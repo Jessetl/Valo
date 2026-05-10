@@ -24,30 +24,37 @@ export class CreateNotificationsTable1711800000000 implements MigrationInterface
             isNullable: false,
           },
           {
-            name: 'debt_id',
+            name: 'financial_id',
             type: 'uuid',
             isNullable: false,
           },
           {
             name: 'type',
             type: 'varchar',
-            default: `'debt_due_reminder'`,
+            isNullable: false,
           },
           {
             name: 'scheduled_at',
-            type: 'timestamptz',
+            type: 'date',
             isNullable: false,
           },
           {
             name: 'sent_at',
-            type: 'timestamptz',
+            type: 'date',
             isNullable: true,
           },
           {
             name: 'status',
             type: 'enum',
+            enumName: 'notifications_status_enum',
             enum: ['PENDING', 'SENT', 'FAILED'],
             default: `'PENDING'`,
+          },
+          {
+            name: 'is_read',
+            type: 'boolean',
+            default: false,
+            isNullable: false,
           },
         ],
       }),
@@ -68,9 +75,9 @@ export class CreateNotificationsTable1711800000000 implements MigrationInterface
     await queryRunner.createForeignKey(
       'notifications',
       new TableForeignKey({
-        name: 'FK_notifications_debt',
-        columnNames: ['debt_id'],
-        referencedTableName: 'debts',
+        name: 'FK_notifications_financial_record',
+        columnNames: ['financial_id'],
+        referencedTableName: 'financial_records',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
       }),
@@ -79,5 +86,6 @@ export class CreateNotificationsTable1711800000000 implements MigrationInterface
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable('notifications');
+    await queryRunner.query('DROP TYPE IF EXISTS "notifications_status_enum"');
   }
 }

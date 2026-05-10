@@ -1,6 +1,6 @@
 import { QueryRunner } from 'typeorm';
 import * as admin from 'firebase-admin';
-import { USER_IDS } from './seed-ids';
+import { USER_IDS, DEVICE_IDS } from './seed-ids';
 
 const SEED_USERS = [
   {
@@ -9,9 +9,19 @@ const SEED_USERS = [
     password: 'kashy1234',
     firstName: 'Juan',
     lastName: 'Pérez',
-    country: 'VE',
-    fcmToken:
-      'cFake_FCM_Token_Juan_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    countryCode: 'VE',
+    latitude: 10.4806,
+    longitude: -66.9036,
+    device: {
+      id: DEVICE_IDS.juanPhone,
+      deviceId: 'seed-juan-device-id',
+      deviceName: 'Pixel 7 (seed Juan)',
+      fcmToken:
+        'cFake_FCM_Token_Juan_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      refreshToken: 'cFake_Refresh_Token_Juan_seed',
+      platform: 'android',
+      appVersion: '1.0.0',
+    },
   },
   {
     id: USER_IDS.maria,
@@ -19,9 +29,19 @@ const SEED_USERS = [
     password: 'kashy1234',
     firstName: 'María',
     lastName: 'González',
-    country: 'VE',
-    fcmToken:
-      'cFake_FCM_Token_Maria_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    countryCode: 'VE',
+    latitude: 10.4634,
+    longitude: -66.8784,
+    device: {
+      id: DEVICE_IDS.mariaPhone,
+      deviceId: 'seed-maria-device-id',
+      deviceName: 'iPhone 14 (seed María)',
+      fcmToken:
+        'cFake_FCM_Token_Maria_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      refreshToken: 'cFake_Refresh_Token_Maria_seed',
+      platform: 'ios',
+      appVersion: '1.0.0',
+    },
   },
 ];
 
@@ -57,9 +77,9 @@ export const UsersSeed = {
         INSERT INTO users (
           id, firebase_uid, email,
           first_name, last_name,
-          country, notification_enabled, fcm_token,
+          country_code, latitude, longitude,
           created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, true, $7, now(), now())
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
         ON CONFLICT (id) DO UPDATE SET firebase_uid = EXCLUDED.firebase_uid
         `,
         [
@@ -68,8 +88,34 @@ export const UsersSeed = {
           u.email,
           u.firstName,
           u.lastName,
-          u.country,
-          u.fcmToken,
+          u.countryCode,
+          u.latitude,
+          u.longitude,
+        ],
+      );
+
+      await q.query(
+        `
+        INSERT INTO user_devices (
+          id, user_id, device_id, device_name,
+          firebase_fcm_token, firebase_refresh_token,
+          platform, app_version,
+          last_active_at, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+        ON CONFLICT (id) DO UPDATE SET
+          firebase_fcm_token = EXCLUDED.firebase_fcm_token,
+          firebase_refresh_token = EXCLUDED.firebase_refresh_token,
+          last_active_at = now()
+        `,
+        [
+          u.device.id,
+          u.id,
+          u.device.deviceId,
+          u.device.deviceName,
+          u.device.fcmToken,
+          u.device.refreshToken,
+          u.device.platform,
+          u.device.appVersion,
         ],
       );
     }
@@ -77,6 +123,12 @@ export const UsersSeed = {
 
   async down(q: QueryRunner): Promise<void> {
     const auth = admin.app().auth();
+
+    // user_devices borra por CASCADE al borrar el user, pero limpiamos primero
+    await q.query(`DELETE FROM user_devices WHERE id IN ($1, $2)`, [
+      DEVICE_IDS.juanPhone,
+      DEVICE_IDS.mariaPhone,
+    ]);
 
     await q.query(`DELETE FROM users WHERE id IN ($1, $2)`, [
       USER_IDS.juan,
