@@ -5,11 +5,11 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateNotificationPreferencesTable1711900000000 implements MigrationInterface {
+export class CreateUserDevicesTable1711350000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'notification_preferences',
+        name: 'user_devices',
         columns: [
           {
             name: 'id',
@@ -21,31 +21,48 @@ export class CreateNotificationPreferencesTable1711900000000 implements Migratio
           {
             name: 'user_id',
             type: 'uuid',
+            isNullable: false,
+          },
+          {
+            name: 'device_id',
+            type: 'varchar',
             isUnique: true,
             isNullable: false,
           },
           {
-            name: 'push_enabled',
-            type: 'boolean',
-            default: true,
+            name: 'device_name',
+            type: 'varchar',
+            isNullable: false,
           },
           {
-            name: 'debt_reminders',
-            type: 'boolean',
-            default: true,
+            name: 'firebase_fcm_token',
+            type: 'varchar',
+            isUnique: true,
+            isNullable: false,
           },
           {
-            name: 'price_alerts',
-            type: 'boolean',
-            default: false,
+            name: 'firebase_refresh_token',
+            type: 'text',
+            isNullable: false,
           },
           {
-            name: 'list_reminders',
-            type: 'boolean',
-            default: true,
+            name: 'platform',
+            type: 'varchar',
+            isNullable: false,
           },
           {
-            name: 'updated_at',
+            name: 'app_version',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
+            name: 'last_active_at',
+            type: 'timestamptz',
+            default: 'now()',
+            isNullable: false,
+          },
+          {
+            name: 'created_at',
             type: 'timestamptz',
             default: 'now()',
             isNullable: false,
@@ -56,9 +73,9 @@ export class CreateNotificationPreferencesTable1711900000000 implements Migratio
     );
 
     await queryRunner.createForeignKey(
-      'notification_preferences',
+      'user_devices',
       new TableForeignKey({
-        name: 'FK_notification_preferences_user',
+        name: 'FK_user_devices_user',
         columnNames: ['user_id'],
         referencedTableName: 'users',
         referencedColumnNames: ['id'],
@@ -68,6 +85,6 @@ export class CreateNotificationPreferencesTable1711900000000 implements Migratio
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('notification_preferences');
+    await queryRunner.dropTable('user_devices');
   }
 }

@@ -7,7 +7,6 @@ import {
 
 export class CreateShoppingListsTable1711400000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // --- shopping_lists ---
     await queryRunner.createTable(
       new Table({
         name: 'shopping_lists',
@@ -35,10 +34,28 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             isNullable: true,
           },
           {
-            name: 'status',
+            name: 'list_type',
             type: 'enum',
-            enum: ['ACTIVE', 'COMPLETED'],
-            default: `'ACTIVE'`,
+            enumName: 'shopping_lists_list_type_enum',
+            enum: ['TEMPLATE', 'RECEIPT'],
+            isNullable: false,
+          },
+          {
+            name: 'country_code',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'currency_code',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'exchange_rate_snapshot',
+            type: 'decimal',
+            precision: 18,
+            scale: 4,
+            isNullable: false,
           },
           {
             name: 'iva_enabled',
@@ -46,35 +63,29 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             default: false,
           },
           {
-            name: 'total_local',
-            type: 'decimal',
-            precision: 18,
-            scale: 2,
-            default: 0,
+            name: 'scheduled_date',
+            type: 'timestamptz',
+            isNullable: true,
           },
           {
-            name: 'total_usd',
+            name: 'latitude',
             type: 'decimal',
-            precision: 18,
-            scale: 2,
-            default: 0,
-          },
-          {
-            name: 'exchange_rate_snapshot',
-            type: 'decimal',
-            precision: 18,
-            scale: 4,
+            precision: 10,
+            scale: 7,
             isNullable: true,
           },
           {
-            name: 'created_at',
-            type: 'timestamptz',
-            default: 'now()',
+            name: 'longitude',
+            type: 'decimal',
+            precision: 10,
+            scale: 7,
+            isNullable: true,
           },
           {
-            name: 'completed_at',
-            type: 'timestamptz',
-            isNullable: true,
+            name: 'is_active',
+            type: 'boolean',
+            default: true,
+            isNullable: false,
           },
         ],
       }),
@@ -95,5 +106,8 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable('shopping_lists');
+    await queryRunner.query(
+      'DROP TYPE IF EXISTS "shopping_lists_list_type_enum"',
+    );
   }
 }

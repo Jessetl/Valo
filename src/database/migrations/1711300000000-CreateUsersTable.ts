@@ -24,6 +24,7 @@ export class CreateUsersTable1711300000000 implements MigrationInterface {
           {
             name: 'email',
             type: 'varchar',
+            isUnique: true,
             isNullable: false,
           },
           {
@@ -42,37 +43,30 @@ export class CreateUsersTable1711300000000 implements MigrationInterface {
             isNullable: true,
           },
           {
-            name: 'country',
-            type: 'varchar',
+            name: 'subscription_plan',
+            type: 'enum',
+            enumName: 'users_subscription_plan_enum',
+            enum: ['FREE'],
+            default: `'FREE'`,
+            isNullable: false,
           },
           {
-            name: 'location_label',
+            name: 'country_code',
             type: 'varchar',
+            isNullable: false,
+          },
+          {
+            name: 'latitude',
+            type: 'decimal',
+            precision: 10,
+            scale: 7,
             isNullable: true,
           },
           {
-            name: 'location_latitude',
-            type: 'double precision',
-            isNullable: true,
-          },
-          {
-            name: 'location_longitude',
-            type: 'double precision',
-            isNullable: true,
-          },
-          {
-            name: 'fcm_token',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
-            name: 'notification_enabled',
-            type: 'boolean',
-            default: true,
-          },
-          {
-            name: 'fcm_platform',
-            type: 'varchar',
+            name: 'longitude',
+            type: 'decimal',
+            precision: 10,
+            scale: 7,
             isNullable: true,
           },
           {
@@ -93,5 +87,8 @@ export class CreateUsersTable1711300000000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropTable('users');
+    await queryRunner.query(
+      'DROP TYPE IF EXISTS "users_subscription_plan_enum"',
+    );
   }
 }

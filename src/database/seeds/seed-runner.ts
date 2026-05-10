@@ -7,10 +7,10 @@
  *   npm run seed -- --only 03 → ejecuta solo el seed que empiece con "03"
  *
  * ORDEN DE EJECUCIÓN (up):
- *   01-users → 02-notification-preferences → 03-debts → 04-notifications → 05-shopping-lists
+ *   01-users → 02-notification-preferences → 03-financial-records → 04-notifications → 05-shopping-lists
  *
  * ORDEN DE REVERSIÓN (down):
- *   05-shopping-lists → 04-notifications → 03-debts → 02-notification-preferences → 01-users
+ *   05-shopping-lists → 04-notifications → 03-financial-records → 02-notification-preferences → 01-users
  *   (aunque el CASCADE en FK del seed 01 borra todo de una vez)
  */
 
@@ -19,7 +19,7 @@ import * as admin from 'firebase-admin';
 import { DataSource, QueryRunner } from 'typeorm';
 import { UsersSeed } from './01-users.seed';
 import { NotificationPreferencesSeed } from './02-notification-preferences.seed';
-import { DebtsSeed } from './03-debts.seed';
+import { FinancialRecordsSeed } from './03-financial-records.seed';
 import { NotificationsSeed } from './04-notifications.seed';
 import { ShoppingListsSeed } from './05-shopping-lists.seed';
 
@@ -28,7 +28,7 @@ import { ShoppingListsSeed } from './05-shopping-lists.seed';
 const SEEDS = [
   { name: '01-users', seed: UsersSeed },
   { name: '02-notification-preferences', seed: NotificationPreferencesSeed },
-  { name: '03-debts', seed: DebtsSeed },
+  { name: '03-financial-records', seed: FinancialRecordsSeed },
   { name: '04-notifications', seed: NotificationsSeed },
   { name: '05-shopping-lists', seed: ShoppingListsSeed },
 ];
