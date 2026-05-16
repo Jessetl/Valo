@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { UnauthorizedException } from '@nestjs/common';
-import type { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { RegisterUserUseCase } from '../../application/use-cases/register-user.use-case';
 import { LoginUserUseCase } from '../../application/use-cases/login-user.use-case';
 import { LoginWithGoogleUseCase } from '../../application/use-cases/login-with-google.use-case';
@@ -13,16 +12,9 @@ import { RecoverPasswordUseCase } from '../../application/use-cases/recover-pass
 import { AuthController } from './auth.controller';
 
 type ExecMock = { execute: jest.Mock<(...args: unknown[]) => Promise<any>> };
-type ResolverMock = {
-  resolve: jest.Mock<(...args: unknown[]) => Promise<string>>;
-};
 
 function makeExecMock(): ExecMock {
   return { execute: jest.fn() };
-}
-
-function makeResolverMock(): ResolverMock {
-  return { resolve: jest.fn() };
 }
 
 describe('AuthController', () => {
@@ -35,10 +27,9 @@ describe('AuthController', () => {
   let logout: ExecMock;
   let changePassword: ExecMock;
   let recoverPassword: ExecMock;
-  let userIdentityResolver: ResolverMock;
   let controller: AuthController;
 
-  const firebaseUser = { uid: 'fb-1', email: 'user@example.com' };
+  const userId = 'user-1';
   const device = {
     deviceId: 'dev-1',
     deviceName: 'Pixel',
@@ -57,9 +48,6 @@ describe('AuthController', () => {
     logout = makeExecMock();
     changePassword = makeExecMock();
     recoverPassword = makeExecMock();
-    userIdentityResolver = makeResolverMock();
-
-    userIdentityResolver.resolve.mockResolvedValue('user-1');
 
     controller = new AuthController(
       registerUser as unknown as RegisterUserUseCase,
@@ -71,7 +59,6 @@ describe('AuthController', () => {
       logout as unknown as LogoutUseCase,
       changePassword as unknown as ChangePasswordUseCase,
       recoverPassword as unknown as RecoverPasswordUseCase,
-      userIdentityResolver as unknown as UserIdentityResolver,
     );
   });
 
@@ -106,12 +93,29 @@ describe('AuthController', () => {
     expect(loginWithGoogle.execute).toHaveBeenCalledWith({ dto, device });
   });
 
-  it('refresh delega deviceId', async () => {
+  it('refresh delega deviceId + accessTokenHint extraido del header', async () => {
     refreshToken.execute.mockResolvedValue({ access_token: 't' });
 
-    await controller.refresh('dev-1');
+    await controller.refresh('dev-1', 'Bearer jwt-expirado');
 
-    expect(refreshToken.execute).toHaveBeenCalledWith({ deviceId: 'dev-1' });
+    expect(refreshToken.execute).toHaveBeenCalledWith({
+      deviceId: 'dev-1',
+      accessTokenHint: 'jwt-expirado',
+    });
+  });
+
+  it('refresh lanza unauthorized si no hay Authorization Bearer', async () => {
+    expect(() => controller.refresh('dev-1', undefined)).toThrow(
+      UnauthorizedException,
+    );
+
+    expect(refreshToken.execute).not.toHaveBeenCalled();
+  });
+
+  it('refresh lanza unauthorized si Authorization tiene formato invalido', async () => {
+    expect(() => controller.refresh('dev-1', 'NotBearer xyz')).toThrow(
+      UnauthorizedException,
+    );
   });
 
   it('recoverPassword delega dto', async () => {
@@ -123,61 +127,42 @@ describe('AuthController', () => {
     expect(recoverPassword.execute).toHaveBeenCalledWith(dto);
   });
 
-  it('changePassword resuelve userId y delega', async () => {
+  it('changePassword delega userId + dto + device', async () => {
     changePassword.execute.mockResolvedValue(undefined);
     const dto = { current_password: 'a', new_password: 'b' };
 
-    await controller.changePassword(firebaseUser, dto as never, device);
+    await controller.changePassword(userId, dto as never, device);
 
-    expect(userIdentityResolver.resolve).toHaveBeenCalledWith(firebaseUser);
     expect(changePassword.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
+      userId,
       dto,
       device,
     });
   });
 
   it('profile devuelve user via getUserById', async () => {
-    getUserById.execute.mockResolvedValue({ id: 'user-1', email: 'a@b.com' });
+    getUserById.execute.mockResolvedValue({ id: userId, email: 'a@b.com' });
 
-    const result = await controller.profile(firebaseUser);
+    const result = await controller.profile(userId);
 
-    expect(getUserById.execute).toHaveBeenCalledWith('user-1');
-    expect(result).toEqual({ id: 'user-1', email: 'a@b.com' });
+    expect(getUserById.execute).toHaveBeenCalledWith(userId);
+    expect(result).toEqual({ id: userId, email: 'a@b.com' });
   });
 
-  it('updateProfile delega payload', async () => {
-    updateProfile.execute.mockResolvedValue({ id: 'user-1' });
+  it('updateProfile delega userId + dto', async () => {
+    updateProfile.execute.mockResolvedValue({ id: userId });
     const dto = { first_name: 'Jane' };
 
-    await controller.updateProfile(firebaseUser, dto as never);
+    await controller.updateProfile(userId, dto as never);
 
-    expect(updateProfile.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
-      dto,
-    });
+    expect(updateProfile.execute).toHaveBeenCalledWith({ userId, dto });
   });
 
   it('logout delega userId + deviceId', async () => {
     logout.execute.mockResolvedValue(undefined);
 
-    await controller.logout(firebaseUser, 'dev-1');
+    await controller.logout(userId, 'dev-1');
 
-    expect(logout.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
-      deviceId: 'dev-1',
-    });
-  });
-
-  it('propaga unauthorized del resolver en rutas autenticadas', async () => {
-    userIdentityResolver.resolve.mockRejectedValueOnce(
-      new UnauthorizedException('Invalid Firebase token payload'),
-    );
-
-    await expect(controller.profile(firebaseUser)).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    );
-
-    expect(getUserById.execute).not.toHaveBeenCalled();
+    expect(logout.execute).toHaveBeenCalledWith({ userId, deviceId: 'dev-1' });
   });
 });

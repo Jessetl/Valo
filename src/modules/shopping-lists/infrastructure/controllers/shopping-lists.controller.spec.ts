@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { UnauthorizedException } from '@nestjs/common';
-import type { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { AddItemsToShoppingListUseCase } from '../../application/use-cases/add-items-to-shopping-list.use-case';
 import { CompareShoppingListsUseCase } from '../../application/use-cases/compare-shopping-lists.use-case';
 import { CompleteShoppingListUseCase } from '../../application/use-cases/complete-shopping-list.use-case';
@@ -18,16 +16,9 @@ import { UpdateShoppingListUseCase } from '../../application/use-cases/update-sh
 import { ShoppingListsController } from './shopping-lists.controller';
 
 type ExecMock = { execute: jest.Mock<(...args: unknown[]) => Promise<any>> };
-type ResolverMock = {
-  resolve: jest.Mock<(...args: unknown[]) => Promise<string>>;
-};
 
 function makeExecMock(): ExecMock {
   return { execute: jest.fn() };
-}
-
-function makeResolverMock(): ResolverMock {
-  return { resolve: jest.fn() };
 }
 
 describe('ShoppingListsController', () => {
@@ -45,15 +36,10 @@ describe('ShoppingListsController', () => {
   let duplicateShoppingList: ExecMock;
   let compareShoppingLists: ExecMock;
   let getSpendingStats: ExecMock;
-  let userIdentityResolver: ResolverMock;
 
   let controller: ShoppingListsController;
 
-  const firebaseUser = {
-    uid: 'firebase-1',
-    email: ' user@example.com ',
-    roles: ['user'],
-  };
+  const userId = 'user-1';
 
   beforeEach(() => {
     createShoppingList = makeExecMock();
@@ -70,9 +56,6 @@ describe('ShoppingListsController', () => {
     duplicateShoppingList = makeExecMock();
     compareShoppingLists = makeExecMock();
     getSpendingStats = makeExecMock();
-    userIdentityResolver = makeResolverMock();
-
-    userIdentityResolver.resolve.mockResolvedValue('user-1');
 
     controller = new ShoppingListsController(
       createShoppingList as unknown as CreateShoppingListUseCase,
@@ -89,21 +72,16 @@ describe('ShoppingListsController', () => {
       duplicateShoppingList as unknown as DuplicateShoppingListUseCase,
       compareShoppingLists as unknown as CompareShoppingListsUseCase,
       getSpendingStats as unknown as GetSpendingStatsUseCase,
-      userIdentityResolver as unknown as UserIdentityResolver,
     );
   });
 
-  it('create resuelve user y delega en use case', async () => {
+  it('create delega payload al use case', async () => {
     createShoppingList.execute.mockResolvedValue({ id: 'list-1' });
 
     const dto = { name: 'Compra' };
-    const result = await controller.create(firebaseUser, dto as never);
+    const result = await controller.create(userId, dto as never);
 
-    expect(userIdentityResolver.resolve).toHaveBeenCalledWith(firebaseUser);
-    expect(createShoppingList.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
-      dto,
-    });
+    expect(createShoppingList.execute).toHaveBeenCalledWith({ userId, dto });
     expect(result).toEqual({ id: 'list-1' });
   });
 
@@ -115,10 +93,10 @@ describe('ShoppingListsController', () => {
       limit: 50,
     });
 
-    await controller.history(firebaseUser, '0', '500');
+    await controller.history(userId, '0', '500');
 
     expect(getShoppingListHistory.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
+      userId,
       page: 1,
       limit: 50,
     });
@@ -132,10 +110,10 @@ describe('ShoppingListsController', () => {
       limit: 10,
     });
 
-    await controller.history(firebaseUser, undefined, undefined);
+    await controller.history(userId, undefined, undefined);
 
     expect(getShoppingListHistory.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
+      userId,
       page: 1,
       limit: 10,
     });
@@ -144,10 +122,10 @@ describe('ShoppingListsController', () => {
   it('compare parsea ids y elimina vacios', async () => {
     compareShoppingLists.execute.mockResolvedValue({ comparisons: [] });
 
-    await controller.compare(firebaseUser, ' id1, ,id2 ,');
+    await controller.compare(userId, ' id1, ,id2 ,');
 
     expect(compareShoppingLists.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
+      userId,
       ids: ['id1', 'id2'],
     });
   });
@@ -155,10 +133,10 @@ describe('ShoppingListsController', () => {
   it('compare usa arreglo vacio cuando ids es undefined', async () => {
     compareShoppingLists.execute.mockResolvedValue({ comparisons: [] });
 
-    await controller.compare(firebaseUser, undefined as never);
+    await controller.compare(userId, undefined as never);
 
     expect(compareShoppingLists.execute).toHaveBeenCalledWith({
-      userId: 'user-1',
+      userId,
       ids: [],
     });
   });
@@ -166,15 +144,15 @@ describe('ShoppingListsController', () => {
   it('stats usa period month por defecto y week cuando aplica', async () => {
     getSpendingStats.execute.mockResolvedValue({ period: 'month', stats: [] });
 
-    await controller.stats(firebaseUser, 'invalid');
+    await controller.stats(userId, 'invalid');
     expect(getSpendingStats.execute).toHaveBeenLastCalledWith({
-      userId: 'user-1',
+      userId,
       period: 'month',
     });
 
-    await controller.stats(firebaseUser, 'week');
+    await controller.stats(userId, 'week');
     expect(getSpendingStats.execute).toHaveBeenLastCalledWith({
-      userId: 'user-1',
+      userId,
       period: 'week',
     });
   });
@@ -182,19 +160,19 @@ describe('ShoppingListsController', () => {
   it('findAll delega userId', async () => {
     getShoppingLists.execute.mockResolvedValue([]);
 
-    await controller.findAll(firebaseUser);
+    await controller.findAll(userId);
 
-    expect(getShoppingLists.execute).toHaveBeenCalledWith('user-1');
+    expect(getShoppingLists.execute).toHaveBeenCalledWith(userId);
   });
 
   it('findOne delega ids', async () => {
     getShoppingListById.execute.mockResolvedValue({ id: 'list-1' });
 
-    await controller.findOne(firebaseUser, 'list-1');
+    await controller.findOne(userId, 'list-1');
 
     expect(getShoppingListById.execute).toHaveBeenCalledWith({
       listId: 'list-1',
-      userId: 'user-1',
+      userId,
     });
   });
 
@@ -202,11 +180,11 @@ describe('ShoppingListsController', () => {
     updateShoppingList.execute.mockResolvedValue({ id: 'list-1' });
 
     const dto = { name: 'Nueva' };
-    await controller.update(firebaseUser, 'list-1', dto as never);
+    await controller.update(userId, 'list-1', dto as never);
 
     expect(updateShoppingList.execute).toHaveBeenCalledWith({
       listId: 'list-1',
-      userId: 'user-1',
+      userId,
       dto,
     });
   });
@@ -214,22 +192,22 @@ describe('ShoppingListsController', () => {
   it('remove delega payload', async () => {
     deleteShoppingList.execute.mockResolvedValue({ message: 'ok' });
 
-    await controller.remove(firebaseUser, 'list-1');
+    await controller.remove(userId, 'list-1');
 
     expect(deleteShoppingList.execute).toHaveBeenCalledWith({
       listId: 'list-1',
-      userId: 'user-1',
+      userId,
     });
   });
 
   it('duplicate delega payload', async () => {
     duplicateShoppingList.execute.mockResolvedValue({ id: 'list-2' });
 
-    await controller.duplicate(firebaseUser, 'list-1');
+    await controller.duplicate(userId, 'list-1');
 
     expect(duplicateShoppingList.execute).toHaveBeenCalledWith({
       listId: 'list-1',
-      userId: 'user-1',
+      userId,
     });
   });
 
@@ -239,18 +217,18 @@ describe('ShoppingListsController', () => {
       status: 'COMPLETED',
     });
 
-    await controller.complete(firebaseUser, 'list-1');
+    await controller.complete(userId, 'list-1');
 
     expect(completeShoppingList.execute).toHaveBeenCalledWith({
       listId: 'list-1',
-      userId: 'user-1',
+      userId,
     });
   });
 
   it('addItems delega payload', async () => {
     addItemsToShoppingList.execute.mockResolvedValue([]);
 
-    await controller.addItems(firebaseUser, 'list-1', {
+    await controller.addItems(userId, 'list-1', {
       items: [
         { productName: 'P', category: 'C', unitPriceLocal: 1, totalLocal: 1 },
       ],
@@ -258,7 +236,7 @@ describe('ShoppingListsController', () => {
 
     expect(addItemsToShoppingList.execute).toHaveBeenCalledWith({
       listId: 'list-1',
-      userId: 'user-1',
+      userId,
       items: [
         { productName: 'P', category: 'C', unitPriceLocal: 1, totalLocal: 1 },
       ],
@@ -269,12 +247,12 @@ describe('ShoppingListsController', () => {
     editShoppingItem.execute.mockResolvedValue({ id: 'list-1' });
 
     const dto = { productName: 'P', category: 'C', unitPriceLocal: 2 };
-    await controller.editItem(firebaseUser, 'list-1', 'item-1', dto as never);
+    await controller.editItem(userId, 'list-1', 'item-1', dto as never);
 
     expect(editShoppingItem.execute).toHaveBeenCalledWith({
       listId: 'list-1',
       itemId: 'item-1',
-      userId: 'user-1',
+      userId,
       dto,
     });
   });
@@ -282,51 +260,24 @@ describe('ShoppingListsController', () => {
   it('removeItem delega payload', async () => {
     deleteShoppingItem.execute.mockResolvedValue({ id: 'list-1' });
 
-    await controller.removeItem(firebaseUser, 'list-1', 'item-1');
+    await controller.removeItem(userId, 'list-1', 'item-1');
 
     expect(deleteShoppingItem.execute).toHaveBeenCalledWith({
       listId: 'list-1',
       itemId: 'item-1',
-      userId: 'user-1',
+      userId,
     });
   });
 
   it('toggleItem delega payload', async () => {
     toggleShoppingItem.execute.mockResolvedValue({ id: 'list-1' });
 
-    await controller.toggleItem(firebaseUser, 'list-1', 'item-1');
+    await controller.toggleItem(userId, 'list-1', 'item-1');
 
     expect(toggleShoppingItem.execute).toHaveBeenCalledWith({
       listId: 'list-1',
       itemId: 'item-1',
-      userId: 'user-1',
+      userId,
     });
-  });
-
-  it('propaga unauthorized del resolver con uid faltante', async () => {
-    userIdentityResolver.resolve.mockRejectedValueOnce(
-      new UnauthorizedException('Invalid Firebase token payload'),
-    );
-
-    await expect(
-      controller.findAll({ uid: '', email: 'user@example.com' }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-
-    expect(getShoppingLists.execute).not.toHaveBeenCalled();
-  });
-
-  it('propaga unauthorized del resolver con email invalido', async () => {
-    userIdentityResolver.resolve.mockRejectedValueOnce(
-      new UnauthorizedException('Invalid Firebase token payload'),
-    );
-
-    await expect(
-      controller.findAll({
-        uid: 'firebase-1',
-        email: 'correo-invalido',
-      }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-
-    expect(getShoppingLists.execute).not.toHaveBeenCalled();
   });
 });

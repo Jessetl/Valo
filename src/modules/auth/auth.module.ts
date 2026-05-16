@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserOrmEntity } from './infrastructure/persistence/orm-entities/user.orm-entity';
 import { NotificationPreferencesOrmEntity } from './infrastructure/persistence/orm-entities/notification-preferences.orm-entity';
@@ -24,7 +23,6 @@ import { UpdateProfileUseCase } from './application/use-cases/update-profile.use
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
 import { SyncFirebaseUserUseCase } from './application/use-cases/sync-firebase-user.use-case';
 import { JwtTokenService } from './application/services/jwt-token.service';
-import { UserIdentityResolver } from '../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { AuthController } from './infrastructure/controllers/auth.controller';
 
 @Module({
@@ -34,18 +32,6 @@ import { AuthController } from './infrastructure/controllers/auth.controller';
       NotificationPreferencesOrmEntity,
       UserDeviceOrmEntity,
     ]),
-    JwtModule.registerAsync({
-      useFactory: () => {
-        const secret = process.env.JWT_SECRET;
-        if (!secret) {
-          throw new Error('JWT_SECRET env var is not configured');
-        }
-        return {
-          secret,
-          signOptions: { expiresIn: '15m' },
-        };
-      },
-    }),
   ],
   controllers: [AuthController],
   providers: [
@@ -71,7 +57,6 @@ import { AuthController } from './infrastructure/controllers/auth.controller';
       provide: FIREBASE_USER_SYNC_PORT,
       useExisting: SyncFirebaseUserUseCase,
     },
-    UserIdentityResolver,
   ],
   exports: [
     USER_REPOSITORY,
@@ -80,7 +65,6 @@ import { AuthController } from './infrastructure/controllers/auth.controller';
     FIREBASE_USER_SYNC_PORT,
     SyncFirebaseUserUseCase,
     JwtTokenService,
-    UserIdentityResolver,
   ],
 })
 export class AuthModule {}

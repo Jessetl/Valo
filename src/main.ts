@@ -5,8 +5,23 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { AppModule } from './app.module';
 import { validationExceptionFactory } from './shared-kernel/infrastructure/pipes/validation-exception.factory';
+import { assertEncryptionKey } from './shared-kernel/utils/crypto.util';
+
+function assertStartupSecrets(): void {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET env var is not configured');
+  }
+  if (jwtSecret.length < 32) {
+    throw new Error(
+      'JWT_SECRET must be at least 32 characters. Generate with: openssl rand -base64 48',
+    );
+  }
+  assertEncryptionKey();
+}
 
 async function bootstrap() {
+  assertStartupSecrets();
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
   const port = Number(process.env.PORT ?? 3000);

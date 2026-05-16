@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Patch,
   Post,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,10 +16,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Public } from '../../../../shared-kernel/infrastructure/decorators/public.decorator';
-import { CurrentUser } from '../../../../shared-kernel/infrastructure/decorators/current-user.decorator';
-import type { FirebaseUser } from '../../../../shared-kernel/infrastructure/guards/firebase-auth.guard';
-import { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
+import { CurrentUserId } from '../../../../shared-kernel/infrastructure/decorators/current-user-id.decorator';
 import { RegisterUserUseCase } from '../../application/use-cases/register-user.use-case';
 import { LoginUserUseCase } from '../../application/use-cases/login-user.use-case';
 import { LoginWithGoogleUseCase } from '../../application/use-cases/login-with-google.use-case';
@@ -57,10 +57,10 @@ export class AuthController {
     private readonly logoutUseCase: LogoutUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
     private readonly recoverPasswordUseCase: RecoverPasswordUseCase,
-    private readonly userIdentityResolver: UserIdentityResolver,
   ) {}
 
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
@@ -80,6 +80,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -106,6 +107,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login/google')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -133,12 +135,14 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('firebase-token')
   @ApiOperation({
     summary: 'Renovar JWT custom',
     description:
-      'Usa el firebase_refresh_token encriptado del dispositivo (lookup por X-Device-Id) para obtener un nuevo idToken de Firebase y firma un nuevo JWT custom.',
+      'Requiere el JWT custom expirado en Authorization Bearer como proof-of-possession + X-Device-Id. Backend valida firma del JWT (ignorando expiracion), verifica que el device pertenece al user, intercambia el refresh token de Firebase y firma un nuevo JWT.',
   })
   @ApiHeader({ name: 'X-Device-Id', required: true })
   @ApiHeader({ name: 'X-Device-Name', required: false })
@@ -149,17 +153,26 @@ export class AuthController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Refresh token invalido o revocado',
+    description:
+      'Refresh token invalido, revocado, sin Authorization Bearer o device no autorizado',
   })
   refresh(
     @DeviceIdHeader() deviceId: string,
+    @Headers('authorization') authorization: string | undefined,
     @Headers('x-device-name') _deviceName?: string,
   ): Promise<RefreshResponseDto> {
     void _deviceName;
-    return this.refreshToken.execute({ deviceId });
+    const accessTokenHint = extractBearerToken(authorization);
+    if (!accessTokenHint) {
+      throw new UnauthorizedException(
+        'Falta el JWT en Authorization Bearer para refresh',
+      );
+    }
+    return this.refreshToken.execute({ deviceId, accessTokenHint });
   }
 
   @Public()
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
   @Post('recover-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
@@ -174,6 +187,7 @@ export class AuthController {
     return this.recoverPasswordUseCase.execute(dto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('change-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('firebase-token')
@@ -189,11 +203,10 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Contraseña actual invalida' })
   @ApiResponse({ status: 422, description: 'Contraseña nueva invalida' })
   async changePassword(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Body() dto: ChangePasswordDto,
     @DeviceInfoHeaders() device: DeviceInfo,
   ): Promise<void> {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     await this.changePasswordUseCase.execute({ userId, dto, device });
   }
 
@@ -210,10 +223,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Perfil', type: UserResponseDto })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  async profile(
-    @CurrentUser() firebaseUser: FirebaseUser,
-  ): Promise<UserResponseDto> {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
+  async profile(@CurrentUserId() userId: string): Promise<UserResponseDto> {
     return this.getUserById.execute(userId);
   }
 
@@ -236,10 +246,9 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 422, description: 'Validacion fallida' })
   async updateProfile(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Body() dto: UpdateProfileDto,
   ): Promise<UserResponseDto> {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.updateProfileUseCase.execute({ userId, dto });
   }
 
@@ -260,10 +269,15 @@ export class AuthController {
     description: 'Dispositivo no registrado para el usuario',
   })
   async logout(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @DeviceIdHeader() deviceId: string,
   ): Promise<void> {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     await this.logoutUseCase.execute({ userId, deviceId });
   }
+}
+
+function extractBearerToken(authorization?: string): string | undefined {
+  if (!authorization) return undefined;
+  const match = /^Bearer\s+(.+)$/i.exec(authorization);
+  return match?.[1]?.trim() || undefined;
 }

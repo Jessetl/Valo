@@ -1,4 +1,5 @@
-process.env.APP_ENCRYPTION_KEY ??= 'test-encryption-key';
+process.env.APP_ENCRYPTION_KEY ??=
+  'a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=';
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { UnauthorizedException } from '@nestjs/common';

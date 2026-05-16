@@ -39,4 +39,10 @@ export class JwtTokenService {
   async verify(token: string): Promise<JwtCustomPayload> {
     return this.jwtService.verifyAsync<JwtCustomPayload>(token);
   }
+
+  async verifyIgnoreExpiration(token: string): Promise<JwtCustomPayload> {
+    return this.jwtService.verifyAsync<JwtCustomPayload>(token, {
+      ignoreExpiration: true,
+    });
+  }
 }

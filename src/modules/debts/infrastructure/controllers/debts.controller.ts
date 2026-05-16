@@ -17,10 +17,8 @@ import {
   ApiBearerAuth,
   ApiParam,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../../../../shared-kernel/infrastructure/decorators/current-user.decorator';
+import { CurrentUserId } from '../../../../shared-kernel/infrastructure/decorators/current-user-id.decorator';
 import { ParseUUIDPipe } from '../../../../shared-kernel/infrastructure/pipes/parse-uuid.pipe';
-import type { FirebaseUser } from '../../../../shared-kernel/infrastructure/guards/firebase-auth.guard';
-import { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { CreateDebtUseCase } from '../../application/use-cases/create-debt.use-case';
 import { GetDebtsUseCase } from '../../application/use-cases/get-debts.use-case';
 import { GetDebtByIdUseCase } from '../../application/use-cases/get-debt-by-id.use-case';
@@ -44,7 +42,6 @@ export class DebtsController {
     private readonly updateDebt: UpdateDebtUseCase,
     private readonly deleteDebt: DeleteDebtUseCase,
     private readonly payDebt: PayDebtUseCase,
-    private readonly userIdentityResolver: UserIdentityResolver,
   ) {}
 
   @Post()
@@ -63,10 +60,9 @@ export class DebtsController {
   @ApiResponse({ status: 400, description: 'Datos de entrada invalidos' })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   async create(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Body() dto: CreateDebtDto,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.createDebt.execute({ userId, dto });
   }
 
@@ -83,10 +79,9 @@ export class DebtsController {
   })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   async findAll(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Query() query: ListDebtsQueryDto,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getDebts.execute({
       userId,
       priority: query.priority,
@@ -110,10 +105,9 @@ export class DebtsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Deuda no encontrada' })
   async findOne(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getDebtById.execute({ debtId: id, userId });
   }
 
@@ -137,11 +131,10 @@ export class DebtsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Deuda no encontrada' })
   async update(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateDebtDto,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.updateDebt.execute({ debtId: id, userId, dto });
   }
 
@@ -161,10 +154,9 @@ export class DebtsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Deuda no encontrada' })
   async remove(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.deleteDebt.execute({ debtId: id, userId });
   }
 
@@ -186,10 +178,9 @@ export class DebtsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Deuda no encontrada' })
   async pay(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.payDebt.execute({ debtId: id, userId });
   }
 
