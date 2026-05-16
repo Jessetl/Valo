@@ -9,7 +9,6 @@ import {
   Post,
   Put,
   Query,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,7 +20,7 @@ import {
 import { CurrentUser } from '../../../../shared-kernel/infrastructure/decorators/current-user.decorator';
 import { ParseUUIDPipe } from '../../../../shared-kernel/infrastructure/pipes/parse-uuid.pipe';
 import type { FirebaseUser } from '../../../../shared-kernel/infrastructure/guards/firebase-auth.guard';
-import { SyncFirebaseUserUseCase } from '../../../users/application/use-cases/sync-firebase-user.use-case';
+import { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { CreateDebtUseCase } from '../../application/use-cases/create-debt.use-case';
 import { GetDebtsUseCase } from '../../application/use-cases/get-debts.use-case';
 import { GetDebtByIdUseCase } from '../../application/use-cases/get-debt-by-id.use-case';
@@ -45,7 +44,7 @@ export class DebtsController {
     private readonly updateDebt: UpdateDebtUseCase,
     private readonly deleteDebt: DeleteDebtUseCase,
     private readonly payDebt: PayDebtUseCase,
-    private readonly syncFirebaseUser: SyncFirebaseUserUseCase,
+    private readonly userIdentityResolver: UserIdentityResolver,
   ) {}
 
   @Post()
@@ -67,7 +66,7 @@ export class DebtsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Body() dto: CreateDebtDto,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.createDebt.execute({ userId, dto });
   }
 
@@ -87,7 +86,7 @@ export class DebtsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Query() query: ListDebtsQueryDto,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getDebts.execute({
       userId,
       priority: query.priority,
@@ -114,7 +113,7 @@ export class DebtsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getDebtById.execute({ debtId: id, userId });
   }
 
@@ -142,7 +141,7 @@ export class DebtsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateDebtDto,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.updateDebt.execute({ debtId: id, userId, dto });
   }
 
@@ -165,7 +164,7 @@ export class DebtsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.deleteDebt.execute({ debtId: id, userId });
   }
 
@@ -190,27 +189,8 @@ export class DebtsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.payDebt.execute({ debtId: id, userId });
   }
 
-  // ──────────────────────────────────────────────
-  //  Helpers
-  // ──────────────────────────────────────────────
-
-  private async resolveUserId(firebaseUser: FirebaseUser): Promise<string> {
-    const email = firebaseUser.email?.trim();
-    const hasValidEmail =
-      typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!firebaseUser.uid || !hasValidEmail) {
-      throw new UnauthorizedException('Invalid Firebase token payload');
-    }
-
-    const user = await this.syncFirebaseUser.execute({
-      firebaseUid: firebaseUser.uid,
-      email,
-    });
-    return user.id;
-  }
 }

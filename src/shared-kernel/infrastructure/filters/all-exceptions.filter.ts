@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { buildErrorResponse, getDefaultMessage } from './error-response';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -15,22 +16,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    const message =
-      exception instanceof Error ? exception.message : 'Internal server error';
+    const status = HttpStatus.INTERNAL_SERVER_ERROR;
+    const fallback = getDefaultMessage(status);
+    const detail =
+      exception instanceof Error ? exception.message : String(exception);
 
     this.logger.error(
-      message,
+      detail || fallback,
       exception instanceof Error ? exception.stack : '',
     );
 
-    response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      error: {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        code: 'InternalServerError',
-        message: 'Internal server error',
-      },
-      timestamp: new Date().toISOString(),
-    });
+    response.status(status).json(buildErrorResponse(status, fallback));
   }
 }

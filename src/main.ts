@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import compression from 'compression';
 import { AppModule } from './app.module';
+import { validationExceptionFactory } from './shared-kernel/infrastructure/pipes/validation-exception.factory';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -37,6 +38,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      exceptionFactory: validationExceptionFactory,
     }),
   );
 
@@ -54,7 +56,10 @@ async function bootstrap() {
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'firebase-token',
     )
-    .addTag('Users', 'Registro, login, refresh token y perfil de usuario')
+    .addTag(
+      'Auth',
+      'Registro, login, refresco de tokens y gestion de dispositivos de usuario',
+    )
     .addTag(
       'Shopping Lists',
       'CRUD de listas de compras con items y conversion VES/USD',
@@ -74,11 +79,11 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('api/swagger', app, document);
 
   await app.listen(port, host);
   logger.log(`Application running on ${host}:${port}`);
-  logger.log(`Swagger available at http://localhost:${port}/docs`);
+  logger.log(`Swagger available at http://localhost:${port}/api/swagger`);
 }
 
 bootstrap().catch((error: unknown) => {

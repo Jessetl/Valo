@@ -19,10 +19,12 @@ import { DuplicateShoppingListUseCase } from './application/use-cases/duplicate-
 import { CompareShoppingListsUseCase } from './application/use-cases/compare-shopping-lists.use-case';
 import { GetSpendingStatsUseCase } from './application/use-cases/get-spending-stats.use-case';
 import { ShoppingListsController } from './infrastructure/controllers/shopping-lists.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ShoppingListOrmEntity, ShoppingItemOrmEntity]),
+    AuthModule,
   ],
   controllers: [ShoppingListsController],
   providers: [

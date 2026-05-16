@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { UserOrmEntity } from '../../../../users/infrastructure/persistence/orm-entities/user.orm-entity';
+import { UserOrmEntity } from '../../../../auth/infrastructure/persistence/orm-entities/user.orm-entity';
 import { DebtOrmEntity } from '../../../../debts/infrastructure/persistence/orm-entities/debt.orm-entity';
 import { NotificationStatus } from '../../../domain/enums/notification-status.enum';
 

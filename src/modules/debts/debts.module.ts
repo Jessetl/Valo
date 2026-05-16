@@ -10,13 +10,13 @@ import { UpdateDebtUseCase } from './application/use-cases/update-debt.use-case'
 import { DeleteDebtUseCase } from './application/use-cases/delete-debt.use-case';
 import { PayDebtUseCase } from './application/use-cases/pay-debt.use-case';
 import { DebtsController } from './infrastructure/controllers/debts.controller';
-import { UsersModule } from '../users/users.module';
+import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DebtOrmEntity]),
-    forwardRef(() => UsersModule),
+    forwardRef(() => AuthModule),
     forwardRef(() => NotificationsModule),
   ],
   controllers: [DebtsController],

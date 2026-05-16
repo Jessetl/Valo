@@ -16,6 +16,7 @@ import { CancelDebtNotificationsUseCase } from './application/use-cases/cancel-d
 import { ProcessPendingNotificationsUseCase } from './application/use-cases/process-pending-notifications.use-case';
 import { rabbitmqConfig } from './infrastructure/messaging/rabbitmq.config';
 import { DebtsModule } from '../debts/debts.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DebtsModule } from '../debts/debts.module';
     ScheduleModule.forRoot(),
     ConfigModule.forFeature(rabbitmqConfig),
     forwardRef(() => DebtsModule),
+    AuthModule,
   ],
   providers: [
     // Repository

@@ -19,8 +19,8 @@ export class PaginationDto {
 }
 
 export class PaginatedResponse<T> {
-  data: T[];
-  meta: {
+  data!: T[];
+  meta!: {
     total: number;
     page: number;
     limit: number;

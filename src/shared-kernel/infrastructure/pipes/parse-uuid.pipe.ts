@@ -7,7 +7,7 @@ const UUID_REGEX =
 export class ParseUUIDPipe implements PipeTransform<string, string> {
   transform(value: string): string {
     if (!UUID_REGEX.test(value)) {
-      throw new BadRequestException(`"${value}" is not a valid UUID`);
+      throw new BadRequestException(`"${value}" no es un UUID valido`);
     }
     return value;
   }

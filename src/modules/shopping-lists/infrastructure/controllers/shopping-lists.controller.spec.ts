@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { UnauthorizedException } from '@nestjs/common';
-import type { IFirebaseUserSyncPort } from '../../../../shared-kernel/domain/interfaces/firebase-user-sync.port';
+import type { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { AddItemsToShoppingListUseCase } from '../../application/use-cases/add-items-to-shopping-list.use-case';
 import { CompareShoppingListsUseCase } from '../../application/use-cases/compare-shopping-lists.use-case';
 import { CompleteShoppingListUseCase } from '../../application/use-cases/complete-shopping-list.use-case';
@@ -18,9 +18,16 @@ import { UpdateShoppingListUseCase } from '../../application/use-cases/update-sh
 import { ShoppingListsController } from './shopping-lists.controller';
 
 type ExecMock = { execute: jest.Mock<(...args: unknown[]) => Promise<any>> };
+type ResolverMock = {
+  resolve: jest.Mock<(...args: unknown[]) => Promise<string>>;
+};
 
 function makeExecMock(): ExecMock {
   return { execute: jest.fn() };
+}
+
+function makeResolverMock(): ResolverMock {
+  return { resolve: jest.fn() };
 }
 
 describe('ShoppingListsController', () => {
@@ -38,7 +45,7 @@ describe('ShoppingListsController', () => {
   let duplicateShoppingList: ExecMock;
   let compareShoppingLists: ExecMock;
   let getSpendingStats: ExecMock;
-  let syncFirebaseUser: ExecMock;
+  let userIdentityResolver: ResolverMock;
 
   let controller: ShoppingListsController;
 
@@ -63,9 +70,9 @@ describe('ShoppingListsController', () => {
     duplicateShoppingList = makeExecMock();
     compareShoppingLists = makeExecMock();
     getSpendingStats = makeExecMock();
-    syncFirebaseUser = makeExecMock();
+    userIdentityResolver = makeResolverMock();
 
-    syncFirebaseUser.execute.mockResolvedValue({ id: 'user-1' });
+    userIdentityResolver.resolve.mockResolvedValue('user-1');
 
     controller = new ShoppingListsController(
       createShoppingList as unknown as CreateShoppingListUseCase,
@@ -82,7 +89,7 @@ describe('ShoppingListsController', () => {
       duplicateShoppingList as unknown as DuplicateShoppingListUseCase,
       compareShoppingLists as unknown as CompareShoppingListsUseCase,
       getSpendingStats as unknown as GetSpendingStatsUseCase,
-      syncFirebaseUser as unknown as IFirebaseUserSyncPort,
+      userIdentityResolver as unknown as UserIdentityResolver,
     );
   });
 
@@ -92,10 +99,7 @@ describe('ShoppingListsController', () => {
     const dto = { name: 'Compra' };
     const result = await controller.create(firebaseUser, dto as never);
 
-    expect(syncFirebaseUser.execute).toHaveBeenCalledWith({
-      firebaseUid: 'firebase-1',
-      email: 'user@example.com',
-    });
+    expect(userIdentityResolver.resolve).toHaveBeenCalledWith(firebaseUser);
     expect(createShoppingList.execute).toHaveBeenCalledWith({
       userId: 'user-1',
       dto,
@@ -299,23 +303,30 @@ describe('ShoppingListsController', () => {
     });
   });
 
-  it('lanza unauthorized con uid faltante', async () => {
+  it('propaga unauthorized del resolver con uid faltante', async () => {
+    userIdentityResolver.resolve.mockRejectedValueOnce(
+      new UnauthorizedException('Invalid Firebase token payload'),
+    );
+
     await expect(
-      controller.findAll({ uid: '', email: 'user@example.com', roles: [] }),
+      controller.findAll({ uid: '', email: 'user@example.com' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
 
-    expect(syncFirebaseUser.execute).not.toHaveBeenCalled();
+    expect(getShoppingLists.execute).not.toHaveBeenCalled();
   });
 
-  it('lanza unauthorized con email invalido', async () => {
+  it('propaga unauthorized del resolver con email invalido', async () => {
+    userIdentityResolver.resolve.mockRejectedValueOnce(
+      new UnauthorizedException('Invalid Firebase token payload'),
+    );
+
     await expect(
       controller.findAll({
         uid: 'firebase-1',
         email: 'correo-invalido',
-        roles: [],
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
 
-    expect(syncFirebaseUser.execute).not.toHaveBeenCalled();
+    expect(getShoppingLists.execute).not.toHaveBeenCalled();
   });
 });

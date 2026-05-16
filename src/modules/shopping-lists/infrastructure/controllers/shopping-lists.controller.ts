@@ -5,12 +5,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Inject,
   Param,
   Post,
   Put,
   Query,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,10 +21,7 @@ import {
 import { CurrentUser } from '../../../../shared-kernel/infrastructure/decorators/current-user.decorator';
 import { ParseUUIDPipe } from '../../../../shared-kernel/infrastructure/pipes/parse-uuid.pipe';
 import type { FirebaseUser } from '../../../../shared-kernel/infrastructure/guards/firebase-auth.guard';
-import {
-  FIREBASE_USER_SYNC_PORT,
-  type IFirebaseUserSyncPort,
-} from '../../../../shared-kernel/domain/interfaces/firebase-user-sync.port';
+import { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { CreateShoppingListUseCase } from '../../application/use-cases/create-shopping-list.use-case';
 import { GetShoppingListsUseCase } from '../../application/use-cases/get-shopping-lists.use-case';
 import { GetShoppingListByIdUseCase } from '../../application/use-cases/get-shopping-list-by-id.use-case';
@@ -71,8 +66,7 @@ export class ShoppingListsController {
     private readonly duplicateShoppingList: DuplicateShoppingListUseCase,
     private readonly compareShoppingLists: CompareShoppingListsUseCase,
     private readonly getSpendingStats: GetSpendingStatsUseCase,
-    @Inject(FIREBASE_USER_SYNC_PORT)
-    private readonly syncFirebaseUser: IFirebaseUserSyncPort,
+    private readonly userIdentityResolver: UserIdentityResolver,
   ) {}
 
   // ──────────────────────────────────────────────
@@ -93,7 +87,7 @@ export class ShoppingListsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Body() dto: CreateShoppingListDto,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.createShoppingList.execute({ userId, dto });
   }
 
@@ -114,7 +108,7 @@ export class ShoppingListsController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getShoppingListHistory.execute({
       userId,
       page: Math.max(1, Number(page) || 1),
@@ -144,7 +138,7 @@ export class ShoppingListsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Query('ids') ids: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     const listIds = (ids ?? '')
       .split(',')
       .map((id) => id.trim())
@@ -174,7 +168,7 @@ export class ShoppingListsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Query('period') period?: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     const validPeriod = period === 'week' ? 'week' : 'month';
     return this.getSpendingStats.execute({ userId, period: validPeriod });
   }
@@ -188,7 +182,7 @@ export class ShoppingListsController {
   })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   async findAll(@CurrentUser() firebaseUser: FirebaseUser) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getShoppingLists.execute(userId);
   }
 
@@ -210,7 +204,7 @@ export class ShoppingListsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getShoppingListById.execute({ listId: id, userId });
   }
 
@@ -242,7 +236,7 @@ export class ShoppingListsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateShoppingListDto,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.updateShoppingList.execute({ listId: id, userId, dto });
   }
 
@@ -265,7 +259,7 @@ export class ShoppingListsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.deleteShoppingList.execute({ listId: id, userId });
   }
 
@@ -292,7 +286,7 @@ export class ShoppingListsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.duplicateShoppingList.execute({ listId: id, userId });
   }
 
@@ -318,7 +312,7 @@ export class ShoppingListsController {
     @CurrentUser() firebaseUser: FirebaseUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.completeShoppingList.execute({ listId: id, userId });
   }
 
@@ -347,7 +341,7 @@ export class ShoppingListsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddShoppingItemsDto,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.addItemsToShoppingList.execute({
       listId: id,
       userId,
@@ -385,7 +379,7 @@ export class ShoppingListsController {
     @Param('itemId', ParseUUIDPipe) itemId: string,
     @Body() dto: EditShoppingItemDto,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.editShoppingItem.execute({ listId: id, itemId, userId, dto });
   }
 
@@ -414,7 +408,7 @@ export class ShoppingListsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.deleteShoppingItem.execute({ listId: id, itemId, userId });
   }
 
@@ -445,27 +439,8 @@ export class ShoppingListsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string,
   ) {
-    const userId = await this.resolveUserId(firebaseUser);
+    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.toggleShoppingItem.execute({ listId: id, itemId, userId });
   }
 
-  // ──────────────────────────────────────────────
-  //  Helpers
-  // ──────────────────────────────────────────────
-
-  private async resolveUserId(firebaseUser: FirebaseUser): Promise<string> {
-    const email = firebaseUser.email?.trim();
-    const hasValidEmail =
-      typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!firebaseUser.uid || !hasValidEmail) {
-      throw new UnauthorizedException('Invalid Firebase token payload');
-    }
-
-    const user = await this.syncFirebaseUser.execute({
-      firebaseUid: firebaseUser.uid,
-      email,
-    });
-    return user.id;
-  }
 }

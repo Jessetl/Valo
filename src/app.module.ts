@@ -7,14 +7,13 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { FirebaseAdminModule } from './shared-kernel/infrastructure/firebase/firebase-admin.module';
 import { FirebaseAuthGuard } from './shared-kernel/infrastructure/guards/firebase-auth.guard';
-import { RolesGuard } from './shared-kernel/infrastructure/guards/roles.guard';
 import { AllExceptionsFilter } from './shared-kernel/infrastructure/filters/all-exceptions.filter';
 import { HttpExceptionFilter } from './shared-kernel/infrastructure/filters/http-exception.filter';
 import { DomainExceptionFilter } from './shared-kernel/infrastructure/filters/domain-exception.filter';
 import { LoggingInterceptor } from './shared-kernel/infrastructure/interceptors/logging.interceptor';
 import { ResponseTransformInterceptor } from './shared-kernel/infrastructure/interceptors/response-transform.interceptor';
 import { getDatabaseConfig } from './shared-kernel/infrastructure/config/database.config';
-import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ShoppingListsModule } from './modules/shopping-lists/shopping-lists.module';
 import { ExchangeRatesModule } from './modules/exchange-rates/exchange-rates.module';
 import { DebtsModule } from './modules/debts/debts.module';
@@ -37,7 +36,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     FirebaseAdminModule,
 
     // Modulos de dominio
-    UsersModule,
+    AuthModule,
     ShoppingListsModule,
     ExchangeRatesModule,
     DebtsModule,
@@ -75,11 +74,6 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     {
       provide: APP_GUARD,
       useClass: FirebaseAuthGuard,
-    },
-    // Guard global: verifica roles (custom claims)
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
     },
     // Guard global: rate limiting
     {

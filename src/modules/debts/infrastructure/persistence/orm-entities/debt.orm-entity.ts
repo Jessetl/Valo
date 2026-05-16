@@ -6,7 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { UserOrmEntity } from '../../../../users/infrastructure/persistence/orm-entities/user.orm-entity';
+import { UserOrmEntity } from '../../../../auth/infrastructure/persistence/orm-entities/user.orm-entity';
 import { DebtPriority } from '../../../domain/enums/debt-priority.enum';
 
 @Entity('debts')
