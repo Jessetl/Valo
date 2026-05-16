@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import { encryptString } from '../../../../shared-kernel/utils/crypto.util';
+import { withMinDuration } from '../../../../shared-kernel/utils/constant-time.util';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
 import { USER_REPOSITORY } from '../../domain/interfaces/repositories/user.repository.interface';
 import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
@@ -25,6 +26,8 @@ interface LoginUserInput {
   device: DeviceInfo;
 }
 
+const MIN_RESPONSE_TIME_MS = 800;
+
 @Injectable()
 export class LoginUserUseCase implements UseCase<
   LoginUserInput,
@@ -42,7 +45,14 @@ export class LoginUserUseCase implements UseCase<
     private readonly jwtTokenService: JwtTokenService,
   ) {}
 
-  async execute(input: LoginUserInput): Promise<AuthResponseDto> {
+  execute(input: LoginUserInput): Promise<AuthResponseDto> {
+    return withMinDuration(
+      () => this.run(input),
+      MIN_RESPONSE_TIME_MS,
+    );
+  }
+
+  private async run(input: LoginUserInput): Promise<AuthResponseDto> {
     const { dto, device } = input;
 
     const firebaseResult = await this.firebaseAuth.signIn({
@@ -99,7 +109,7 @@ export class LoginUserUseCase implements UseCase<
       device.deviceId,
     );
 
-    if (existing) {
+    if (existing && existing.userId === userId) {
       const reassigned = existing.reassignToUser(
         userId,
         device.deviceName,
@@ -110,6 +120,10 @@ export class LoginUserUseCase implements UseCase<
       );
       await this.deviceRepository.save(reassigned);
       return;
+    }
+
+    if (existing) {
+      await this.deviceRepository.delete(existing.id);
     }
 
     const newDevice = UserDevice.create(

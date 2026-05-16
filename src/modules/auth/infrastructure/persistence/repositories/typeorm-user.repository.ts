@@ -34,7 +34,10 @@ export class TypeOrmUserRepository implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const orm = await this.ormRepository.findOne({ where: { email } });
+    const orm = await this.ormRepository
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = LOWER(:email)', { email })
+      .getOne();
     if (!orm) {
       return null;
     }

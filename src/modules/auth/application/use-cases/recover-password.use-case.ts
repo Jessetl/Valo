@@ -1,8 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
+import { withMinDuration } from '../../../../shared-kernel/utils/constant-time.util';
 import type { IFirebaseAuthService } from '../../domain/interfaces/services/firebase-auth.service.interface';
 import { FIREBASE_AUTH_SERVICE } from '../../domain/interfaces/services/firebase-auth.service.interface';
 import { RecoverPasswordDto } from '../dtos/recover-password.dto';
+
+const MIN_RESPONSE_TIME_MS = 600;
 
 @Injectable()
 export class RecoverPasswordUseCase implements UseCase<
@@ -16,7 +19,11 @@ export class RecoverPasswordUseCase implements UseCase<
     private readonly firebaseAuth: IFirebaseAuthService,
   ) {}
 
-  async execute(dto: RecoverPasswordDto): Promise<void> {
+  execute(dto: RecoverPasswordDto): Promise<void> {
+    return withMinDuration(() => this.run(dto), MIN_RESPONSE_TIME_MS);
+  }
+
+  private async run(dto: RecoverPasswordDto): Promise<void> {
     try {
       await this.firebaseAuth.sendPasswordResetEmail(dto.email);
     } catch (error) {
@@ -24,7 +31,7 @@ export class RecoverPasswordUseCase implements UseCase<
       this.logger.warn(
         `Password reset email dispatch failed for ${dto.email}: ${message}`,
       );
-      throw error;
+      // No re-lanzamos errores transitorios de Firebase para evitar leak por status code.
     }
   }
 }

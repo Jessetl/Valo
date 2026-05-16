@@ -1,20 +1,44 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  randomBytes,
-} from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
+const REQUIRED_KEY_BYTES = 32;
+
+let cachedKey: Buffer | null = null;
+
+const decodeKey = (raw: string): Buffer => {
+  const trimmed = raw.trim();
+  if (!/^[A-Za-z0-9+/=_-]+$/.test(trimmed)) {
+    throw new Error('APP_ENCRYPTION_KEY must be base64 (or base64url) encoded');
+  }
+  const normalized = trimmed.replace(/-/g, '+').replace(/_/g, '/');
+  const buffer = Buffer.from(normalized, 'base64');
+  if (buffer.length !== REQUIRED_KEY_BYTES) {
+    throw new Error(
+      `APP_ENCRYPTION_KEY must decode to exactly ${REQUIRED_KEY_BYTES} bytes ` +
+        `(got ${buffer.length}). Generate with: openssl rand -base64 32`,
+    );
+  }
+  return buffer;
+};
 
 const getKey = (): Buffer => {
+  if (cachedKey) return cachedKey;
   const raw = process.env.APP_ENCRYPTION_KEY;
   if (!raw) {
     throw new Error('APP_ENCRYPTION_KEY env var is not configured');
   }
-  return createHash('sha256').update(raw, 'utf8').digest();
+  cachedKey = decodeKey(raw);
+  return cachedKey;
+};
+
+export const assertEncryptionKey = (): void => {
+  getKey();
+};
+
+export const resetEncryptionKeyCacheForTests = (): void => {
+  cachedKey = null;
 };
 
 export const encryptString = (plaintext: string): string => {

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import { encryptString } from '../../../../shared-kernel/utils/crypto.util';
+import { withMinDuration } from '../../../../shared-kernel/utils/constant-time.util';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
 import { USER_REPOSITORY } from '../../domain/interfaces/repositories/user.repository.interface';
 import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
@@ -14,6 +15,7 @@ import type { FirebaseGoogleSignInResult } from '../../domain/interfaces/service
 import { User } from '../../domain/entities/user.entity';
 import { NotificationPreferences } from '../../domain/entities/notification-preferences.entity';
 import { UserDevice } from '../../domain/entities/user-device.entity';
+import { EmailNotVerifiedException } from '../../domain/exceptions/email-not-verified.exception';
 import { LoginGoogleDto } from '../dtos/login-google.dto';
 import { AuthResponseDto } from '../dtos/auth-response.dto';
 import { UserMapper } from '../mappers/user.mapper';
@@ -24,6 +26,8 @@ interface LoginWithGoogleInput {
   dto: LoginGoogleDto;
   device: DeviceInfo;
 }
+
+const MIN_RESPONSE_TIME_MS = 800;
 
 @Injectable()
 export class LoginWithGoogleUseCase implements UseCase<
@@ -42,12 +46,23 @@ export class LoginWithGoogleUseCase implements UseCase<
     private readonly jwtTokenService: JwtTokenService,
   ) {}
 
-  async execute(input: LoginWithGoogleInput): Promise<AuthResponseDto> {
+  execute(input: LoginWithGoogleInput): Promise<AuthResponseDto> {
+    return withMinDuration(
+      () => this.run(input),
+      MIN_RESPONSE_TIME_MS,
+    );
+  }
+
+  private async run(input: LoginWithGoogleInput): Promise<AuthResponseDto> {
     const { dto, device } = input;
 
     const firebaseResult = await this.firebaseAuth.signInWithGoogle(
       dto.google_id_token,
     );
+
+    if (!firebaseResult.emailVerified) {
+      throw new EmailNotVerifiedException();
+    }
 
     const user = await this.findOrCreateUser(firebaseResult);
 
@@ -97,7 +112,7 @@ export class LoginWithGoogleUseCase implements UseCase<
       device.deviceId,
     );
 
-    if (existing) {
+    if (existing && existing.userId === userId) {
       const reassigned = existing.reassignToUser(
         userId,
         device.deviceName,
@@ -108,6 +123,10 @@ export class LoginWithGoogleUseCase implements UseCase<
       );
       await this.deviceRepository.save(reassigned);
       return;
+    }
+
+    if (existing) {
+      await this.deviceRepository.delete(existing.id);
     }
 
     const newDevice = UserDevice.create(

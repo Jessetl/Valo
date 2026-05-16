@@ -1,4 +1,5 @@
-process.env.APP_ENCRYPTION_KEY ??= 'test-encryption-key';
+process.env.APP_ENCRYPTION_KEY ??=
+  'a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=';
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
@@ -6,6 +7,7 @@ import type { INotificationPreferencesRepository } from '../../domain/interfaces
 import type { IUserDeviceRepository } from '../../domain/interfaces/repositories/user-device.repository.interface';
 import type { IFirebaseAuthService } from '../../domain/interfaces/services/firebase-auth.service.interface';
 import { User } from '../../domain/entities/user.entity';
+import { EmailNotVerifiedException } from '../../domain/exceptions/email-not-verified.exception';
 import { JwtTokenService } from '../services/jwt-token.service';
 import { LoginWithGoogleUseCase } from './login-with-google.use-case';
 
@@ -66,6 +68,29 @@ describe('LoginWithGoogleUseCase', () => {
     userRepository.save.mockImplementation(async (u: User) => u);
   });
 
+  it('lanza EmailNotVerifiedException si Google no verifica email', async () => {
+    firebaseAuth.signInWithGoogle.mockResolvedValueOnce({
+      firebaseUid: 'fb-uid',
+      idToken: 'id',
+      refreshToken: 'rt',
+      expiresIn: 3600,
+      email: 'jane@kashy.app',
+      emailVerified: false,
+      firstName: 'Jane',
+      lastName: 'Doe',
+      avatarUrl: null,
+    });
+
+    await expect(
+      useCase.execute({
+        dto: { google_id_token: 'gid' } as never,
+        device,
+      }),
+    ).rejects.toBeInstanceOf(EmailNotVerifiedException);
+
+    expect(deviceRepository.save).not.toHaveBeenCalled();
+  });
+
   it('auto-crea user con perfil de Google cuando no existe', async () => {
     userRepository.findByFirebaseUid.mockResolvedValue(null);
 
@@ -86,12 +111,7 @@ describe('LoginWithGoogleUseCase', () => {
   });
 
   it('reutiliza user existente sin crear prefs', async () => {
-    const existing = User.create(
-      'u-1',
-      'fb-uid',
-      'jane@kashy.app',
-      'VE',
-    );
+    const existing = User.create('u-1', 'fb-uid', 'jane@kashy.app', 'VE');
     userRepository.findByFirebaseUid.mockResolvedValue(existing);
 
     await useCase.execute({

@@ -63,7 +63,7 @@ export class User extends BaseEntity {
     const now = new Date();
     return new User(id, {
       firebaseUid,
-      email,
+      email: email.trim().toLowerCase(),
       firstName,
       lastName,
       avatarUrl,

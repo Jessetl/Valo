@@ -23,10 +23,10 @@ Frontend                         Backend                          Firebase
    |                                |                                |
    | (15 min después, JWT expira)   |                                |
    |                                |                                |
-   |-- POST /auth/refresh -------->|                                |
-   |   (X-Device-Id en header)      |-- Busca refreshToken del      |
-   |                                |   dispositivo en BD            |
-   |                                |-- Token exchange -------------->|
+   |-- POST /auth/refresh --------> |                                |
+   |   (X-Device-Id, Authorization  |-- Busca refreshToken del       |
+   |   en header)                   |   dispositivo en user_devices  |
+   |                                |-- Token exchange ------------->|
    |                                |<-- Nuevo idToken --------------|
    |                                |                                |
    |                                | 1. Genera nuevo JWT custom     |

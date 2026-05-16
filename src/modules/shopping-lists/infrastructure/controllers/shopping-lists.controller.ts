@@ -18,10 +18,8 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../../../../shared-kernel/infrastructure/decorators/current-user.decorator';
+import { CurrentUserId } from '../../../../shared-kernel/infrastructure/decorators/current-user-id.decorator';
 import { ParseUUIDPipe } from '../../../../shared-kernel/infrastructure/pipes/parse-uuid.pipe';
-import type { FirebaseUser } from '../../../../shared-kernel/infrastructure/guards/firebase-auth.guard';
-import { UserIdentityResolver } from '../../../../shared-kernel/infrastructure/services/user-identity-resolver.service';
 import { CreateShoppingListUseCase } from '../../application/use-cases/create-shopping-list.use-case';
 import { GetShoppingListsUseCase } from '../../application/use-cases/get-shopping-lists.use-case';
 import { GetShoppingListByIdUseCase } from '../../application/use-cases/get-shopping-list-by-id.use-case';
@@ -66,7 +64,6 @@ export class ShoppingListsController {
     private readonly duplicateShoppingList: DuplicateShoppingListUseCase,
     private readonly compareShoppingLists: CompareShoppingListsUseCase,
     private readonly getSpendingStats: GetSpendingStatsUseCase,
-    private readonly userIdentityResolver: UserIdentityResolver,
   ) {}
 
   // ──────────────────────────────────────────────
@@ -84,10 +81,9 @@ export class ShoppingListsController {
   @ApiResponse({ status: 400, description: 'Datos de entrada invalidos' })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   async create(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Body() dto: CreateShoppingListDto,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.createShoppingList.execute({ userId, dto });
   }
 
@@ -104,11 +100,10 @@ export class ShoppingListsController {
   })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   async history(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getShoppingListHistory.execute({
       userId,
       page: Math.max(1, Number(page) || 1),
@@ -135,10 +130,9 @@ export class ShoppingListsController {
   })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   async compare(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Query('ids') ids: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     const listIds = (ids ?? '')
       .split(',')
       .map((id) => id.trim())
@@ -165,10 +159,9 @@ export class ShoppingListsController {
   })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   async stats(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Query('period') period?: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     const validPeriod = period === 'week' ? 'week' : 'month';
     return this.getSpendingStats.execute({ userId, period: validPeriod });
   }
@@ -181,8 +174,7 @@ export class ShoppingListsController {
     type: [ShoppingListResponseDto],
   })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  async findAll(@CurrentUser() firebaseUser: FirebaseUser) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
+  async findAll(@CurrentUserId() userId: string) {
     return this.getShoppingLists.execute(userId);
   }
 
@@ -201,10 +193,9 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async findOne(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.getShoppingListById.execute({ listId: id, userId });
   }
 
@@ -232,11 +223,10 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async update(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateShoppingListDto,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.updateShoppingList.execute({ listId: id, userId, dto });
   }
 
@@ -256,10 +246,9 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async remove(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.deleteShoppingList.execute({ listId: id, userId });
   }
 
@@ -283,10 +272,9 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async duplicate(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.duplicateShoppingList.execute({ listId: id, userId });
   }
 
@@ -309,10 +297,9 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async complete(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.completeShoppingList.execute({ listId: id, userId });
   }
 
@@ -337,11 +324,10 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async addItems(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddShoppingItemsDto,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.addItemsToShoppingList.execute({
       listId: id,
       userId,
@@ -374,12 +360,11 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista o producto no encontrado' })
   async editItem(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string,
     @Body() dto: EditShoppingItemDto,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.editShoppingItem.execute({ listId: id, itemId, userId, dto });
   }
 
@@ -404,11 +389,10 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista o producto no encontrado' })
   async removeItem(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.deleteShoppingItem.execute({ listId: id, itemId, userId });
   }
 
@@ -435,11 +419,10 @@ export class ShoppingListsController {
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista o producto no encontrado' })
   async toggleItem(
-    @CurrentUser() firebaseUser: FirebaseUser,
+    @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Param('itemId', ParseUUIDPipe) itemId: string,
   ) {
-    const userId = await this.userIdentityResolver.resolve(firebaseUser);
     return this.toggleShoppingItem.execute({ listId: id, itemId, userId });
   }
 

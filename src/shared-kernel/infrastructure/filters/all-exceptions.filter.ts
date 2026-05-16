@@ -5,8 +5,11 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { Response } from 'express';
 import { buildErrorResponse, getDefaultMessage } from './error-response';
+
+const IS_DEV = process.env.NODE_ENV !== 'production';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -20,11 +23,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const fallback = getDefaultMessage(status);
     const detail =
       exception instanceof Error ? exception.message : String(exception);
+    const errorId = randomUUID();
 
-    this.logger.error(
-      detail || fallback,
-      exception instanceof Error ? exception.stack : '',
-    );
+    if (IS_DEV) {
+      this.logger.error(
+        `[${errorId}] ${detail || fallback}`,
+        exception instanceof Error ? exception.stack : '',
+      );
+    } else {
+      this.logger.error(`[${errorId}] ${detail || fallback}`);
+    }
 
     response.status(status).json(buildErrorResponse(status, fallback));
   }

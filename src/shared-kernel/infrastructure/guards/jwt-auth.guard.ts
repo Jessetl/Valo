@@ -3,28 +3,33 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-  Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import * as admin from 'firebase-admin';
+import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { PUBLIC_KEY } from '../decorators/public.decorator';
-import { FIREBASE_ADMIN } from '../firebase/firebase-admin.provider';
 
-export interface FirebaseUser {
-  uid: string;
-  email?: string;
+export interface AuthUser {
+  userId: string;
+  email: string;
+  role: string;
+}
+
+interface JwtCustomPayload {
+  sub: string;
+  email: string;
+  role: string;
 }
 
 type AuthenticatedRequest = Request & {
-  user?: FirebaseUser;
+  user?: AuthUser;
 };
 
 @Injectable()
-export class FirebaseAuthGuard implements CanActivate {
+export class JwtAuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    @Inject(FIREBASE_ADMIN) private readonly firebaseAdmin: typeof admin,
+    private readonly jwtService: JwtService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -49,16 +54,18 @@ export class FirebaseAuthGuard implements CanActivate {
     }
 
     try {
-      const decodedToken = await this.firebaseAdmin.auth().verifyIdToken(token);
+      const payload =
+        await this.jwtService.verifyAsync<JwtCustomPayload>(token);
 
       request.user = {
-        uid: decodedToken.uid,
-        email: decodedToken.email,
-      } satisfies FirebaseUser;
+        userId: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      } satisfies AuthUser;
 
       return true;
     } catch {
-      throw new UnauthorizedException('Token de Firebase invalido o expirado');
+      throw new UnauthorizedException('Token invalido o expirado');
     }
   }
 

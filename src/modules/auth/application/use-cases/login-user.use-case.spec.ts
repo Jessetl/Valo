@@ -1,4 +1,5 @@
-process.env.APP_ENCRYPTION_KEY ??= 'test-encryption-key';
+process.env.APP_ENCRYPTION_KEY ??=
+  'a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=';
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
@@ -87,12 +88,7 @@ describe('LoginUserUseCase', () => {
   });
 
   it('reutiliza user existente cuando firebaseUid match', async () => {
-    const existing = User.create(
-      'u-1',
-      'fb-uid',
-      'jane@kashy.app',
-      'VE',
-    );
+    const existing = User.create('u-1', 'fb-uid', 'jane@kashy.app', 'VE');
     userRepository.findByFirebaseUid.mockResolvedValue(existing);
 
     const result = await useCase.execute({
@@ -116,5 +112,34 @@ describe('LoginUserUseCase', () => {
 
     expect(userRepository.save).toHaveBeenCalled();
     expect(prefsRepository.save).toHaveBeenCalled();
+  });
+
+  it('respeta tiempo minimo de respuesta en happy path', async () => {
+    const existing = User.create('u-1', 'fb-uid', 'jane@kashy.app', 'VE');
+    userRepository.findByFirebaseUid.mockResolvedValue(existing);
+
+    const start = Date.now();
+    await useCase.execute({
+      dto: { email: 'jane@kashy.app', password: 'p' } as never,
+      device,
+    });
+    const elapsed = Date.now() - start;
+
+    expect(elapsed).toBeGreaterThanOrEqual(795);
+  });
+
+  it('respeta tiempo minimo de respuesta en error de credenciales', async () => {
+    firebaseAuth.signIn.mockRejectedValueOnce(new Error('INVALID_PASSWORD'));
+
+    const start = Date.now();
+    await expect(
+      useCase.execute({
+        dto: { email: 'a@b.com', password: 'wrong' } as never,
+        device,
+      }),
+    ).rejects.toThrow();
+    const elapsed = Date.now() - start;
+
+    expect(elapsed).toBeGreaterThanOrEqual(795);
   });
 });

@@ -16,6 +16,7 @@ import { JwtTokenService } from '../services/jwt-token.service';
 
 interface RefreshTokenInput {
   deviceId: string;
+  accessTokenHint: string;
 }
 
 @Injectable()
@@ -36,9 +37,26 @@ export class RefreshTokenUseCase implements UseCase<
   ) {}
 
   async execute(input: RefreshTokenInput): Promise<RefreshResponseDto> {
+    let payload: { sub: string; email: string; role: string };
+
+    try {
+      payload = await this.jwtTokenService.verifyIgnoreExpiration(
+        input.accessTokenHint,
+      );
+    } catch {
+      throw new UnauthorizedException('Token de sesion invalido');
+    }
+
     const device = await this.deviceRepository.findByDeviceId(input.deviceId);
     if (!device) {
       throw new UnauthorizedException('Sesion de dispositivo no encontrada');
+    }
+
+    if (device.userId !== payload.sub) {
+      this.logger.warn(
+        `Refresh proof-of-possession mismatch: device.userId=${device.userId} vs jwt.sub=${payload.sub}`,
+      );
+      throw new UnauthorizedException('Sesion de dispositivo no autorizada');
     }
 
     let firebaseRefreshToken: string;

@@ -3,10 +3,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { JwtModule } from '@nestjs/jwt';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { FirebaseAdminModule } from './shared-kernel/infrastructure/firebase/firebase-admin.module';
-import { FirebaseAuthGuard } from './shared-kernel/infrastructure/guards/firebase-auth.guard';
+import { JwtAuthGuard } from './shared-kernel/infrastructure/guards/jwt-auth.guard';
 import { AllExceptionsFilter } from './shared-kernel/infrastructure/filters/all-exceptions.filter';
 import { HttpExceptionFilter } from './shared-kernel/infrastructure/filters/http-exception.filter';
 import { DomainExceptionFilter } from './shared-kernel/infrastructure/filters/domain-exception.filter';
@@ -34,6 +35,21 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 
     // Firebase Admin SDK (global)
     FirebaseAdminModule,
+
+    // JWT global: firma + verificacion del Custom JWT de sesion
+    JwtModule.registerAsync({
+      global: true,
+      useFactory: () => {
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+          throw new Error('JWT_SECRET env var is not configured');
+        }
+        return {
+          secret,
+          signOptions: { expiresIn: '15m' },
+        };
+      },
+    }),
 
     // Modulos de dominio
     AuthModule,
@@ -70,10 +86,10 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
   ],
   controllers: [AppController],
   providers: [
-    // Guard global: verifica Firebase ID Token
+    // Guard global: verifica Custom JWT (firmado con JWT_SECRET)
     {
       provide: APP_GUARD,
-      useClass: FirebaseAuthGuard,
+      useClass: JwtAuthGuard,
     },
     // Guard global: rate limiting
     {
