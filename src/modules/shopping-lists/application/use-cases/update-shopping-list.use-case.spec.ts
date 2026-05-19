@@ -76,7 +76,9 @@ describe('UpdateShoppingListUseCase', () => {
       36.5,
       false,
     );
-    repo.findByIdAndUserId.mockResolvedValue(makeList({ items: [existingItem] }));
+    repo.findByIdAndUserId.mockResolvedValue(
+      makeList({ items: [existingItem] }),
+    );
 
     await useCase.execute({
       listId: 'l1',
@@ -107,7 +109,7 @@ describe('UpdateShoppingListUseCase', () => {
     expect(saved.items[1].id).not.toBe('item-existing');
   });
 
-  it('recalcula totales en backend tras items changed', async () => {
+  it('replace items: backend reemplaza coleccion completa', async () => {
     repo.findByIdAndUserId.mockResolvedValue(makeList());
 
     await useCase.execute({
@@ -121,6 +123,8 @@ describe('UpdateShoppingListUseCase', () => {
     });
 
     const saved = repo.save.mock.calls[0][0];
-    expect(saved.totalLocal).toBe(30);
+    expect(saved.items).toHaveLength(1);
+    expect(saved.items[0].unitPriceLocal).toBe(10);
+    expect(saved.items[0].quantity).toBe(3);
   });
 });

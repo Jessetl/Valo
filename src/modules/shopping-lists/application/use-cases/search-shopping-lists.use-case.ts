@@ -9,6 +9,7 @@ import {
   PaginationMetaDto,
 } from '../dtos/paginated-shopping-lists-response.dto';
 import { ShoppingListSummaryDto } from '../dtos/shopping-list-summary.dto';
+import { computeListTotals } from '../utils/totals.util';
 
 interface SearchShoppingListsInput {
   userId: string;
@@ -71,6 +72,7 @@ export class SearchShoppingListsUseCase implements UseCase<
   }
 
   private toSummary(list: ShoppingList): ShoppingListSummaryDto {
+    const totals = computeListTotals(list.items, list.ivaEnabled);
     const dto = new ShoppingListSummaryDto();
     dto.id = list.id;
     dto.name = list.name;
@@ -81,6 +83,8 @@ export class SearchShoppingListsUseCase implements UseCase<
     dto.scheduledDate = list.scheduledDate;
     dto.itemsCount = list.items.length;
     dto.checkedCount = list.items.filter((item) => item.isChecked).length;
+    dto.totalLocal = totals.totalLocal;
+    dto.totalUsd = totals.totalUsd;
     return dto;
   }
 }

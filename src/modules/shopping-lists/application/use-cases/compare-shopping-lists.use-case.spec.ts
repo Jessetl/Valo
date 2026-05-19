@@ -6,7 +6,11 @@ import { ShoppingListType } from '../../domain/enums/shopping-list-type.enum';
 import { ShoppingListNotFoundException } from '../../domain/exceptions/shopping-list-not-found.exception';
 import { CompareShoppingListsUseCase } from './compare-shopping-lists.use-case';
 
-function makeList(id: string, userId: string, items: ShoppingItem[]): ShoppingList {
+function makeList(
+  id: string,
+  userId: string,
+  items: ShoppingItem[],
+): ShoppingList {
   return ShoppingList.create({
     id,
     userId,

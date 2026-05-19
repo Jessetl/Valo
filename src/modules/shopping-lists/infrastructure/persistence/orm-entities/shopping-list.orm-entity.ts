@@ -3,10 +3,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
 import { ShoppingItemOrmEntity } from './shopping-item.orm-entity';
-import { ShoppingListStatus } from '../../../domain/enums/shopping-list-status.enum';
 import { ShoppingListType } from '../../../domain/enums/shopping-list-type.enum';
 
 @Entity('shopping_lists')
@@ -72,37 +72,11 @@ export class ShoppingListOrmEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
-  @Column({
-    type: 'enum',
-    enum: ShoppingListStatus,
-    enumName: 'shopping_lists_status_enum',
-    default: ShoppingListStatus.ACTIVE,
-  })
-  status!: ShoppingListStatus;
-
-  @Column({
-    name: 'total_local',
-    type: 'decimal',
-    precision: 18,
-    scale: 2,
-    default: 0,
-  })
-  totalLocal!: number;
-
-  @Column({
-    name: 'total_usd',
-    type: 'decimal',
-    precision: 18,
-    scale: 2,
-    default: 0,
-  })
-  totalUsd!: number;
-
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 
-  @Column({ name: 'completed_at', type: 'timestamptz', nullable: true })
-  completedAt!: Date | null;
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
+  updatedAt!: Date;
 
   @OneToMany(() => ShoppingItemOrmEntity, (item) => item.shoppingList, {
     cascade: true,

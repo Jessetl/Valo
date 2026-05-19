@@ -2,7 +2,6 @@ import { describe, expect, it } from '@jest/globals';
 import { ShoppingItem } from './shopping-item.entity';
 import { ShoppingList } from './shopping-list.entity';
 import { ShoppingListType } from '../enums/shopping-list-type.enum';
-import { ShoppingListStatus } from '../enums/shopping-list-status.enum';
 
 function makeItem(productName: string, price: number): ShoppingItem {
   return ShoppingItem.create(
@@ -19,7 +18,7 @@ function makeItem(productName: string, price: number): ShoppingItem {
 }
 
 describe('ShoppingList domain entity', () => {
-  it('crea lista con campos obligatorios del spec + calcula totales', () => {
+  it('crea lista con campos obligatorios del spec', () => {
     const item = makeItem('Pan', 10);
 
     const list = ShoppingList.create({
@@ -39,8 +38,6 @@ describe('ShoppingList domain entity', () => {
     expect(list.currencyCode).toBe('VES');
     expect(list.exchangeRateSnapshot).toBe(36.5);
     expect(list.isActive).toBe(true);
-    expect(list.status).toBe(ShoppingListStatus.ACTIVE);
-    expect(list.totalLocal).toBe(10);
     expect(list.items).toHaveLength(1);
   });
 
@@ -60,8 +57,7 @@ describe('ShoppingList domain entity', () => {
     expect(list.scheduledDate).toBeNull();
     expect(list.latitude).toBeNull();
     expect(list.longitude).toBeNull();
-    expect(list.totalLocal).toBe(0);
-    expect(list.totalUsd).toBe(0);
+    expect(list.items).toEqual([]);
   });
 
   it('reconstitute construye desde props completos', () => {
@@ -78,17 +74,11 @@ describe('ShoppingList domain entity', () => {
       latitude: 10.5,
       longitude: -66.9,
       isActive: false,
-      status: ShoppingListStatus.COMPLETED,
-      totalLocal: 100,
-      totalUsd: 2.74,
-      createdAt: new Date(),
-      completedAt: new Date(),
       items: [],
     });
 
     expect(list.storeName).toBe('Super');
     expect(list.isActive).toBe(false);
-    expect(list.status).toBe(ShoppingListStatus.COMPLETED);
-    expect(list.totalLocal).toBe(100);
+    expect(list.ivaEnabled).toBe(true);
   });
 });

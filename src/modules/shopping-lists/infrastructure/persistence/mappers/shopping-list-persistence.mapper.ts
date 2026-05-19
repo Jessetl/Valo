@@ -10,14 +10,14 @@ export class ShoppingListPersistenceMapper {
         listId: itemOrm.listId,
         productName: itemOrm.productName,
         category: itemOrm.category,
-        unitPriceLocal: Number(itemOrm.unitPriceLocal),
         quantity: itemOrm.quantity,
-        totalLocal: Number(itemOrm.totalLocal),
+        unitPriceLocal:
+          itemOrm.unitPriceLocal !== null
+            ? Number(itemOrm.unitPriceLocal)
+            : null,
         unitPriceUsd:
           itemOrm.unitPriceUsd !== null ? Number(itemOrm.unitPriceUsd) : null,
-        totalUsd: itemOrm.totalUsd !== null ? Number(itemOrm.totalUsd) : null,
         isChecked: itemOrm.isChecked,
-        createdAt: itemOrm.createdAt,
       }),
     );
 
@@ -34,11 +34,6 @@ export class ShoppingListPersistenceMapper {
       latitude: orm.latitude !== null ? Number(orm.latitude) : null,
       longitude: orm.longitude !== null ? Number(orm.longitude) : null,
       isActive: orm.isActive,
-      status: orm.status,
-      totalLocal: Number(orm.totalLocal),
-      totalUsd: Number(orm.totalUsd),
-      createdAt: orm.createdAt,
-      completedAt: orm.completedAt,
       items,
     });
   }
@@ -58,11 +53,6 @@ export class ShoppingListPersistenceMapper {
     orm.latitude = list.latitude;
     orm.longitude = list.longitude;
     orm.isActive = list.isActive;
-    orm.status = list.status;
-    orm.totalLocal = list.totalLocal;
-    orm.totalUsd = list.totalUsd;
-    orm.createdAt = list.createdAt;
-    orm.completedAt = list.completedAt;
     orm.items = list.items.map((item) => this.toItemOrm(item));
     return orm;
   }
@@ -73,13 +63,10 @@ export class ShoppingListPersistenceMapper {
     orm.listId = item.listId;
     orm.productName = item.productName;
     orm.category = item.category;
-    orm.unitPriceLocal = item.unitPriceLocal;
     orm.quantity = item.quantity;
-    orm.totalLocal = item.totalLocal;
+    orm.unitPriceLocal = item.unitPriceLocal;
     orm.unitPriceUsd = item.unitPriceUsd;
-    orm.totalUsd = item.totalUsd;
     orm.isChecked = item.isChecked;
-    orm.createdAt = item.createdAt;
     return orm;
   }
 }

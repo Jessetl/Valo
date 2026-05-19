@@ -60,34 +60,17 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             isNullable: false,
           },
           {
-            name: 'status',
-            type: 'enum',
-            enumName: 'shopping_lists_status_enum',
-            enum: ['ACTIVE', 'COMPLETED'],
-            default: "'ACTIVE'",
-            isNullable: false,
-          },
-          {
-            name: 'total_local',
-            type: 'decimal',
-            precision: 18,
-            scale: 2,
-            default: 0,
-          },
-          {
-            name: 'total_usd',
-            type: 'decimal',
-            precision: 18,
-            scale: 2,
-            default: 0,
-          },
-          {
             name: 'created_at',
             type: 'timestamptz',
             default: 'now()',
             isNullable: false,
           },
-          { name: 'completed_at', type: 'timestamptz', isNullable: true },
+          {
+            name: 'updated_at',
+            type: 'timestamptz',
+            default: 'now()',
+            isNullable: false,
+          },
         ],
       }),
       true,
@@ -110,6 +93,5 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
     await queryRunner.query(
       'DROP TYPE IF EXISTS "shopping_lists_list_type_enum"',
     );
-    await queryRunner.query('DROP TYPE IF EXISTS "shopping_lists_status_enum"');
   }
 }

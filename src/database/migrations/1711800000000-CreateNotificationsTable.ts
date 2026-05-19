@@ -56,6 +56,18 @@ export class CreateNotificationsTable1711800000000 implements MigrationInterface
             default: false,
             isNullable: false,
           },
+          {
+            name: 'created_at',
+            type: 'timestamptz',
+            default: 'now()',
+            isNullable: false,
+          },
+          {
+            name: 'updated_at',
+            type: 'timestamptz',
+            default: 'now()',
+            isNullable: false,
+          },
         ],
       }),
       true,

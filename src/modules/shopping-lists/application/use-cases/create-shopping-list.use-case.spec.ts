@@ -52,10 +52,9 @@ describe('CreateShoppingListUseCase', () => {
 
     const saved = repo.save.mock.calls[0][0];
     expect(saved.items).toHaveLength(0);
-    expect(saved.totalLocal).toBe(0);
   });
 
-  it('calcula totales del backend (no trust en cliente)', async () => {
+  it('crea items con cantidad y precio sin almacenar totales', async () => {
     await useCase.execute({
       userId: 'u1',
       dto: {
@@ -72,7 +71,8 @@ describe('CreateShoppingListUseCase', () => {
     });
 
     const saved = repo.save.mock.calls[0][0];
-    expect(saved.totalLocal).toBe(25);
     expect(saved.items).toHaveLength(2);
+    expect(saved.items[0].unitPriceLocal).toBe(10);
+    expect(saved.items[0].quantity).toBe(2);
   });
 });

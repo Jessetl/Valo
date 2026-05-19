@@ -2,7 +2,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -22,49 +21,29 @@ export class ShoppingItemOrmEntity {
   @Column({ name: 'category', type: 'varchar' })
   category!: string;
 
+  @Column({ type: 'integer', default: 1 })
+  quantity!: number;
+
   @Column({
     name: 'unit_price_local',
     type: 'decimal',
     precision: 18,
     scale: 2,
+    nullable: true,
   })
-  unitPriceLocal!: number;
-
-  @Column({ type: 'integer', default: 1 })
-  quantity!: number;
-
-  @Column({
-    name: 'total_local',
-    type: 'decimal',
-    precision: 18,
-    scale: 2,
-    default: 0,
-  })
-  totalLocal!: number;
+  unitPriceLocal!: number | null;
 
   @Column({
     name: 'unit_price_usd',
     type: 'decimal',
     precision: 18,
-    scale: 4,
+    scale: 2,
     nullable: true,
   })
   unitPriceUsd!: number | null;
 
-  @Column({
-    name: 'total_usd',
-    type: 'decimal',
-    precision: 18,
-    scale: 4,
-    nullable: true,
-  })
-  totalUsd!: number | null;
-
   @Column({ name: 'is_checked', type: 'boolean', default: false })
   isChecked!: boolean;
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt!: Date;
 
   @ManyToOne(() => ShoppingListOrmEntity, (list) => list.items, {
     onDelete: 'CASCADE',

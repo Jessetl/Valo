@@ -4,7 +4,8 @@ import { IsString, MinLength } from 'class-validator';
 
 export class LoginGoogleDto {
   @ApiProperty({
-    description: 'idToken emitido por Google OAuth via Firebase Auth en el cliente',
+    description:
+      'idToken emitido por Google OAuth via Firebase Auth en el cliente',
     example: 'eyJhbGciOiJSUzI1NiIs...',
   })
   @IsString()

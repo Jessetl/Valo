@@ -1,5 +1,4 @@
 import { BaseEntity } from '../../../../shared-kernel/domain/base-entity';
-import { ShoppingListStatus } from '../enums/shopping-list-status.enum';
 import { ShoppingListType } from '../enums/shopping-list-type.enum';
 import { ShoppingItem } from './shopping-item.entity';
 
@@ -16,11 +15,6 @@ interface ShoppingListProps {
   latitude: number | null;
   longitude: number | null;
   isActive: boolean;
-  status: ShoppingListStatus;
-  totalLocal: number;
-  totalUsd: number;
-  createdAt: Date;
-  completedAt: Date | null;
   items: ShoppingItem[];
 }
 
@@ -37,11 +31,6 @@ export class ShoppingList extends BaseEntity {
   readonly latitude: number | null;
   readonly longitude: number | null;
   readonly isActive: boolean;
-  readonly status: ShoppingListStatus;
-  readonly totalLocal: number;
-  readonly totalUsd: number;
-  readonly createdAt: Date;
-  readonly completedAt: Date | null;
   readonly items: ShoppingItem[];
 
   private constructor(id: string, props: ShoppingListProps) {
@@ -58,11 +47,6 @@ export class ShoppingList extends BaseEntity {
     this.latitude = props.latitude;
     this.longitude = props.longitude;
     this.isActive = props.isActive;
-    this.status = props.status;
-    this.totalLocal = props.totalLocal;
-    this.totalUsd = props.totalUsd;
-    this.createdAt = props.createdAt;
-    this.completedAt = props.completedAt;
     this.items = props.items;
   }
 
@@ -82,10 +66,6 @@ export class ShoppingList extends BaseEntity {
     isActive?: boolean;
     items?: ShoppingItem[];
   }): ShoppingList {
-    const items = params.items ?? [];
-    const totalLocal = items.reduce((sum, item) => sum + item.totalLocal, 0);
-    const totalUsd = items.reduce((sum, item) => sum + (item.totalUsd ?? 0), 0);
-
     return new ShoppingList(params.id, {
       userId: params.userId,
       name: params.name,
@@ -99,12 +79,7 @@ export class ShoppingList extends BaseEntity {
       latitude: params.latitude ?? null,
       longitude: params.longitude ?? null,
       isActive: params.isActive ?? true,
-      status: ShoppingListStatus.ACTIVE,
-      totalLocal,
-      totalUsd,
-      createdAt: new Date(),
-      completedAt: null,
-      items,
+      items: params.items ?? [],
     });
   }
 

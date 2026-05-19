@@ -66,13 +66,10 @@ describe('Shopping list DTOs', () => {
     responseItem.listId = 'l1';
     responseItem.productName = 'Cafe';
     responseItem.category = 'Bebidas';
-    responseItem.unitPriceLocal = 10;
     responseItem.quantity = 1;
-    responseItem.totalLocal = 10;
+    responseItem.unitPriceLocal = 10;
     responseItem.unitPriceUsd = null;
-    responseItem.totalUsd = null;
     responseItem.isChecked = false;
-    responseItem.createdAt = new Date();
 
     const responseList = new ShoppingListResponseDto();
     responseList.id = 'l1';
@@ -88,6 +85,12 @@ describe('Shopping list DTOs', () => {
     responseList.latitude = null;
     responseList.longitude = null;
     responseList.isActive = true;
+    responseList.subtotalLocal = 10;
+    responseList.subtotalUsd = null;
+    responseList.ivaLocal = 0;
+    responseList.ivaUsd = null;
+    responseList.totalLocal = 10;
+    responseList.totalUsd = null;
     responseList.items = [responseItem];
 
     const summary = new ShoppingListSummaryDto();
@@ -100,6 +103,8 @@ describe('Shopping list DTOs', () => {
     summary.scheduledDate = null;
     summary.itemsCount = 1;
     summary.checkedCount = 0;
+    summary.totalLocal = 0;
+    summary.totalUsd = null;
 
     const meta = new PaginationMetaDto();
     meta.page = 1;

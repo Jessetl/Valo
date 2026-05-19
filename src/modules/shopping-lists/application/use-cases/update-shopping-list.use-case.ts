@@ -79,14 +79,6 @@ export class UpdateShoppingListUseCase implements UseCase<
       });
     }
 
-    const totalLocal = itemsChanged
-      ? items.reduce((sum, item) => sum + item.totalLocal, 0)
-      : existing.totalLocal;
-
-    const totalUsd = itemsChanged
-      ? items.reduce((sum, item) => sum + (item.totalUsd ?? 0), 0)
-      : existing.totalUsd;
-
     const updated = ShoppingList.reconstitute(existing.id, {
       userId: existing.userId,
       name: input.dto.name ?? existing.name,
@@ -114,11 +106,6 @@ export class UpdateShoppingListUseCase implements UseCase<
           ? input.dto.longitude
           : existing.longitude,
       isActive: input.dto.isActive ?? existing.isActive,
-      status: existing.status,
-      totalLocal,
-      totalUsd,
-      createdAt: existing.createdAt,
-      completedAt: existing.completedAt,
       items,
     });
 

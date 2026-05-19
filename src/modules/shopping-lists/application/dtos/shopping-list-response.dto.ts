@@ -45,6 +45,48 @@ export class ShoppingListResponseDto {
   @ApiProperty({ example: true })
   isActive!: boolean;
 
+  @ApiProperty({
+    example: 91.0,
+    description:
+      'Σ unit_price_local × quantity sobre todos los items. Computed.',
+  })
+  subtotalLocal!: number;
+
+  @ApiPropertyOptional({
+    example: 2.4,
+    nullable: true,
+    description:
+      'Σ unit_price_usd × quantity sobre todos los items. null si algún item carece de USD.',
+  })
+  subtotalUsd!: number | null;
+
+  @ApiProperty({
+    example: 14.56,
+    description: 'subtotal_local × 0.16 si iva_enabled, sino 0.',
+  })
+  ivaLocal!: number;
+
+  @ApiPropertyOptional({
+    example: 0.38,
+    nullable: true,
+    description:
+      'subtotal_usd × 0.16 si iva_enabled, sino 0. null si subtotal_usd null.',
+  })
+  ivaUsd!: number | null;
+
+  @ApiProperty({
+    example: 105.56,
+    description: 'subtotal_local + iva_local. Computed.',
+  })
+  totalLocal!: number;
+
+  @ApiPropertyOptional({
+    example: 2.78,
+    nullable: true,
+    description: 'subtotal_usd + iva_usd. null si subtotal_usd null.',
+  })
+  totalUsd!: number | null;
+
   @ApiProperty({ type: [ShoppingItemResponseDto] })
   items!: ShoppingItemResponseDto[];
 }

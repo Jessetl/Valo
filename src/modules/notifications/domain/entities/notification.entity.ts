@@ -3,67 +3,73 @@ import { NotificationStatus } from '../enums/notification-status.enum';
 
 interface NotificationProps {
   userId: string;
-  debtId: string;
+  financialId: string;
   type: string;
   scheduledAt: Date;
   sentAt: Date | null;
   status: NotificationStatus;
+  isRead: boolean;
 }
 
 export class Notification extends BaseEntity {
   readonly userId: string;
-  readonly debtId: string;
+  readonly financialId: string;
   readonly type: string;
   readonly scheduledAt: Date;
   readonly sentAt: Date | null;
   readonly status: NotificationStatus;
+  readonly isRead: boolean;
 
   private constructor(id: string, props: NotificationProps) {
     super(id);
     this.userId = props.userId;
-    this.debtId = props.debtId;
+    this.financialId = props.financialId;
     this.type = props.type;
     this.scheduledAt = props.scheduledAt;
     this.sentAt = props.sentAt;
     this.status = props.status;
+    this.isRead = props.isRead;
   }
 
   static create(
     id: string,
     userId: string,
-    debtId: string,
+    financialId: string,
     scheduledAt: Date,
-    type: string = 'debt_due_reminder',
+    type: string = 'financial_due_reminder',
   ): Notification {
     return new Notification(id, {
       userId,
-      debtId,
+      financialId,
       type,
       scheduledAt,
       sentAt: null,
       status: NotificationStatus.PENDING,
+      isRead: false,
     });
   }
 
   markAsSent(): Notification {
     return new Notification(this.id, {
       userId: this.userId,
-      debtId: this.debtId,
+      financialId: this.financialId,
       type: this.type,
       scheduledAt: this.scheduledAt,
       sentAt: new Date(),
       status: NotificationStatus.SENT,
+      isRead: this.isRead,
     });
   }
 
   markAsFailed(): Notification {
     return new Notification(this.id, {
       userId: this.userId,
-      debtId: this.debtId,
+      financialId: this.financialId,
       type: this.type,
       scheduledAt: this.scheduledAt,
       sentAt: null,
       status: NotificationStatus.FAILED,
+      isRead: this.isRead,
     });
   }
 

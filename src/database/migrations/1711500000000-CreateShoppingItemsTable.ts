@@ -34,6 +34,11 @@ export class CreateShoppingItemsTable1711500000000 implements MigrationInterface
             isNullable: false,
           },
           {
+            name: 'quantity',
+            type: 'integer',
+            isNullable: false,
+          },
+          {
             name: 'unit_price_local',
             type: 'decimal',
             precision: 18,
@@ -41,15 +46,10 @@ export class CreateShoppingItemsTable1711500000000 implements MigrationInterface
             isNullable: true,
           },
           {
-            name: 'quantity',
-            type: 'integer',
-            isNullable: false,
-          },
-          {
             name: 'unit_price_usd',
             type: 'decimal',
             precision: 18,
-            scale: 4,
+            scale: 2,
             isNullable: true,
           },
           {

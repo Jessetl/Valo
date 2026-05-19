@@ -18,8 +18,8 @@ export class MatchedItemDto {
   @ApiProperty({ example: 'Comida' })
   category!: string;
 
-  @ApiProperty({ example: 45.5 })
-  listAPriceLocal!: number;
+  @ApiPropertyOptional({ example: 45.5, nullable: true })
+  listAPriceLocal!: number | null;
 
   @ApiPropertyOptional({ example: 1.2, nullable: true })
   listAPriceUsd!: number | null;
@@ -27,8 +27,8 @@ export class MatchedItemDto {
   @ApiProperty({ example: 1 })
   listAQuantity!: number;
 
-  @ApiProperty({ example: 50.0 })
-  listBPriceLocal!: number;
+  @ApiPropertyOptional({ example: 50.0, nullable: true })
+  listBPriceLocal!: number | null;
 
   @ApiPropertyOptional({ example: 1.3, nullable: true })
   listBPriceUsd!: number | null;
@@ -36,11 +36,12 @@ export class MatchedItemDto {
   @ApiProperty({ example: 1 })
   listBQuantity!: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: -4.5,
     description: 'priceA - priceB (negativo => A mas barato)',
+    nullable: true,
   })
-  priceDiffLocal!: number;
+  priceDiffLocal!: number | null;
 
   @ApiPropertyOptional({ example: -0.1, nullable: true })
   priceDiffUsd!: number | null;
@@ -59,8 +60,8 @@ export class UnmatchedItemDto {
   @ApiProperty({ example: 1 })
   quantity!: number;
 
-  @ApiProperty({ example: 12.5 })
-  unitPriceLocal!: number;
+  @ApiPropertyOptional({ example: 12.5, nullable: true })
+  unitPriceLocal!: number | null;
 
   @ApiPropertyOptional({ example: 0.32, nullable: true })
   unitPriceUsd!: number | null;

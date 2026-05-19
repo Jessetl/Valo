@@ -110,12 +110,16 @@ export class CompareShoppingListsUseCase implements UseCase<
     dto.listBPriceLocal = b.unitPriceLocal;
     dto.listBPriceUsd = b.unitPriceUsd;
     dto.listBQuantity = b.quantity;
-    dto.priceDiffLocal = round2(a.unitPriceLocal - b.unitPriceLocal);
+    dto.priceDiffLocal =
+      a.unitPriceLocal !== null && b.unitPriceLocal !== null
+        ? round2(a.unitPriceLocal - b.unitPriceLocal)
+        : null;
     dto.priceDiffUsd =
       a.unitPriceUsd !== null && b.unitPriceUsd !== null
         ? round2(a.unitPriceUsd - b.unitPriceUsd)
         : null;
-    if (dto.priceDiffLocal < 0) dto.cheaperIn = 'list_a';
+    if (dto.priceDiffLocal === null) dto.cheaperIn = 'equal';
+    else if (dto.priceDiffLocal < 0) dto.cheaperIn = 'list_a';
     else if (dto.priceDiffLocal > 0) dto.cheaperIn = 'list_b';
     else dto.cheaperIn = 'equal';
     return dto;
@@ -145,10 +149,16 @@ export class CompareShoppingListsUseCase implements UseCase<
     unmatchedBCount: number,
   ): CompareSummaryDto {
     const listATotalLocal = round2(
-      matched.reduce((sum, m) => sum + m.listAPriceLocal * m.listAQuantity, 0),
+      matched.reduce(
+        (sum, m) => sum + (m.listAPriceLocal ?? 0) * m.listAQuantity,
+        0,
+      ),
     );
     const listBTotalLocal = round2(
-      matched.reduce((sum, m) => sum + m.listBPriceLocal * m.listBQuantity, 0),
+      matched.reduce(
+        (sum, m) => sum + (m.listBPriceLocal ?? 0) * m.listBQuantity,
+        0,
+      ),
     );
 
     const anyUsdMissing = matched.some(

@@ -4,43 +4,34 @@ interface ShoppingItemProps {
   listId: string;
   productName: string;
   category: string;
-  unitPriceLocal: number;
   quantity: number;
-  totalLocal: number;
+  unitPriceLocal: number | null;
   unitPriceUsd: number | null;
-  totalUsd: number | null;
   isChecked: boolean;
-  createdAt: Date;
 }
 
 export class ShoppingItem extends BaseEntity {
   readonly listId: string;
   readonly productName: string;
   readonly category: string;
-  readonly unitPriceLocal: number;
   readonly quantity: number;
-  readonly totalLocal: number;
+  readonly unitPriceLocal: number | null;
   readonly unitPriceUsd: number | null;
-  readonly totalUsd: number | null;
   readonly isChecked: boolean;
-  readonly createdAt: Date;
 
   private constructor(id: string, props: ShoppingItemProps) {
     super(id);
     this.listId = props.listId;
     this.productName = props.productName;
     this.category = props.category;
-    this.unitPriceLocal = props.unitPriceLocal;
     this.quantity = props.quantity;
-    this.totalLocal = props.totalLocal;
+    this.unitPriceLocal = props.unitPriceLocal;
     this.unitPriceUsd = props.unitPriceUsd;
-    this.totalUsd = props.totalUsd;
     this.isChecked = props.isChecked;
-    this.createdAt = props.createdAt;
   }
 
   /**
-   * @param unitPriceUsd Si es null y rateLocalPerUsd esta disponible, se calcula automaticamente.
+   * @param unitPriceUsd Si es null y rateLocalPerUsd esta disponible, se calcula desde unitPriceLocal.
    * @param rateLocalPerUsd Tasa local/USD vigente para conversion automatica.
    * @param isChecked Estado de compra (default false para items nuevos).
    */
@@ -49,38 +40,30 @@ export class ShoppingItem extends BaseEntity {
     listId: string,
     productName: string,
     category: string,
-    unitPriceLocal: number,
+    unitPriceLocal: number | null,
     quantity: number,
     unitPriceUsd: number | null = null,
     rateLocalPerUsd: number | null = null,
     isChecked: boolean = false,
   ): ShoppingItem {
-    const totalLocal = unitPriceLocal * quantity;
-
-    // Si no se envia USD pero hay tasa disponible, calcular automaticamente
     let resolvedUnitPriceUsd = unitPriceUsd;
     if (
       resolvedUnitPriceUsd === null &&
+      unitPriceLocal !== null &&
       rateLocalPerUsd !== null &&
       rateLocalPerUsd > 0
     ) {
       resolvedUnitPriceUsd = unitPriceLocal / rateLocalPerUsd;
     }
 
-    const totalUsd =
-      resolvedUnitPriceUsd !== null ? resolvedUnitPriceUsd * quantity : null;
-
     return new ShoppingItem(id, {
       listId,
       productName,
       category,
-      unitPriceLocal,
       quantity,
-      totalLocal,
+      unitPriceLocal,
       unitPriceUsd: resolvedUnitPriceUsd,
-      totalUsd,
       isChecked,
-      createdAt: new Date(),
     });
   }
 
@@ -89,20 +72,17 @@ export class ShoppingItem extends BaseEntity {
       listId: this.listId,
       productName: this.productName,
       category: this.category,
-      unitPriceLocal: this.unitPriceLocal,
       quantity: this.quantity,
-      totalLocal: this.totalLocal,
+      unitPriceLocal: this.unitPriceLocal,
       unitPriceUsd: this.unitPriceUsd,
-      totalUsd: this.totalUsd,
       isChecked: !this.isChecked,
-      createdAt: this.createdAt,
     });
   }
 
   update(
     productName: string,
     category: string,
-    unitPriceLocal: number,
+    unitPriceLocal: number | null,
     quantity: number,
     unitPriceUsd: number | null,
     rateLocalPerUsd: number | null,
