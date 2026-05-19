@@ -46,10 +46,7 @@ export class LoginUserUseCase implements UseCase<
   ) {}
 
   execute(input: LoginUserInput): Promise<AuthResponseDto> {
-    return withMinDuration(
-      () => this.run(input),
-      MIN_RESPONSE_TIME_MS,
-    );
+    return withMinDuration(() => this.run(input), MIN_RESPONSE_TIME_MS);
   }
 
   private async run(input: LoginUserInput): Promise<AuthResponseDto> {

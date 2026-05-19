@@ -1,5 +1,4 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -7,55 +6,53 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
 
 export class UpdateShoppingItemDto {
-  /**
-   * Si se envia `id`, se actualiza el item existente.
-   * Si no se envia `id`, se crea un item nuevo.
-   */
   @ApiPropertyOptional({
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    description: 'UUID del item existente. Omitir para crear uno nuevo.',
+    description:
+      'UUID del item existente. Si viene, se actualiza. Si no, se crea uno nuevo. ' +
+      'Items existentes no incluidos en el array se eliminan.',
   })
   @IsOptional()
   @IsUUID()
   id?: string;
 
-  @ApiProperty({ example: 'Harina PAN' })
+  @ApiProperty({ example: 'Pan campesino' })
   @IsString()
   @MaxLength(255)
   productName!: string;
 
-  @ApiProperty({ example: 'Alimentos' })
+  @ApiProperty({ example: 'Panaderia' })
   @IsString()
-  @MaxLength(100)
+  @MaxLength(80)
   category!: string;
 
-  @ApiProperty({ example: 45.5 })
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  unitPriceLocal!: number;
-
-  @ApiProperty({ example: 2, default: 1 })
+  @ApiPropertyOptional({ example: 1 })
   @IsOptional()
-  @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(10_000)
   quantity?: number;
 
-  @ApiPropertyOptional({ example: 1.2, nullable: true })
+  @ApiProperty({ example: 12.5 })
+  @IsNumber()
+  @Min(0.01)
+  @Max(10_000_000)
+  unitPriceLocal!: number;
+
+  @ApiPropertyOptional({ example: 0.32 })
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 4 })
-  @Min(0)
+  @IsNumber()
+  @Min(0.01)
+  @Max(10_000_000)
   unitPriceUsd?: number;
 
-  @ApiPropertyOptional({ example: true, default: false })
+  @ApiPropertyOptional({ example: false })
   @IsOptional()
   @IsBoolean()
-  isPurchased?: boolean;
+  isChecked?: boolean;
 }

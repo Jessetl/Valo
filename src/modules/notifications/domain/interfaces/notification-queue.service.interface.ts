@@ -3,8 +3,9 @@ export const NOTIFICATION_QUEUE_SERVICE = Symbol('NOTIFICATION_QUEUE_SERVICE');
 export interface NotificationMessage {
   notificationId: string;
   userId: string;
-  debtId: string;
-  debtTitle: string;
+  financialId: string;
+  financialTitle: string;
+  notificationType: string;
   fcmToken: string;
 }
 

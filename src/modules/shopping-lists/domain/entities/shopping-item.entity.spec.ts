@@ -15,10 +15,10 @@ describe('ShoppingItem', () => {
     );
 
     expect(item.id).toBe('item-1');
-    expect(item.totalLocal).toBe(80);
+    expect(item.quantity).toBe(2);
+    expect(item.unitPriceLocal).toBe(40);
     expect(item.unitPriceUsd).toBe(2);
-    expect(item.totalUsd).toBe(4);
-    expect(item.isPurchased).toBe(false);
+    expect(item.isChecked).toBe(false);
   });
 
   it('create mantiene unitPriceUsd nulo si no hay tasa valida', () => {
@@ -33,9 +33,7 @@ describe('ShoppingItem', () => {
       0,
     );
 
-    expect(item.totalLocal).toBe(75);
     expect(item.unitPriceUsd).toBeNull();
-    expect(item.totalUsd).toBeNull();
   });
 
   it('create mantiene unitPriceUsd nulo si la tasa es null', () => {
@@ -51,7 +49,6 @@ describe('ShoppingItem', () => {
     );
 
     expect(item.unitPriceUsd).toBeNull();
-    expect(item.totalUsd).toBeNull();
   });
 
   it('togglePurchased invierte el estado de compra', () => {
@@ -69,12 +66,12 @@ describe('ShoppingItem', () => {
 
     const toggled = original.togglePurchased();
 
-    expect(toggled.isPurchased).toBe(true);
+    expect(toggled.isChecked).toBe(true);
     expect(toggled.id).toBe(original.id);
     expect(toggled.productName).toBe(original.productName);
   });
 
-  it('update aplica nuevos valores y respeta defaults de cantidad y conversion', () => {
+  it('update aplica nuevos valores y respeta defaults de conversion', () => {
     const original = ShoppingItem.create(
       'item-4',
       'list-1',
@@ -100,27 +97,39 @@ describe('ShoppingItem', () => {
     expect(updated.id).toBe(original.id);
     expect(updated.productName).toBe('Pasta Integral');
     expect(updated.unitPriceUsd).toBe(2);
-    expect(updated.totalUsd).toBe(4);
-    expect(updated.isPurchased).toBe(true);
+    expect(updated.quantity).toBe(2);
+    expect(updated.isChecked).toBe(true);
   });
 
   it('reconstitute conserva props sin recalculo', () => {
-    const createdAt = new Date('2026-01-01T00:00:00.000Z');
     const item = ShoppingItem.reconstitute('item-5', {
       listId: 'list-1',
       productName: 'Leche',
       category: 'Lacteos',
-      unitPriceLocal: 50,
       quantity: 2,
-      totalLocal: 999,
+      unitPriceLocal: 50,
       unitPriceUsd: null,
-      totalUsd: null,
-      isPurchased: true,
-      createdAt,
+      isChecked: true,
     });
 
-    expect(item.totalLocal).toBe(999);
-    expect(item.createdAt).toBe(createdAt);
-    expect(item.isPurchased).toBe(true);
+    expect(item.unitPriceLocal).toBe(50);
+    expect(item.isChecked).toBe(true);
+  });
+
+  it('acepta unitPriceLocal null (campo nullable per spec)', () => {
+    const item = ShoppingItem.create(
+      'item-6',
+      'list-1',
+      'Sin precio',
+      'Otros',
+      null,
+      1,
+      null,
+      36.5,
+      false,
+    );
+
+    expect(item.unitPriceLocal).toBeNull();
+    expect(item.unitPriceUsd).toBeNull();
   });
 });

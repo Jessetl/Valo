@@ -138,7 +138,7 @@ export class AuthController {
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth('firebase-token')
+  @ApiBearerAuth('jwt')
   @ApiOperation({
     summary: 'Renovar JWT custom',
     description:
@@ -190,7 +190,7 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('change-password')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBearerAuth('firebase-token')
+  @ApiBearerAuth('jwt')
   @ApiOperation({
     summary: 'Cambio de contraseña del usuario autenticado',
     description:
@@ -212,7 +212,7 @@ export class AuthController {
 
   @Get('profile')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth('firebase-token')
+  @ApiBearerAuth('jwt')
   @ApiOperation({
     summary: 'Obtener perfil del usuario autenticado',
     description:
@@ -229,7 +229,7 @@ export class AuthController {
 
   @Patch('profile')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth('firebase-token')
+  @ApiBearerAuth('jwt')
   @ApiOperation({
     summary: 'Actualizar datos del perfil',
     description:
@@ -254,7 +254,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBearerAuth('firebase-token')
+  @ApiBearerAuth('jwt')
   @ApiOperation({
     summary: 'Cerrar sesion del dispositivo actual',
     description:

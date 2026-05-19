@@ -3,10 +3,6 @@ import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import type { IShoppingListRepository } from '../../domain/interfaces/repositories/shopping-list.repository.interface';
 import { SHOPPING_LIST_REPOSITORY } from '../../domain/interfaces/repositories/shopping-list.repository.interface';
-import {
-  EXCHANGE_RATE_PROVIDER,
-  type IExchangeRateProvider,
-} from '../../../../shared-kernel/domain/interfaces/exchange-rate-provider.interface';
 import { ShoppingList } from '../../domain/entities/shopping-list.entity';
 import { ShoppingItem } from '../../domain/entities/shopping-item.entity';
 import { UpdateShoppingListDto } from '../dtos/update-shopping-list.dto';
@@ -28,8 +24,6 @@ export class UpdateShoppingListUseCase implements UseCase<
   constructor(
     @Inject(SHOPPING_LIST_REPOSITORY)
     private readonly shoppingListRepository: IShoppingListRepository,
-    @Inject(EXCHANGE_RATE_PROVIDER)
-    private readonly exchangeRateProvider: IExchangeRateProvider,
   ) {}
 
   async execute(
@@ -44,23 +38,19 @@ export class UpdateShoppingListUseCase implements UseCase<
       throw new ShoppingListNotFoundException(input.listId);
     }
 
+    const rate =
+      input.dto.exchangeRateSnapshot ?? existing.exchangeRateSnapshot;
     const itemsChanged = input.dto.items !== undefined;
 
     let items: ShoppingItem[] = existing.items;
-    let rateLocalPerUsd = existing.exchangeRateSnapshot;
 
     if (itemsChanged) {
-      // Obtener tasa vigente para items nuevos/actualizados
-      const exchangeRate = await this.exchangeRateProvider.getCurrent();
-      rateLocalPerUsd = exchangeRate.rateLocalPerUsd;
-
       const existingItemsMap = new Map(
         existing.items.map((item) => [item.id, item]),
       );
 
       items = (input.dto.items ?? []).map((itemDto) => {
         if (itemDto.id && existingItemsMap.has(itemDto.id)) {
-          // Actualizar item existente: recrear con nuevos valores
           const existingItem = existingItemsMap.get(itemDto.id)!;
           return ShoppingItem.create(
             existingItem.id,
@@ -70,12 +60,11 @@ export class UpdateShoppingListUseCase implements UseCase<
             itemDto.unitPriceLocal,
             itemDto.quantity ?? 1,
             itemDto.unitPriceUsd ?? null,
-            rateLocalPerUsd,
-            itemDto.isPurchased ?? existingItem.isPurchased,
+            rate,
+            itemDto.isChecked ?? existingItem.isChecked,
           );
         }
 
-        // Item nuevo
         return ShoppingItem.create(
           randomUUID(),
           existing.id,
@@ -84,20 +73,11 @@ export class UpdateShoppingListUseCase implements UseCase<
           itemDto.unitPriceLocal,
           itemDto.quantity ?? 1,
           itemDto.unitPriceUsd ?? null,
-          rateLocalPerUsd,
-          itemDto.isPurchased ?? false,
+          rate,
+          itemDto.isChecked ?? false,
         );
       });
     }
-
-    // Recalcular totales si items cambiaron
-    const totalLocal = itemsChanged
-      ? items.reduce((sum, item) => sum + item.totalLocal, 0)
-      : existing.totalLocal;
-
-    const totalUsd = itemsChanged
-      ? items.reduce((sum, item) => sum + (item.totalUsd ?? 0), 0)
-      : existing.totalUsd;
 
     const updated = ShoppingList.reconstitute(existing.id, {
       userId: existing.userId,
@@ -106,13 +86,26 @@ export class UpdateShoppingListUseCase implements UseCase<
         input.dto.storeName !== undefined
           ? input.dto.storeName
           : existing.storeName,
-      status: existing.status,
+      listType: input.dto.listType ?? existing.listType,
+      countryCode: existing.countryCode,
+      currencyCode: input.dto.currencyCode ?? existing.currencyCode,
+      exchangeRateSnapshot: rate,
       ivaEnabled: input.dto.ivaEnabled ?? existing.ivaEnabled,
-      totalLocal,
-      totalUsd,
-      exchangeRateSnapshot: rateLocalPerUsd,
-      createdAt: existing.createdAt,
-      completedAt: existing.completedAt,
+      scheduledDate:
+        input.dto.scheduledDate !== undefined
+          ? input.dto.scheduledDate
+            ? new Date(input.dto.scheduledDate)
+            : null
+          : existing.scheduledDate,
+      latitude:
+        input.dto.latitude !== undefined
+          ? input.dto.latitude
+          : existing.latitude,
+      longitude:
+        input.dto.longitude !== undefined
+          ? input.dto.longitude
+          : existing.longitude,
+      isActive: input.dto.isActive ?? existing.isActive,
       items,
     });
 

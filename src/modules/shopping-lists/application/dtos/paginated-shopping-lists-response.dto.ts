@@ -1,16 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ShoppingListResponseDto } from './shopping-list-response.dto';
+import { ShoppingListSummaryDto } from './shopping-list-summary.dto';
 
-export class PaginatedShoppingListsResponseDto {
-  @ApiProperty({ type: [ShoppingListResponseDto] })
-  data!: ShoppingListResponseDto[];
-
-  @ApiProperty({ example: 25 })
-  total!: number;
-
+export class PaginationMetaDto {
   @ApiProperty({ example: 1 })
   page!: number;
 
-  @ApiProperty({ example: 10 })
+  @ApiProperty({ example: 20 })
   limit!: number;
+
+  @ApiProperty({ example: 45 })
+  total!: number;
+
+  @ApiProperty({ example: 3 })
+  totalPages!: number;
+}
+
+export class PaginatedShoppingListsResponseDto {
+  @ApiProperty({ type: [ShoppingListSummaryDto] })
+  data!: ShoppingListSummaryDto[];
+
+  @ApiProperty({ type: PaginationMetaDto })
+  meta!: PaginationMetaDto;
 }

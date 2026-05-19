@@ -84,6 +84,18 @@ export class CreateFinancialRecordsTable1711600000000 implements MigrationInterf
             type: 'integer',
             isNullable: true,
           },
+          {
+            name: 'created_at',
+            type: 'timestamptz',
+            default: 'now()',
+            isNullable: false,
+          },
+          {
+            name: 'updated_at',
+            type: 'timestamptz',
+            default: 'now()',
+            isNullable: false,
+          },
         ],
       }),
       true,

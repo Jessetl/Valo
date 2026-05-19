@@ -1,183 +1,84 @@
 import { describe, expect, it } from '@jest/globals';
-import { ShoppingListStatus } from '../enums/shopping-list-status.enum';
 import { ShoppingItem } from './shopping-item.entity';
 import { ShoppingList } from './shopping-list.entity';
+import { ShoppingListType } from '../enums/shopping-list-type.enum';
 
-function makeItem(params?: {
-  id?: string;
-  totalLocal?: number;
-  totalUsd?: number | null;
-  isPurchased?: boolean;
-  createdAt?: Date;
-}): ShoppingItem {
-  const createdAt = params?.createdAt ?? new Date('2026-02-01T00:00:00.000Z');
-  const resolvedTotalUsd = params?.totalUsd !== undefined ? params.totalUsd : 1;
-  const resolvedUnitPriceUsd =
-    resolvedTotalUsd === null ? null : Number(resolvedTotalUsd);
-
-  return ShoppingItem.reconstitute(params?.id ?? 'item-1', {
-    listId: 'list-1',
-    productName: 'Producto',
-    category: 'Categoria',
-    unitPriceLocal: 10,
-    quantity: 1,
-    totalLocal: params?.totalLocal ?? 10,
-    unitPriceUsd: resolvedUnitPriceUsd,
-    totalUsd: resolvedTotalUsd,
-    isPurchased: params?.isPurchased ?? false,
-    createdAt,
-  });
+function makeItem(productName: string, price: number): ShoppingItem {
+  return ShoppingItem.create(
+    'item-' + productName,
+    'list-1',
+    productName,
+    'Cat',
+    price,
+    1,
+    null,
+    36.5,
+    false,
+  );
 }
 
-describe('ShoppingList', () => {
-  it('create calcula totales usando items y totalUsd con fallback 0', () => {
-    const itemA = makeItem({ id: 'a', totalLocal: 10, totalUsd: 1 });
-    const itemB = makeItem({ id: 'b', totalLocal: 5, totalUsd: null });
+describe('ShoppingList domain entity', () => {
+  it('crea lista con campos obligatorios del spec', () => {
+    const item = makeItem('Pan', 10);
 
-    const list = ShoppingList.create(
-      'list-1',
-      'user-1',
-      'Compra',
-      'Tienda',
-      true,
-      [itemA, itemB],
-      36.5,
-    );
+    const list = ShoppingList.create({
+      id: 'l1',
+      userId: 'u1',
+      name: 'Lista test',
+      listType: ShoppingListType.TEMPLATE,
+      countryCode: 'VE',
+      currencyCode: 'VES',
+      exchangeRateSnapshot: 36.5,
+      items: [item],
+    });
 
-    expect(list.status).toBe(ShoppingListStatus.ACTIVE);
-    expect(list.totalLocal).toBe(15);
-    expect(list.totalUsd).toBe(1);
+    expect(list.id).toBe('l1');
+    expect(list.listType).toBe(ShoppingListType.TEMPLATE);
+    expect(list.countryCode).toBe('VE');
+    expect(list.currencyCode).toBe('VES');
     expect(list.exchangeRateSnapshot).toBe(36.5);
+    expect(list.isActive).toBe(true);
+    expect(list.items).toHaveLength(1);
   });
 
-  it('addItems agrega y recalcula totales', () => {
-    const base = ShoppingList.create(
-      'list-1',
-      'user-1',
-      'Compra',
-      null,
-      false,
-      [makeItem({ id: 'a', totalLocal: 10, totalUsd: 2 })],
-    );
-
-    const updated = base.addItems([
-      makeItem({ id: 'b', totalLocal: 20, totalUsd: 3 }),
-      makeItem({ id: 'c', totalLocal: 5, totalUsd: null }),
-    ]);
-
-    expect(updated.items).toHaveLength(3);
-    expect(updated.totalLocal).toBe(35);
-    expect(updated.totalUsd).toBe(5);
-  });
-
-  it('complete marca status completed y setea completedAt/snapshot', () => {
-    const base = ShoppingList.create('list-1', 'user-1', 'Compra');
-    const completed = base.complete(40.2);
-
-    expect(completed.status).toBe(ShoppingListStatus.COMPLETED);
-    expect(completed.exchangeRateSnapshot).toBe(40.2);
-    expect(completed.completedAt).toBeInstanceOf(Date);
-  });
-
-  it('duplicate clona items con nuevos ids y isPurchased false', () => {
-    const purchasedItem = makeItem({
-      id: 'old-1',
-      isPurchased: true,
-      totalLocal: 11,
-      totalUsd: 1,
-    });
-    const list = ShoppingList.create(
-      'list-1',
-      'user-1',
-      'Compra',
-      'Store',
-      true,
-      [purchasedItem],
-      33,
-    );
-
-    const copy = list.duplicate('list-2', ['new-1']);
-
-    expect(copy.id).toBe('list-2');
-    expect(copy.status).toBe(ShoppingListStatus.ACTIVE);
-    expect(copy.items).toHaveLength(1);
-    expect(copy.items[0].id).toBe('new-1');
-    expect(copy.items[0].isPurchased).toBe(false);
-    expect(copy.items[0].listId).toBe('list-2');
-  });
-
-  it('removeItem quita item y recalcula', () => {
-    const list = ShoppingList.create(
-      'list-1',
-      'user-1',
-      'Compra',
-      null,
-      false,
-      [
-        makeItem({ id: 'keep', totalLocal: 10, totalUsd: 2 }),
-        makeItem({ id: 'drop', totalLocal: 20, totalUsd: 1 }),
-      ],
-    );
-
-    const updated = list.removeItem('drop');
-
-    expect(updated.items).toHaveLength(1);
-    expect(updated.items[0].id).toBe('keep');
-    expect(updated.totalLocal).toBe(10);
-    expect(updated.totalUsd).toBe(2);
-  });
-
-  it('replaceItem sustituye item por id y recalcula', () => {
-    const original = makeItem({ id: 'target', totalLocal: 10, totalUsd: 2 });
-    const list = ShoppingList.create(
-      'list-1',
-      'user-1',
-      'Compra',
-      null,
-      false,
-      [original, makeItem({ id: 'other', totalLocal: 5, totalUsd: null })],
-    );
-
-    const replacement = ShoppingItem.reconstitute('target', {
-      listId: 'list-1',
-      productName: 'Nuevo',
-      category: 'Cat',
-      unitPriceLocal: 1,
-      quantity: 1,
-      totalLocal: 50,
-      unitPriceUsd: 2,
-      totalUsd: 4,
-      isPurchased: false,
-      createdAt: new Date('2026-02-02T00:00:00.000Z'),
-    });
-
-    const updated = list.replaceItem(replacement);
-
-    expect(updated.items.find((x) => x.id === 'target')?.totalLocal).toBe(50);
-    expect(updated.totalLocal).toBe(55);
-    expect(updated.totalUsd).toBe(4);
-  });
-
-  it('reconstitute conserva valores exactos', () => {
-    const createdAt = new Date('2026-02-01T00:00:00.000Z');
-    const completedAt = new Date('2026-02-05T00:00:00.000Z');
-
-    const list = ShoppingList.reconstitute('list-1', {
-      userId: 'user-1',
+  it('aplica defaults: storeName=null, ivaEnabled=false, scheduledDate=null, lat/lng=null', () => {
+    const list = ShoppingList.create({
+      id: 'l1',
+      userId: 'u1',
       name: 'Lista',
-      storeName: null,
-      status: ShoppingListStatus.COMPLETED,
+      listType: ShoppingListType.RECEIPT,
+      countryCode: 'VE',
+      currencyCode: 'VES',
+      exchangeRateSnapshot: 36.5,
+    });
+
+    expect(list.storeName).toBeNull();
+    expect(list.ivaEnabled).toBe(false);
+    expect(list.scheduledDate).toBeNull();
+    expect(list.latitude).toBeNull();
+    expect(list.longitude).toBeNull();
+    expect(list.items).toEqual([]);
+  });
+
+  it('reconstitute construye desde props completos', () => {
+    const list = ShoppingList.reconstitute('l1', {
+      userId: 'u1',
+      name: 'Lista',
+      storeName: 'Super',
+      listType: ShoppingListType.RECEIPT,
+      countryCode: 'VE',
+      currencyCode: 'USD',
+      exchangeRateSnapshot: 36.5,
       ivaEnabled: true,
-      totalLocal: 123,
-      totalUsd: 4,
-      exchangeRateSnapshot: 31,
-      createdAt,
-      completedAt,
+      scheduledDate: new Date('2026-04-01T00:00:00Z'),
+      latitude: 10.5,
+      longitude: -66.9,
+      isActive: false,
       items: [],
     });
 
-    expect(list.status).toBe(ShoppingListStatus.COMPLETED);
-    expect(list.totalLocal).toBe(123);
-    expect(list.completedAt).toBe(completedAt);
+    expect(list.storeName).toBe('Super');
+    expect(list.isActive).toBe(false);
+    expect(list.ivaEnabled).toBe(true);
   });
 });

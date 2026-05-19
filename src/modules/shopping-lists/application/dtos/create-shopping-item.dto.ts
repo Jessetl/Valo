@@ -1,62 +1,48 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
-  IsBoolean,
   IsString,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
 
 export class CreateShoppingItemDto {
-  @ApiProperty({ example: 'Harina PAN' })
+  @ApiProperty({ example: 'Pan campesino' })
   @IsString()
   @MaxLength(255)
   productName!: string;
 
-  @ApiProperty({ example: 'Comida' })
+  @ApiProperty({ example: 'Panaderia' })
   @IsString()
-  @MaxLength(255)
+  @MaxLength(80)
   category!: string;
 
-  @ApiProperty({ example: 45.5 })
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  unitPriceLocal!: number;
-
-  @ApiProperty({ example: 2, default: 1 })
+  @ApiPropertyOptional({ example: 1, default: 1 })
   @IsOptional()
-  @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(10_000)
   quantity?: number;
 
-  @ApiProperty({ example: 91, nullable: true })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  totalLocal!: number;
+  @ApiProperty({ example: 12.5 })
+  @IsNumber()
+  @Min(0.01)
+  @Max(10_000_000)
+  unitPriceLocal!: number;
 
-  @ApiPropertyOptional({ example: 1.2, nullable: true })
+  @ApiPropertyOptional({ example: 0.32 })
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 4 })
-  @Min(0)
+  @IsNumber()
+  @Min(0.01)
+  @Max(10_000_000)
   unitPriceUsd?: number;
-
-  @ApiPropertyOptional({ example: 2.4, nullable: true })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 4 })
-  @Min(0)
-  totalUsd?: number;
 
   @ApiPropertyOptional({ example: false, default: false })
   @IsOptional()
   @IsBoolean()
-  isPurchased?: boolean;
+  isChecked?: boolean;
 }

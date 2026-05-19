@@ -4,6 +4,7 @@ export const USER_DEVICE_REPOSITORY = Symbol('USER_DEVICE_REPOSITORY');
 
 export interface IUserDeviceRepository {
   findByDeviceId(deviceId: string): Promise<UserDevice | null>;
+  findByUserId(userId: string): Promise<UserDevice[]>;
   findByUserIdAndDeviceId(
     userId: string,
     deviceId: string,

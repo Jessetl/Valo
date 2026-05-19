@@ -11,11 +11,11 @@ import { RabbitMqNotificationQueueService } from './infrastructure/messaging/rab
 import { RabbitMqNotificationConsumer } from './infrastructure/messaging/rabbitmq-notification.consumer';
 import { FcmPushNotificationService } from './infrastructure/push/fcm-push-notification.service';
 import { NotificationCronService } from './infrastructure/scheduling/notification-cron.service';
-import { ScheduleDebtNotificationUseCase } from './application/use-cases/schedule-debt-notification.use-case';
-import { CancelDebtNotificationsUseCase } from './application/use-cases/cancel-debt-notifications.use-case';
+import { ScheduleFinancialNotificationUseCase } from './application/use-cases/schedule-financial-notification.use-case';
+import { CancelFinancialNotificationsUseCase } from './application/use-cases/cancel-financial-notifications.use-case';
 import { ProcessPendingNotificationsUseCase } from './application/use-cases/process-pending-notifications.use-case';
 import { rabbitmqConfig } from './infrastructure/messaging/rabbitmq.config';
-import { DebtsModule } from '../debts/debts.module';
+import { FinancesModule } from '../finances/finances.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
@@ -23,37 +23,32 @@ import { AuthModule } from '../auth/auth.module';
     TypeOrmModule.forFeature([NotificationOrmEntity]),
     ScheduleModule.forRoot(),
     ConfigModule.forFeature(rabbitmqConfig),
-    forwardRef(() => DebtsModule),
+    forwardRef(() => FinancesModule),
     AuthModule,
   ],
   providers: [
-    // Repository
     {
       provide: NOTIFICATION_REPOSITORY,
       useClass: TypeOrmNotificationRepository,
     },
-    // Queue service
     {
       provide: NOTIFICATION_QUEUE_SERVICE,
       useClass: RabbitMqNotificationQueueService,
     },
-    // Push notification service
     {
       provide: PUSH_NOTIFICATION_SERVICE,
       useClass: FcmPushNotificationService,
     },
-    // Use cases
-    ScheduleDebtNotificationUseCase,
-    CancelDebtNotificationsUseCase,
+    ScheduleFinancialNotificationUseCase,
+    CancelFinancialNotificationsUseCase,
     ProcessPendingNotificationsUseCase,
-    // Infrastructure
     RabbitMqNotificationConsumer,
     NotificationCronService,
   ],
   exports: [
     NOTIFICATION_REPOSITORY,
-    ScheduleDebtNotificationUseCase,
-    CancelDebtNotificationsUseCase,
+    ScheduleFinancialNotificationUseCase,
+    CancelFinancialNotificationsUseCase,
   ],
 })
 export class NotificationsModule {}

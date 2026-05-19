@@ -69,7 +69,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'firebase-token',
+      'jwt',
     )
     .addTag(
       'Auth',
@@ -84,12 +84,12 @@ async function bootstrap() {
       'Tasa de cambio VES/USD oficial desde DolarAPI (endpoint publico)',
     )
     .addTag(
-      'Debts',
-      'CRUD de deudas y cobros personales en USD con prioridad, interes y vencimiento',
+      'Finances',
+      'CRUD de ingresos y egresos con recurrencia mensual, prioridad, recordatorios y summary',
     )
     .addTag(
       'Notifications',
-      'Notificaciones push de recordatorio de vencimiento de deudas via FCM + RabbitMQ',
+      'Notificaciones push de recordatorio de vencimiento de registros financieros via FCM + RabbitMQ',
     )
     .build();
 

@@ -17,7 +17,7 @@ import { getDatabaseConfig } from './shared-kernel/infrastructure/config/databas
 import { AuthModule } from './modules/auth/auth.module';
 import { ShoppingListsModule } from './modules/shopping-lists/shopping-lists.module';
 import { ExchangeRatesModule } from './modules/exchange-rates/exchange-rates.module';
-import { DebtsModule } from './modules/debts/debts.module';
+import { FinancesModule } from './modules/finances/finances.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -55,7 +55,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AuthModule,
     ShoppingListsModule,
     ExchangeRatesModule,
-    DebtsModule,
+    FinancesModule,
     NotificationsModule,
 
     // Rate limiting

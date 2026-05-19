@@ -6,6 +6,7 @@ import { NOTIFICATION_REPOSITORY } from '../../domain/interfaces/repositories/no
 import type { IPushNotificationService } from '../../domain/interfaces/push-notification.service.interface';
 import { PUSH_NOTIFICATION_SERVICE } from '../../domain/interfaces/push-notification.service.interface';
 import type { NotificationMessage } from '../../domain/interfaces/notification-queue.service.interface';
+import { NotificationStatus } from '../../domain/enums/notification-status.enum';
 import { NOTIFICATION_QUEUE } from './rabbitmq.config';
 
 @Injectable()
@@ -81,17 +82,19 @@ export class RabbitMqNotificationConsumer implements OnModuleInit {
 
     const success = await this.pushService.sendPush(
       message.fcmToken,
-      'Recordatorio de deuda',
-      `Tu deuda "${message.debtTitle}" vence mañana. ¡No olvides pagarla!`,
+      'Recordatorio de vencimiento',
+      `"${message.financialTitle}" vence mañana. No olvides revisarlo.`,
       {
-        type: 'debt_due_reminder',
-        debtId: message.debtId,
+        type: message.notificationType,
+        financialId: message.financialId,
       },
     );
 
     if (success) {
-      const updated = notification.markAsSent();
-      await this.notificationRepository.save(updated);
+      if (notification.status !== NotificationStatus.SENT) {
+        const updated = notification.markAsSent();
+        await this.notificationRepository.save(updated);
+      }
       this.logger.log(`Notification ${message.notificationId} sent`);
     } else {
       const updated = notification.markAsFailed();

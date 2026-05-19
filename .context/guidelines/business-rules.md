@@ -164,8 +164,8 @@ net_balance_usd = total_income_usd - total_expense_usd
 ### Totales de una lista
 
 ```
-subtotal_local = Σ (unit_price_local × quantity) para items con is_checked = true
-subtotal_usd = Σ (unit_price_usd × quantity) para items con is_checked = true
+subtotal_local = Σ (unit_price_local × quantity)
+subtotal_usd = Σ (unit_price_usd × quantity)
 
 // Solo si iva_enabled = true
 iva_local = subtotal_local × 0.16
@@ -174,8 +174,6 @@ iva_usd = subtotal_usd × 0.16
 total_local = subtotal_local + iva_local
 total_usd = subtotal_usd + iva_usd
 ```
-
-> Los totales se calculan solo sobre items marcados como comprados (`is_checked = true`).
 
 ### Comparadora de listas
 

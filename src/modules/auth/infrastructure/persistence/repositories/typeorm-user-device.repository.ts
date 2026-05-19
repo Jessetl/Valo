@@ -18,6 +18,11 @@ export class TypeOrmUserDeviceRepository implements IUserDeviceRepository {
     return orm ? UserDevicePersistenceMapper.toDomain(orm) : null;
   }
 
+  async findByUserId(userId: string): Promise<UserDevice[]> {
+    const orms = await this.ormRepository.find({ where: { userId } });
+    return orms.map((orm) => UserDevicePersistenceMapper.toDomain(orm));
+  }
+
   async findByUserIdAndDeviceId(
     userId: string,
     deviceId: string,

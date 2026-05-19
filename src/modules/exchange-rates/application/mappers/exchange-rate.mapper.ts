@@ -2,7 +2,10 @@ import type { ExchangeRateSnapshot } from '../../../../shared-kernel/domain/inte
 import { ExchangeRateResponseDto } from '../dtos/exchange-rate-response.dto';
 
 export class ExchangeRateMapper {
-  static toResponse(rate: ExchangeRateSnapshot, currency: string): ExchangeRateResponseDto {
+  static toResponse(
+    rate: ExchangeRateSnapshot,
+    currency: string,
+  ): ExchangeRateResponseDto {
     const dto = new ExchangeRateResponseDto();
     dto.currency = currency;
     dto.rateLocalPerUsd = rate.rateLocalPerUsd;

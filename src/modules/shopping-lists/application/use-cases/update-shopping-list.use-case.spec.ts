@@ -1,0 +1,130 @@
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { IShoppingListRepository } from '../../domain/interfaces/repositories/shopping-list.repository.interface';
+import { ShoppingList } from '../../domain/entities/shopping-list.entity';
+import { ShoppingItem } from '../../domain/entities/shopping-item.entity';
+import { ShoppingListType } from '../../domain/enums/shopping-list-type.enum';
+import { ShoppingListNotFoundException } from '../../domain/exceptions/shopping-list-not-found.exception';
+import { UpdateShoppingListUseCase } from './update-shopping-list.use-case';
+
+function makeList(overrides: { items?: ShoppingItem[] } = {}): ShoppingList {
+  return ShoppingList.create({
+    id: 'l1',
+    userId: 'u1',
+    name: 'Lista',
+    listType: ShoppingListType.TEMPLATE,
+    countryCode: 'VE',
+    currencyCode: 'VES',
+    exchangeRateSnapshot: 36.5,
+    items: overrides.items,
+  });
+}
+
+describe('UpdateShoppingListUseCase', () => {
+  let repo: jest.Mocked<IShoppingListRepository>;
+  let useCase: UpdateShoppingListUseCase;
+
+  beforeEach(() => {
+    repo = {
+      findById: jest.fn(),
+      findByIdAndUserId: jest.fn(),
+      findByIdsAndUserId: jest.fn(),
+      searchByUserId: jest.fn(),
+      save: jest.fn(),
+      delete: jest.fn(),
+    } as never;
+    useCase = new UpdateShoppingListUseCase(repo);
+
+    repo.save.mockImplementation(async (l: ShoppingList) => l);
+  });
+
+  it('throws cuando lista no existe O pertenece a otro user', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute({
+        listId: 'l1',
+        userId: 'u-attacker',
+        dto: { name: 'Hack' } as never,
+      }),
+    ).rejects.toBeInstanceOf(ShoppingListNotFoundException);
+
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it('preserva userId original — no permite mass assignment desde dto', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(makeList());
+
+    await useCase.execute({
+      listId: 'l1',
+      userId: 'u1',
+      dto: { name: 'Nueva' } as never,
+    });
+
+    const saved = repo.save.mock.calls[0][0];
+    expect(saved.userId).toBe('u1');
+  });
+
+  it('replace de items: items sin id se crean, items con id se preservan, faltantes se borran', async () => {
+    const existingItem = ShoppingItem.create(
+      'item-existing',
+      'l1',
+      'Existing',
+      'Cat',
+      10,
+      1,
+      null,
+      36.5,
+      false,
+    );
+    repo.findByIdAndUserId.mockResolvedValue(
+      makeList({ items: [existingItem] }),
+    );
+
+    await useCase.execute({
+      listId: 'l1',
+      userId: 'u1',
+      dto: {
+        items: [
+          // item con id existente → preserva id
+          {
+            id: 'item-existing',
+            productName: 'Existing-Renamed',
+            category: 'Cat',
+            unitPriceLocal: 20,
+          },
+          // item nuevo sin id → genera nuevo
+          {
+            productName: 'New',
+            category: 'Cat',
+            unitPriceLocal: 5,
+          },
+        ],
+      } as never,
+    });
+
+    const saved = repo.save.mock.calls[0][0];
+    expect(saved.items).toHaveLength(2);
+    expect(saved.items[0].id).toBe('item-existing');
+    expect(saved.items[0].productName).toBe('Existing-Renamed');
+    expect(saved.items[1].id).not.toBe('item-existing');
+  });
+
+  it('replace items: backend reemplaza coleccion completa', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(makeList());
+
+    await useCase.execute({
+      listId: 'l1',
+      userId: 'u1',
+      dto: {
+        items: [
+          { productName: 'A', category: 'C', unitPriceLocal: 10, quantity: 3 },
+        ],
+      } as never,
+    });
+
+    const saved = repo.save.mock.calls[0][0];
+    expect(saved.items).toHaveLength(1);
+    expect(saved.items[0].unitPriceLocal).toBe(10);
+    expect(saved.items[0].quantity).toBe(3);
+  });
+});

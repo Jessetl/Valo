@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ShoppingListType } from '../../domain/enums/shopping-list-type.enum';
 import { ShoppingItemResponseDto } from './shopping-item-response.dto';
 
 export class ShoppingListResponseDto {
@@ -14,26 +15,77 @@ export class ShoppingListResponseDto {
   @ApiPropertyOptional({ example: 'Supermercado Central', nullable: true })
   storeName!: string | null;
 
-  @ApiProperty({ example: 'ACTIVE', enum: ['ACTIVE', 'COMPLETED'] })
-  status!: string;
+  @ApiProperty({ enum: ShoppingListType, example: ShoppingListType.TEMPLATE })
+  listType!: ShoppingListType;
+
+  @ApiProperty({ example: 'VE' })
+  countryCode!: string;
+
+  @ApiProperty({ example: 'VES' })
+  currencyCode!: string;
+
+  @ApiProperty({ example: 36.5 })
+  exchangeRateSnapshot!: number;
 
   @ApiProperty({ example: false })
   ivaEnabled!: boolean;
 
-  @ApiProperty({ example: 150.75 })
+  @ApiPropertyOptional({
+    example: '2026-04-15T18:00:00.000Z',
+    nullable: true,
+  })
+  scheduledDate!: Date | null;
+
+  @ApiPropertyOptional({ example: 10.4806, nullable: true })
+  latitude!: number | null;
+
+  @ApiPropertyOptional({ example: -66.9036, nullable: true })
+  longitude!: number | null;
+
+  @ApiProperty({ example: true })
+  isActive!: boolean;
+
+  @ApiProperty({
+    example: 91.0,
+    description:
+      'Σ unit_price_local × quantity sobre todos los items. Computed.',
+  })
+  subtotalLocal!: number;
+
+  @ApiPropertyOptional({
+    example: 2.4,
+    nullable: true,
+    description:
+      'Σ unit_price_usd × quantity sobre todos los items. null si algún item carece de USD.',
+  })
+  subtotalUsd!: number | null;
+
+  @ApiProperty({
+    example: 14.56,
+    description: 'subtotal_local × 0.16 si iva_enabled, sino 0.',
+  })
+  ivaLocal!: number;
+
+  @ApiPropertyOptional({
+    example: 0.38,
+    nullable: true,
+    description:
+      'subtotal_usd × 0.16 si iva_enabled, sino 0. null si subtotal_usd null.',
+  })
+  ivaUsd!: number | null;
+
+  @ApiProperty({
+    example: 105.56,
+    description: 'subtotal_local + iva_local. Computed.',
+  })
   totalLocal!: number;
 
-  @ApiProperty({ example: 4.12 })
-  totalUsd!: number;
-
-  @ApiPropertyOptional({ example: 36.5, nullable: true })
-  exchangeRateSnapshot!: number | null;
-
-  @ApiProperty({ example: '2026-03-27T12:00:00.000Z' })
-  createdAt!: Date;
-
-  @ApiPropertyOptional({ example: '2026-03-27T18:00:00.000Z', nullable: true })
-  completedAt!: Date | null;
+  @ApiPropertyOptional({
+    example: 2.78,
+    nullable: true,
+    description: 'subtotal_usd + iva_usd. null si subtotal_usd null.',
+  })
+  totalUsd!: number | null;
 
   @ApiProperty({ type: [ShoppingItemResponseDto] })
   items!: ShoppingItemResponseDto[];

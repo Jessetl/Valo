@@ -20,22 +20,23 @@ export class TypeOrmNotificationRepository implements INotificationRepository {
   }
 
   async findPendingBefore(date: Date): Promise<Notification[]> {
+    const dateOnly = date.toISOString().split('T')[0];
     const orms = await this.ormRepository.find({
       where: {
         status: NotificationStatus.PENDING,
-        scheduledAt: LessThanOrEqual(date),
+        scheduledAt: LessThanOrEqual(dateOnly as unknown as Date),
       },
       order: { scheduledAt: 'ASC' },
     });
-    return orms.map(NotificationPersistenceMapper.toDomain);
+    return orms.map((orm) => NotificationPersistenceMapper.toDomain(orm));
   }
 
-  async findByDebtId(debtId: string): Promise<Notification[]> {
+  async findByFinancialId(financialId: string): Promise<Notification[]> {
     const orms = await this.ormRepository.find({
-      where: { debtId },
+      where: { financialId },
       order: { scheduledAt: 'DESC' },
     });
-    return orms.map(NotificationPersistenceMapper.toDomain);
+    return orms.map((orm) => NotificationPersistenceMapper.toDomain(orm));
   }
 
   async save(notification: Notification): Promise<Notification> {
@@ -44,8 +45,8 @@ export class TypeOrmNotificationRepository implements INotificationRepository {
     return NotificationPersistenceMapper.toDomain(saved);
   }
 
-  async deleteByDebtId(debtId: string): Promise<void> {
-    await this.ormRepository.delete({ debtId });
+  async deleteByFinancialId(financialId: string): Promise<void> {
+    await this.ormRepository.delete({ financialId });
   }
 
   async deleteByUserId(userId: string): Promise<void> {

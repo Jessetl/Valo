@@ -1,24 +1,31 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { NotificationStatus } from '../../domain/enums/notification-status.enum';
 
 export class NotificationResponseDto {
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
   id!: string;
 
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
-  userId!: string;
+  user_id!: string;
 
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
-  debtId!: string;
+  financial_id!: string;
 
-  @ApiProperty({ example: 'debt_due_reminder' })
+  @ApiProperty({ example: 'financial_due_reminder' })
   type!: string;
 
-  @ApiProperty({ example: '2026-05-14T12:00:00.000Z' })
-  scheduledAt!: Date;
+  @ApiProperty({ example: '2026-06-14' })
+  scheduled_at!: string;
 
-  @ApiPropertyOptional({ example: '2026-05-14T12:00:00.000Z', nullable: true })
-  sentAt!: Date | null;
+  @ApiPropertyOptional({ example: '2026-06-14', nullable: true })
+  sent_at!: string | null;
 
-  @ApiProperty({ example: 'PENDING', enum: ['PENDING', 'SENT', 'FAILED'] })
-  status!: string;
+  @ApiProperty({
+    enum: NotificationStatus,
+    example: NotificationStatus.PENDING,
+  })
+  status!: NotificationStatus;
+
+  @ApiProperty({ example: false })
+  is_read!: boolean;
 }

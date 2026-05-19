@@ -6,9 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
-  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,59 +15,35 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { CurrentUserId } from '../../../../shared-kernel/infrastructure/decorators/current-user-id.decorator';
 import { ParseUUIDPipe } from '../../../../shared-kernel/infrastructure/pipes/parse-uuid.pipe';
 import { CreateShoppingListUseCase } from '../../application/use-cases/create-shopping-list.use-case';
-import { GetShoppingListsUseCase } from '../../application/use-cases/get-shopping-lists.use-case';
 import { GetShoppingListByIdUseCase } from '../../application/use-cases/get-shopping-list-by-id.use-case';
 import { UpdateShoppingListUseCase } from '../../application/use-cases/update-shopping-list.use-case';
 import { DeleteShoppingListUseCase } from '../../application/use-cases/delete-shopping-list.use-case';
-import { AddItemsToShoppingListUseCase } from '../../application/use-cases/add-items-to-shopping-list.use-case';
-import { EditShoppingItemUseCase } from '../../application/use-cases/edit-shopping-item.use-case';
-import { DeleteShoppingItemUseCase } from '../../application/use-cases/delete-shopping-item.use-case';
-import { ToggleShoppingItemUseCase } from '../../application/use-cases/toggle-shopping-item.use-case';
-import { CompleteShoppingListUseCase } from '../../application/use-cases/complete-shopping-list.use-case';
-import { GetShoppingListHistoryUseCase } from '../../application/use-cases/get-shopping-list-history.use-case';
-import { DuplicateShoppingListUseCase } from '../../application/use-cases/duplicate-shopping-list.use-case';
 import { CompareShoppingListsUseCase } from '../../application/use-cases/compare-shopping-lists.use-case';
-import { GetSpendingStatsUseCase } from '../../application/use-cases/get-spending-stats.use-case';
+import { SearchShoppingListsUseCase } from '../../application/use-cases/search-shopping-lists.use-case';
 import { CreateShoppingListDto } from '../../application/dtos/create-shopping-list.dto';
-import { AddShoppingItemsDto } from '../../application/dtos/add-shopping-items.dto';
-import { EditShoppingItemDto } from '../../application/dtos/edit-shopping-item.dto';
 import { UpdateShoppingListDto } from '../../application/dtos/update-shopping-list.dto';
-import { DeleteShoppingListResponseDto } from '../../application/dtos/delete-shopping-list-response.dto';
+import { SearchShoppingListsDto } from '../../application/dtos/search-shopping-lists.dto';
+import { CompareShoppingListsDto } from '../../application/dtos/compare-shopping-lists.dto';
 import { ShoppingListResponseDto } from '../../application/dtos/shopping-list-response.dto';
-import { ShoppingItemResponseDto } from '../../application/dtos/shopping-item-response.dto';
 import { PaginatedShoppingListsResponseDto } from '../../application/dtos/paginated-shopping-lists-response.dto';
 import { CompareShoppingListsResponseDto } from '../../application/dtos/compare-shopping-lists-response.dto';
-import { SpendingStatsResponseDto } from '../../application/dtos/spending-stats-response.dto';
 
 @ApiTags('Shopping Lists')
-@ApiBearerAuth('firebase-token')
+@ApiBearerAuth('jwt')
 @Controller('shopping-lists')
 export class ShoppingListsController {
   constructor(
     private readonly createShoppingList: CreateShoppingListUseCase,
-    private readonly getShoppingLists: GetShoppingListsUseCase,
     private readonly getShoppingListById: GetShoppingListByIdUseCase,
     private readonly updateShoppingList: UpdateShoppingListUseCase,
     private readonly deleteShoppingList: DeleteShoppingListUseCase,
-    private readonly addItemsToShoppingList: AddItemsToShoppingListUseCase,
-    private readonly editShoppingItem: EditShoppingItemUseCase,
-    private readonly deleteShoppingItem: DeleteShoppingItemUseCase,
-    private readonly toggleShoppingItem: ToggleShoppingItemUseCase,
-    private readonly completeShoppingList: CompleteShoppingListUseCase,
-    private readonly getShoppingListHistory: GetShoppingListHistoryUseCase,
-    private readonly duplicateShoppingList: DuplicateShoppingListUseCase,
     private readonly compareShoppingLists: CompareShoppingListsUseCase,
-    private readonly getSpendingStats: GetSpendingStatsUseCase,
+    private readonly searchShoppingLists: SearchShoppingListsUseCase,
   ) {}
-
-  // ──────────────────────────────────────────────
-  //  Listas
-  // ──────────────────────────────────────────────
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -87,95 +62,25 @@ export class ShoppingListsController {
     return this.createShoppingList.execute({ userId, dto });
   }
 
-  @Get('history')
+  @Post('search')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Historial de listas completadas (paginado)',
+    summary: 'Listar listas con filtros + paginacion',
+    description:
+      'Devuelve resumen paginado por lista (sin items detallados). Filtros opcionales: listType, storeName (ILIKE), isActive, scheduledDateFrom/To.',
   })
-  @ApiQuery({ name: 'page', required: false, example: 1, type: Number })
-  @ApiQuery({ name: 'limit', required: false, example: 10, type: Number })
   @ApiResponse({
     status: 200,
-    description: 'Historial paginado de listas completadas',
+    description: 'Listado paginado',
     type: PaginatedShoppingListsResponseDto,
   })
+  @ApiResponse({ status: 400, description: 'Filtros invalidos' })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  async history(
+  async search(
     @CurrentUserId() userId: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Body() dto: SearchShoppingListsDto,
   ) {
-    return this.getShoppingListHistory.execute({
-      userId,
-      page: Math.max(1, Number(page) || 1),
-      limit: Math.min(50, Math.max(1, Number(limit) || 10)),
-    });
-  }
-
-  @Get('compare')
-  @ApiOperation({
-    summary: 'Comparar precios entre listas',
-    description:
-      'Compara productos con el mismo nombre entre 2 o mas listas seleccionadas.',
-  })
-  @ApiQuery({
-    name: 'ids',
-    required: true,
-    description: 'UUIDs de las listas separados por coma',
-    example: 'uuid-1,uuid-2',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Comparacion de precios por producto',
-    type: CompareShoppingListsResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  async compare(
-    @CurrentUserId() userId: string,
-    @Query('ids') ids: string,
-  ) {
-    const listIds = (ids ?? '')
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean);
-    return this.compareShoppingLists.execute({ ids: listIds, userId });
-  }
-
-  @Get('stats')
-  @ApiOperation({
-    summary: 'Estadisticas de gasto por periodo',
-    description:
-      'Agrega gasto total VES/USD de listas completadas por semana o mes.',
-  })
-  @ApiQuery({
-    name: 'period',
-    required: false,
-    enum: ['week', 'month'],
-    example: 'month',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Estadisticas de gasto',
-    type: SpendingStatsResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  async stats(
-    @CurrentUserId() userId: string,
-    @Query('period') period?: string,
-  ) {
-    const validPeriod = period === 'week' ? 'week' : 'month';
-    return this.getSpendingStats.execute({ userId, period: validPeriod });
-  }
-
-  @Get()
-  @ApiOperation({ summary: 'Listar listas activas del usuario' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listas activas del usuario',
-    type: [ShoppingListResponseDto],
-  })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  async findAll(@CurrentUserId() userId: string) {
-    return this.getShoppingLists.execute(userId);
+    return this.searchShoppingLists.execute({ userId, dto });
   }
 
   @Get(':id')
@@ -183,247 +88,86 @@ export class ShoppingListsController {
   @ApiParam({
     name: 'id',
     description: 'UUID de la lista de compras',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    type: String,
   })
   @ApiResponse({
     status: 200,
-    description: 'Detalle de la lista',
+    description: 'Lista obtenida exitosamente',
     type: ShoppingListResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async findOne(
     @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) listId: string,
   ) {
-    return this.getShoppingListById.execute({ listId: id, userId });
+    return this.getShoppingListById.execute({ listId, userId });
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({
-    summary: 'Editar lista y/o sus items',
+    summary: 'Actualizar lista y reemplazar items completos',
     description:
-      'Actualiza metadatos de la lista (nombre, tienda, IVA) y opcionalmente sus items. ' +
-      'Items con id se actualizan, sin id se crean como nuevos. ' +
-      'Items existentes no incluidos en el array se eliminan. ' +
-      'Si no se envia el campo items, los items existentes se mantienen sin cambios. ' +
-      'Los precios USD se calculan automaticamente si no se envian.',
+      'Actualiza campos parciales de la lista. El array `items` enviado SUSTITUYE completamente los anteriores: items con id se actualizan, items sin id se crean, items existentes no incluidos se eliminan. Todo en una sola transaccion.',
   })
   @ApiParam({
     name: 'id',
     description: 'UUID de la lista de compras',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    type: String,
   })
   @ApiResponse({
     status: 200,
     description: 'Lista actualizada',
     type: ShoppingListResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos de entrada invalidos' })
+  @ApiResponse({ status: 400, description: 'Datos invalidos' })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async update(
     @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUUIDPipe) listId: string,
     @Body() dto: UpdateShoppingListDto,
   ) {
-    return this.updateShoppingList.execute({ listId: id, userId, dto });
+    return this.updateShoppingList.execute({ listId, userId, dto });
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Eliminar lista de compras' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Eliminar lista de compras y todos sus items' })
   @ApiParam({
     name: 'id',
     description: 'UUID de la lista de compras',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+    type: String,
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista eliminada exitosamente',
-    type: DeleteShoppingListResponseDto,
-  })
+  @ApiResponse({ status: 204, description: 'Lista eliminada' })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
   @ApiResponse({ status: 404, description: 'Lista no encontrada' })
   async remove(
     @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    return this.deleteShoppingList.execute({ listId: id, userId });
+    @Param('id', ParseUUIDPipe) listId: string,
+  ): Promise<void> {
+    await this.deleteShoppingList.execute({ listId, userId });
   }
 
-  @Post(':id/duplicate')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({
-    summary: 'Duplicar lista existente',
-    description:
-      'Crea una copia de la lista con status ACTIVE y todos sus items (sin marcar como comprados).',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'UUID de la lista a duplicar',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Lista duplicada exitosamente',
-    type: ShoppingListResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista no encontrada' })
-  async duplicate(
-    @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    return this.duplicateShoppingList.execute({ listId: id, userId });
-  }
-
-  @Put(':id/complete')
-  @ApiOperation({
-    summary: 'Cerrar lista (marcar como completada)',
-    description:
-      'Cambia el status a COMPLETED y guarda un snapshot de la tasa de cambio vigente.',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'UUID de la lista a completar',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista completada exitosamente',
-    type: ShoppingListResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista no encontrada' })
-  async complete(
-    @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    return this.completeShoppingList.execute({ listId: id, userId });
-  }
-
-  // ──────────────────────────────────────────────
-  //  Items
-  // ──────────────────────────────────────────────
-
-  @Post(':id/items')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Agregar productos a una lista existente' })
-  @ApiParam({
-    name: 'id',
-    description: 'UUID de la lista de compras',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Productos agregados exitosamente',
-    type: [ShoppingItemResponseDto],
-  })
-  @ApiResponse({ status: 400, description: 'Datos de entrada invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista no encontrada' })
-  async addItems(
-    @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: AddShoppingItemsDto,
-  ) {
-    return this.addItemsToShoppingList.execute({
-      listId: id,
-      userId,
-      items: dto.items,
-    });
-  }
-
-  @Put(':id/items/:itemId')
-  @ApiOperation({
-    summary: 'Editar producto de una lista',
-    description:
-      'Actualiza nombre, precio, cantidad y/o estado de compra de un producto existente.',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'UUID de la lista de compras',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  })
-  @ApiParam({
-    name: 'itemId',
-    description: 'UUID del producto',
-    example: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Producto actualizado exitosamente',
-    type: ShoppingListResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Datos de entrada invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista o producto no encontrado' })
-  async editItem(
-    @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Param('itemId', ParseUUIDPipe) itemId: string,
-    @Body() dto: EditShoppingItemDto,
-  ) {
-    return this.editShoppingItem.execute({ listId: id, itemId, userId, dto });
-  }
-
-  @Delete(':id/items/:itemId')
+  @Post('compare')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Eliminar producto de una lista' })
-  @ApiParam({
-    name: 'id',
-    description: 'UUID de la lista de compras',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  })
-  @ApiParam({
-    name: 'itemId',
-    description: 'UUID del producto',
-    example: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Producto eliminado exitosamente',
-    type: ShoppingListResponseDto,
-  })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista o producto no encontrado' })
-  async removeItem(
-    @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Param('itemId', ParseUUIDPipe) itemId: string,
-  ) {
-    return this.deleteShoppingItem.execute({ listId: id, itemId, userId });
-  }
-
-  @Put(':id/items/:itemId/toggle')
   @ApiOperation({
-    summary: 'Marcar/desmarcar producto como comprado',
-    description: 'Alterna el estado is_purchased del producto.',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'UUID de la lista de compras',
-    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-  })
-  @ApiParam({
-    name: 'itemId',
-    description: 'UUID del producto',
-    example: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+    summary: 'Comparar productos entre 2 listas',
+    description:
+      'Cruza items por product_name (case-insensitive, trim). Matched: con diff de precio y cheaper_in. Unmatched: agrupados por lista de origen. Summary: totales, savings absolutos y recommended.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Estado de compra actualizado',
-    type: ShoppingListResponseDto,
+    description: 'Comparacion generada',
+    type: CompareShoppingListsResponseDto,
   })
+  @ApiResponse({ status: 400, description: 'Parametros invalidos' })
   @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista o producto no encontrado' })
-  async toggleItem(
+  @ApiResponse({ status: 404, description: 'Alguna lista no encontrada' })
+  async compare(
     @CurrentUserId() userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Param('itemId', ParseUUIDPipe) itemId: string,
+    @Body() dto: CompareShoppingListsDto,
   ) {
-    return this.toggleShoppingItem.execute({ listId: id, itemId, userId });
+    return this.compareShoppingLists.execute({ userId, dto });
   }
-
 }

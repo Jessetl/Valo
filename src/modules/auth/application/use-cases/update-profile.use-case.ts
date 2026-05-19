@@ -13,9 +13,10 @@ interface UpdateProfileInput {
 }
 
 @Injectable()
-export class UpdateProfileUseCase
-  implements UseCase<UpdateProfileInput, UserResponseDto>
-{
+export class UpdateProfileUseCase implements UseCase<
+  UpdateProfileInput,
+  UserResponseDto
+> {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

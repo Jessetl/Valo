@@ -62,6 +62,8 @@
 | `latitude`               | Decimal   | Nullable    | Latitud de la tienda.               |
 | `longitude`              | Decimal   | Nullable    | Longitud de la tienda.              |
 | `is_active`              | Boolean   | Not Null    | Si la lista está activa.            |
+| `created_at`             | Timestamp | Not Null    | Fecha de creación.                  |
+| `updated_at`             | Timestamp | Not Null    | Última actualización.               |
 
 ### `shopping_items`
 
@@ -84,33 +86,37 @@
 
 > Registros de ingresos y egresos con soporte para recurrencia y prioridad.
 
-| Campo            | Tipo    | Constraints | Descripción                          |
-| :--------------- | :------ | :---------- | :----------------------------------- |
-| `id`             | UUID    | PK          | Identificador único.                 |
-| `user_id`        | UUID    | FK → users  | Usuario dueño del registro.          |
-| `type`           | Enum    | Not Null    | `INCOME` / `EXPENSE`.                |
-| `title`          | String  | Not Null    | Título del registro.                 |
-| `description`    | String  | Nullable    | Descripción adicional.               |
-| `amount_local`   | Decimal | Not Null    | Monto en moneda local.               |
-| `amount_usd`     | Decimal | Not Null    | Monto en USD.                        |
-| `priority`       | Enum    | Nullable    | `HIGH` / `MEDIUM` / `LOW`.           |
-| `interest_rate`  | Decimal | Nullable    | Tasa de interés (si aplica).         |
-| `date`           | Date    | Not Null    | Fecha del registro.                  |
-| `is_recurring`   | Boolean | Not Null    | Si es recurrente.                    |
-| `recurrence_day` | Integer | Nullable    | Día del mes (1-31) si es recurrente. |
+| Campo            | Tipo      | Constraints | Descripción                          |
+| :--------------- | :-------- | :---------- | :----------------------------------- |
+| `id`             | UUID      | PK          | Identificador único.                 |
+| `user_id`        | UUID      | FK → users  | Usuario dueño del registro.          |
+| `type`           | Enum      | Not Null    | `INCOME` / `EXPENSE`.                |
+| `title`          | String    | Not Null    | Título del registro.                 |
+| `description`    | String    | Nullable    | Descripción adicional.               |
+| `amount_local`   | Decimal   | Not Null    | Monto en moneda local.               |
+| `amount_usd`     | Decimal   | Not Null    | Monto en USD.                        |
+| `priority`       | Enum      | Nullable    | `HIGH` / `MEDIUM` / `LOW`.           |
+| `interest_rate`  | Decimal   | Nullable    | Tasa de interés (si aplica).         |
+| `date`           | Date      | Not Null    | Fecha del registro.                  |
+| `is_recurring`   | Boolean   | Not Null    | Si es recurrente.                    |
+| `recurrence_day` | Integer   | Nullable    | Día del mes (1-31) si es recurrente. |
+| `created_at`     | Timestamp | Not Null    | Fecha de creación.                   |
+| `updated_at`     | Timestamp | Not Null    | Última actualización.                |
 
 ### `financial_goals` _(Premium — Post-MVP)_
 
 > Metas financieras con seguimiento de progreso.
 
-| Campo               | Tipo    | Constraints | Descripción                 |
-| :------------------ | :------ | :---------- | :-------------------------- |
-| `id`                | UUID    | PK          | Identificador único.        |
-| `user_id`           | UUID    | FK → users  | Usuario dueño de la meta.   |
-| `title`             | String  | Not Null    | Título de la meta.          |
-| `target_amount_usd` | Decimal | Not Null    | Monto objetivo en USD.      |
-| `deadline_date`     | Date    | Not Null    | Fecha límite.               |
-| `status`            | Enum    | Not Null    | `IN_PROGRESS` / `ACHIEVED`. |
+| Campo               | Tipo      | Constraints | Descripción                 |
+| :------------------ | :-------- | :---------- | :-------------------------- |
+| `id`                | UUID      | PK          | Identificador único.        |
+| `user_id`           | UUID      | FK → users  | Usuario dueño de la meta.   |
+| `title`             | String    | Not Null    | Título de la meta.          |
+| `target_amount_usd` | Decimal   | Not Null    | Monto objetivo en USD.      |
+| `deadline_date`     | Date      | Not Null    | Fecha límite.               |
+| `status`            | Enum      | Not Null    | `IN_PROGRESS` / `ACHIEVED`. |
+| `created_at`        | Timestamp | Not Null    | Fecha de creación.          |
+| `updated_at`        | Timestamp | Not Null    | Última actualización.       |
 
 ## 🔔 MÓDULO: NOTIFICACIONES
 
@@ -118,16 +124,18 @@
 
 > Registro de recordatorios programados y su estado de envío.
 
-| Campo          | Tipo    | Constraints             | Descripción                         |
-| :------------- | :------ | :---------------------- | :---------------------------------- |
-| `id`           | UUID    | PK                      | Identificador único.                |
-| `user_id`      | UUID    | FK → users              | Usuario destinatario.               |
-| `financial_id` | UUID    | FK → financial_records  | Registro financiero asociado.       |
-| `type`         | String  | Not Null                | Tipo de notificación.               |
-| `scheduled_at` | Date    | Not Null                | Fecha programada de envío.          |
-| `sent_at`      | Date    | Nullable                | Fecha real de envío.                |
-| `status`       | Enum    | Not Null                | `PENDING` / `SENT` / `FAILED`.      |
-| `is_read`      | Boolean | Not Null, Default false | Si el usuario leyó la notificación. |
+| Campo          | Tipo      | Constraints             | Descripción                         |
+| :------------- | :-------- | :---------------------- | :---------------------------------- |
+| `id`           | UUID      | PK                      | Identificador único.                |
+| `user_id`      | UUID      | FK → users              | Usuario destinatario.               |
+| `financial_id` | UUID      | FK → financial_records  | Registro financiero asociado.       |
+| `type`         | String    | Not Null                | Tipo de notificación.               |
+| `scheduled_at` | Date      | Not Null                | Fecha programada de envío.          |
+| `sent_at`      | Date      | Nullable                | Fecha real de envío.                |
+| `status`       | Enum      | Not Null                | `PENDING` / `SENT` / `FAILED`.      |
+| `is_read`      | Boolean   | Not Null, Default false | Si el usuario leyó la notificación. |
+| `created_at`   | Timestamp | Not Null                | Fecha de creación.                  |
+| `updated_at`   | Timestamp | Not Null                | Última actualización.               |
 
 ### `notification_preferences`
 

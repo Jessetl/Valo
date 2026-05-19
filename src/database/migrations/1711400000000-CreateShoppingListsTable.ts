@@ -18,21 +18,9 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             generationStrategy: 'uuid',
             default: 'uuid_generate_v4()',
           },
-          {
-            name: 'user_id',
-            type: 'uuid',
-            isNullable: false,
-          },
-          {
-            name: 'name',
-            type: 'varchar',
-            isNullable: false,
-          },
-          {
-            name: 'store_name',
-            type: 'varchar',
-            isNullable: true,
-          },
+          { name: 'user_id', type: 'uuid', isNullable: false },
+          { name: 'name', type: 'varchar', isNullable: false },
+          { name: 'store_name', type: 'varchar', isNullable: true },
           {
             name: 'list_type',
             type: 'enum',
@@ -40,16 +28,8 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             enum: ['TEMPLATE', 'RECEIPT'],
             isNullable: false,
           },
-          {
-            name: 'country_code',
-            type: 'varchar',
-            isNullable: false,
-          },
-          {
-            name: 'currency_code',
-            type: 'varchar',
-            isNullable: false,
-          },
+          { name: 'country_code', type: 'varchar', isNullable: false },
+          { name: 'currency_code', type: 'varchar', isNullable: false },
           {
             name: 'exchange_rate_snapshot',
             type: 'decimal',
@@ -57,16 +37,8 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             scale: 4,
             isNullable: false,
           },
-          {
-            name: 'iva_enabled',
-            type: 'boolean',
-            default: false,
-          },
-          {
-            name: 'scheduled_date',
-            type: 'timestamptz',
-            isNullable: true,
-          },
+          { name: 'iva_enabled', type: 'boolean', default: false },
+          { name: 'scheduled_date', type: 'timestamptz', isNullable: true },
           {
             name: 'latitude',
             type: 'decimal',
@@ -85,6 +57,18 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             name: 'is_active',
             type: 'boolean',
             default: true,
+            isNullable: false,
+          },
+          {
+            name: 'created_at',
+            type: 'timestamptz',
+            default: 'now()',
+            isNullable: false,
+          },
+          {
+            name: 'updated_at',
+            type: 'timestamptz',
+            default: 'now()',
             isNullable: false,
           },
         ],

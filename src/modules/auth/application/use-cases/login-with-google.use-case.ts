@@ -47,10 +47,7 @@ export class LoginWithGoogleUseCase implements UseCase<
   ) {}
 
   execute(input: LoginWithGoogleInput): Promise<AuthResponseDto> {
-    return withMinDuration(
-      () => this.run(input),
-      MIN_RESPONSE_TIME_MS,
-    );
+    return withMinDuration(() => this.run(input), MIN_RESPONSE_TIME_MS);
   }
 
   private async run(input: LoginWithGoogleInput): Promise<AuthResponseDto> {
