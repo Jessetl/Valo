@@ -8,6 +8,7 @@ import { ShoppingItem } from '../../domain/entities/shopping-item.entity';
 import { CreateShoppingListDto } from '../dtos/create-shopping-list.dto';
 import { ShoppingListResponseDto } from '../dtos/shopping-list-response.dto';
 import { ShoppingListMapper } from '../mappers/shopping-list.mapper';
+import { ExchangeRateSnapshotValidator } from '../services/exchange-rate-snapshot.validator';
 
 interface CreateShoppingListInput {
   userId: string;
@@ -22,11 +23,14 @@ export class CreateShoppingListUseCase implements UseCase<
   constructor(
     @Inject(SHOPPING_LIST_REPOSITORY)
     private readonly shoppingListRepository: IShoppingListRepository,
+    private readonly exchangeRateValidator: ExchangeRateSnapshotValidator,
   ) {}
 
   async execute(
     input: CreateShoppingListInput,
   ): Promise<ShoppingListResponseDto> {
+    await this.exchangeRateValidator.validate(input.dto.exchangeRateSnapshot);
+
     const listId = randomUUID();
     const rate = input.dto.exchangeRateSnapshot;
 

@@ -92,16 +92,31 @@ total_usd = subtotal_usd + iva_amount_usd
 
 ### Reglas
 
-| Regla                 | Detalle                                                                                                              |
-| :-------------------- | :------------------------------------------------------------------------------------------------------------------- |
-| **Cuándo se captura** | Al momento de crear la lista de compras.                                                                             |
-| **Inmutable**         | Una vez creada la lista, el `exchange_rate_snapshot` **no cambia**, ni siquiera si se edita la lista.                |
-| **Propósito**         | Garantizar que las comparaciones entre listas reflejen la tasa vigente al momento de cada compra, no la tasa actual. |
-| **Fuente**            | Campo `promedio` del endpoint `/v1/dolares/oficial` de DolarAPI.                                                     |
+| Regla                  | Detalle                                                                                                              |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------- |
+| **Cuándo se captura**  | Al momento de crear la lista de compras.                                                                             |
+| **Inmutable**          | Una vez creada la lista, el `exchange_rate_snapshot` **no cambia**, ni siquiera si se edita la lista.                |
+| **Propósito**          | Garantizar que las comparaciones entre listas reflejen la tasa vigente al momento de cada compra, no la tasa actual. |
+| **Fuente**             | Campo `promedio` del endpoint `/v1/dolares/oficial` de DolarAPI.                                                     |
+| **Validación backend** | El backend valida que `exchangeRateSnapshot` recibido del cliente esté dentro de una tolerancia de ±1% respecto a la tasa actual del provider. Si excede, responde `422`. |
 
 ### ¿Por qué es inmutable?
 
 Si dos listas se crearon en fechas diferentes con tasas diferentes, la comparadora debe reflejar lo que el usuario realmente pagó en cada momento. Si el snapshot se actualizara, se perderían los precios reales y las métricas serían incorrectas.
+
+### Validación de tolerancia
+
+El cliente obtiene la tasa actual vía `GET /api/v1/exchange-rates/current` y la envía como `exchangeRateSnapshot` al crear/actualizar la lista. El backend re-consulta su propio provider (con cache TTL) y valida:
+
+```
+current_rate = exchange_rate_provider.getCurrent().rateLocalPerUsd
+tolerance = current_rate * 0.01
+
+if abs(exchange_rate_snapshot - current_rate) > tolerance:
+    return 422 "exchangeRateSnapshot fuera de tolerancia (±1%) respecto a la tasa actual"
+```
+
+Cubre desfases por cache, latencia o redondeo. Rechaza tasas manipuladas o stale. En `PATCH`, la validación solo aplica si el cliente envía `exchangeRateSnapshot` en el body (si se omite, se preserva el valor existente sin re-validar).
 
 ---
 

@@ -9,6 +9,7 @@ import { UpdateShoppingListDto } from '../dtos/update-shopping-list.dto';
 import { ShoppingListResponseDto } from '../dtos/shopping-list-response.dto';
 import { ShoppingListMapper } from '../mappers/shopping-list.mapper';
 import { ShoppingListNotFoundException } from '../../domain/exceptions/shopping-list-not-found.exception';
+import { ExchangeRateSnapshotValidator } from '../services/exchange-rate-snapshot.validator';
 
 interface UpdateShoppingListInput {
   listId: string;
@@ -24,6 +25,7 @@ export class UpdateShoppingListUseCase implements UseCase<
   constructor(
     @Inject(SHOPPING_LIST_REPOSITORY)
     private readonly shoppingListRepository: IShoppingListRepository,
+    private readonly exchangeRateValidator: ExchangeRateSnapshotValidator,
   ) {}
 
   async execute(
@@ -36,6 +38,10 @@ export class UpdateShoppingListUseCase implements UseCase<
 
     if (!existing) {
       throw new ShoppingListNotFoundException(input.listId);
+    }
+
+    if (input.dto.exchangeRateSnapshot !== undefined) {
+      await this.exchangeRateValidator.validate(input.dto.exchangeRateSnapshot);
     }
 
     const rate =

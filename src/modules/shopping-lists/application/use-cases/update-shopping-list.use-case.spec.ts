@@ -5,6 +5,8 @@ import { ShoppingItem } from '../../domain/entities/shopping-item.entity';
 import { ShoppingListType } from '../../domain/enums/shopping-list-type.enum';
 import { ShoppingListNotFoundException } from '../../domain/exceptions/shopping-list-not-found.exception';
 import { UpdateShoppingListUseCase } from './update-shopping-list.use-case';
+import { ExchangeRateSnapshotValidator } from '../services/exchange-rate-snapshot.validator';
+import { ValidationException } from '../../../../shared-kernel/domain/exceptions/validation.exception';
 
 function makeList(overrides: { items?: ShoppingItem[] } = {}): ShoppingList {
   return ShoppingList.create({
@@ -21,6 +23,7 @@ function makeList(overrides: { items?: ShoppingItem[] } = {}): ShoppingList {
 
 describe('UpdateShoppingListUseCase', () => {
   let repo: jest.Mocked<IShoppingListRepository>;
+  let validator: jest.Mocked<ExchangeRateSnapshotValidator>;
   let useCase: UpdateShoppingListUseCase;
 
   beforeEach(() => {
@@ -32,9 +35,54 @@ describe('UpdateShoppingListUseCase', () => {
       save: jest.fn(),
       delete: jest.fn(),
     } as never;
-    useCase = new UpdateShoppingListUseCase(repo);
+    validator = {
+      validate: jest.fn(),
+    } as never;
+    validator.validate.mockResolvedValue(undefined);
+    useCase = new UpdateShoppingListUseCase(repo, validator);
 
     repo.save.mockImplementation(async (l: ShoppingList) => l);
+  });
+
+  it('NO valida tasa si dto omite exchangeRateSnapshot', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(makeList());
+
+    await useCase.execute({
+      listId: 'l1',
+      userId: 'u1',
+      dto: { name: 'Nueva' } as never,
+    });
+
+    expect(validator.validate).not.toHaveBeenCalled();
+  });
+
+  it('valida tasa si dto envia exchangeRateSnapshot', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(makeList());
+
+    await useCase.execute({
+      listId: 'l1',
+      userId: 'u1',
+      dto: { exchangeRateSnapshot: 37 } as never,
+    });
+
+    expect(validator.validate).toHaveBeenCalledWith(37);
+  });
+
+  it('propaga ValidationException si tasa fuera de tolerancia y no persiste', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(makeList());
+    validator.validate.mockRejectedValueOnce(
+      new ValidationException('out of tolerance'),
+    );
+
+    await expect(
+      useCase.execute({
+        listId: 'l1',
+        userId: 'u1',
+        dto: { exchangeRateSnapshot: 100 } as never,
+      }),
+    ).rejects.toBeInstanceOf(ValidationException);
+
+    expect(repo.save).not.toHaveBeenCalled();
   });
 
   it('throws cuando lista no existe O pertenece a otro user', async () => {

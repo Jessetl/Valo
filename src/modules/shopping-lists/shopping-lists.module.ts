@@ -11,6 +11,7 @@ import { DeleteShoppingListUseCase } from './application/use-cases/delete-shoppi
 import { CompareShoppingListsUseCase } from './application/use-cases/compare-shopping-lists.use-case';
 import { SearchShoppingListsUseCase } from './application/use-cases/search-shopping-lists.use-case';
 import { ShoppingListsController } from './infrastructure/controllers/shopping-lists.controller';
+import { ExchangeRateSnapshotValidator } from './application/services/exchange-rate-snapshot.validator';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ShoppingListsController } from './infrastructure/controllers/shopping-l
       provide: SHOPPING_LIST_REPOSITORY,
       useClass: TypeOrmShoppingListRepository,
     },
+    ExchangeRateSnapshotValidator,
     CreateShoppingListUseCase,
     GetShoppingListByIdUseCase,
     UpdateShoppingListUseCase,

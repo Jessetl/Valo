@@ -3,9 +3,12 @@ import type { IShoppingListRepository } from '../../domain/interfaces/repositori
 import { ShoppingList } from '../../domain/entities/shopping-list.entity';
 import { ShoppingListType } from '../../domain/enums/shopping-list-type.enum';
 import { CreateShoppingListUseCase } from './create-shopping-list.use-case';
+import { ExchangeRateSnapshotValidator } from '../services/exchange-rate-snapshot.validator';
+import { ValidationException } from '../../../../shared-kernel/domain/exceptions/validation.exception';
 
 describe('CreateShoppingListUseCase', () => {
   let repo: jest.Mocked<IShoppingListRepository>;
+  let validator: jest.Mocked<ExchangeRateSnapshotValidator>;
   let useCase: CreateShoppingListUseCase;
 
   beforeEach(() => {
@@ -17,9 +20,49 @@ describe('CreateShoppingListUseCase', () => {
       save: jest.fn(),
       delete: jest.fn(),
     } as never;
-    useCase = new CreateShoppingListUseCase(repo);
+    validator = {
+      validate: jest.fn(),
+    } as never;
+    validator.validate.mockResolvedValue(undefined);
+    useCase = new CreateShoppingListUseCase(repo, validator);
 
     repo.save.mockImplementation(async (l: ShoppingList) => l);
+  });
+
+  it('valida exchangeRateSnapshot contra provider antes de crear', async () => {
+    await useCase.execute({
+      userId: 'u1',
+      dto: {
+        name: 'Test',
+        listType: ShoppingListType.TEMPLATE,
+        countryCode: 'VE',
+        currencyCode: 'VES',
+        exchangeRateSnapshot: 36.5,
+      } as never,
+    });
+
+    expect(validator.validate).toHaveBeenCalledWith(36.5);
+  });
+
+  it('propaga ValidationException si tasa fuera de tolerancia y no persiste', async () => {
+    validator.validate.mockRejectedValueOnce(
+      new ValidationException('out of tolerance'),
+    );
+
+    await expect(
+      useCase.execute({
+        userId: 'u1',
+        dto: {
+          name: 'Test',
+          listType: ShoppingListType.TEMPLATE,
+          countryCode: 'VE',
+          currencyCode: 'VES',
+          exchangeRateSnapshot: 50,
+        } as never,
+      }),
+    ).rejects.toBeInstanceOf(ValidationException);
+
+    expect(repo.save).not.toHaveBeenCalled();
   });
 
   it('asigna userId del token (no del dto)', async () => {

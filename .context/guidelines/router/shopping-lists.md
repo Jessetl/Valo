@@ -7,14 +7,14 @@
 
 ## Resumen de Endpoints
 
-| Emoji | Método   | Ruta                      | Auth | Descripción                                    |
-| :---: | -------- | ------------------------- | :--: | ---------------------------------------------- |
-|  🟡   | `POST`   | `/shopping-lists`         |  ✅  | Crear lista con todos sus items.               |
-|  🟡   | `POST`   | `/shopping-lists/search`  |  ✅  | Listar listas con filtros y paginación.        |
-|  🟢   | `GET`    | `/shopping-lists/:id`     |  ✅  | Obtener detalle de una lista con sus items.    |
+| Emoji | Método   | Ruta                      | Auth | Descripción                                      |
+| :---: | -------- | ------------------------- | :--: | ------------------------------------------------ |
+|  🟡   | `POST`   | `/shopping-lists`         |  ✅  | Crear lista con todos sus items.                 |
+|  🟡   | `POST`   | `/shopping-lists/search`  |  ✅  | Listar listas con filtros y paginación.          |
+|  🟢   | `GET`    | `/shopping-lists/:id`     |  ✅  | Obtener detalle de una lista con sus items.      |
 |  🟠   | `PATCH`  | `/shopping-lists/:id`     |  ✅  | Actualizar lista y sincronizar items por upsert. |
-|  🔴   | `DELETE` | `/shopping-lists/:id`     |  ✅  | Eliminar una lista y todos sus items.          |
-|  🟡   | `POST`   | `/shopping-lists/compare` |  ✅  | Comparar productos entre 2 listas.             |
+|  🔴   | `DELETE` | `/shopping-lists/:id`     |  ✅  | Eliminar una lista y todos sus items.            |
+|  🟡   | `POST`   | `/shopping-lists/compare` |  ✅  | Comparar productos entre 2 listas.               |
 
 > **Nota:** Todas las rutas llevan el prefijo `/api/v1`. Los headers `Authorization`, `X-Device-Id` y `X-Device-Name` son obligatorios en todos los endpoints.
 
@@ -99,6 +99,7 @@
 > La lista y todos sus items se crean en una sola transacción. Si falla un item, no se crea nada.
 
 > **Totales calculados en backend** (per `business-rules.md` — listas):
+>
 > - `subtotalLocal = Σ (unitPriceLocal × quantity)` sobre todos los items.
 > - `subtotalUsd = Σ (unitPriceUsd × quantity)`. `null` si algún item carece de `unitPriceUsd`.
 > - `ivaLocal = subtotalLocal × 0.16` si `ivaEnabled`, sino `0`.
@@ -107,6 +108,8 @@
 > - `totalUsd = subtotalUsd + ivaUsd`. `null` si `subtotalUsd` es `null`.
 >
 > El cliente no recalcula: usa los totales del backend para evitar drift.
+
+> **Validación de `exchangeRateSnapshot`:** el backend re-consulta la tasa actual del provider y valida que el valor recibido esté dentro de ±1% (per `business-rules.md` — Exchange Rate Snapshot). Si excede, responde `422` con detalle del campo. Si el provider externo no responde, se usa la última tasa conocida en cache/fallback.
 
 **Errores posibles:** `400`, `401`, `422`
 
@@ -166,6 +169,7 @@
 > El listado devuelve un resumen de cada lista con conteo de items, marcados y totales computados. No incluye el detalle de items para mantener el payload liviano.
 
 > **Totales del summary** (per `business-rules.md`):
+>
 > - `totalLocal = subtotalLocal + ivaLocal` sobre todos los items.
 > - `totalUsd = subtotalUsd + ivaUsd`. `null` si algún item carece de `unitPriceUsd`.
 >
@@ -277,6 +281,8 @@
 3. Todo en una sola transacción — si falla cualquier paso, rollback completo.
 
 > **Por qué upsert en vez de delete + insert:** preservar los `id` de items existentes permite que el cliente mantenga su estado local (selecciones, scroll, sync optimista) sin necesidad de re-mapear referencias después de cada PATCH. También evita romper relaciones futuras que apunten al `id` del item.
+
+> **Validación de `exchangeRateSnapshot`:** si el body incluye `exchangeRateSnapshot`, el backend valida que esté dentro de ±1% respecto a la tasa actual del provider (per `business-rules.md`). Si el campo se omite, se preserva el valor existente sin re-validar. Si excede, responde `422`.
 
 **Errores posibles:** `400`, `401`, `404`, `422`
 
