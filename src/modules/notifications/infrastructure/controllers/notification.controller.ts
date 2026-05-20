@@ -29,6 +29,7 @@ import { SearchNotificationsResponseDto } from '../../application/dtos/search-no
 import { UnreadCountResponseDto } from '../../application/dtos/unread-count-response.dto';
 import { MarkAllReadResponseDto } from '../../application/dtos/mark-all-read-response.dto';
 import { NotificationListItemDto } from '../../application/dtos/notification-list-item.dto';
+import { ApiErrorResponse } from '../../../../shared-kernel/application/responses/api-response.dto';
 
 @ApiTags('Notifications')
 @ApiBearerAuth('jwt')
@@ -56,8 +57,16 @@ export class NotificationController {
     description: 'Listado paginado',
     type: SearchNotificationsResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Filtros invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 400,
+    description: 'Filtros invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   search(
     @CurrentUserId() userId: string,
     @Body() dto: SearchNotificationsDto,
@@ -76,7 +85,11 @@ export class NotificationController {
     description: 'Contador',
     type: UnreadCountResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   unreadCount(
     @CurrentUserId() userId: string,
   ): Promise<UnreadCountResponseDto> {
@@ -95,7 +108,11 @@ export class NotificationController {
     description: 'Conteo de marcadas',
     type: MarkAllReadResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   readAll(@CurrentUserId() userId: string): Promise<MarkAllReadResponseDto> {
     return this.markAllNotificationsRead.execute(userId);
   }
@@ -112,9 +129,21 @@ export class NotificationController {
     description: 'Notificacion marcada',
     type: NotificationListItemDto,
   })
-  @ApiResponse({ status: 400, description: 'ID invalido' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Notificacion no encontrada' })
+  @ApiResponse({
+    status: 400,
+    description: 'ID invalido',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Notificacion no encontrada',
+    type: ApiErrorResponse,
+  })
   markRead(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) notificationId: string,
@@ -131,9 +160,21 @@ export class NotificationController {
   })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 204, description: 'Notificacion eliminada' })
-  @ApiResponse({ status: 400, description: 'ID invalido' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Notificacion no encontrada' })
+  @ApiResponse({
+    status: 400,
+    description: 'ID invalido',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Notificacion no encontrada',
+    type: ApiErrorResponse,
+  })
   async remove(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) notificationId: string,

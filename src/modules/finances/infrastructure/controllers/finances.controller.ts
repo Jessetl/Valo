@@ -33,6 +33,10 @@ import { FinancialRecordResponseDto } from '../../application/dtos/financial-rec
 import { SearchFinancialRecordsResponseDto } from '../../application/dtos/search-financial-records-response.dto';
 import { FinancialSummaryResponseDto } from '../../application/dtos/financial-summary-response.dto';
 import { FinancialSummaryQueryDto } from '../../application/dtos/financial-summary-response.dto';
+import {
+  ApiErrorResponse,
+  ApiValidationErrorResponse,
+} from '../../../../shared-kernel/application/responses/api-response.dto';
 
 @ApiTags('Finances')
 @ApiBearerAuth('jwt')
@@ -61,9 +65,21 @@ export class FinancesController {
     description: 'Registro creado',
     type: FinancialRecordResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 422, description: 'Validacion fallida' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Validacion fallida',
+    type: ApiValidationErrorResponse,
+  })
   create(
     @CurrentUserId() userId: string,
     @Body() dto: CreateFinancialRecordDto,
@@ -83,8 +99,16 @@ export class FinancesController {
     description: 'Listado paginado',
     type: SearchFinancialRecordsResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   search(
     @CurrentUserId() userId: string,
     @Body() dto: SearchFinancialRecordsDto,
@@ -104,8 +128,16 @@ export class FinancesController {
     description: 'Resumen',
     type: FinancialSummaryResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   summary(
     @CurrentUserId() userId: string,
     @Query() query: FinancialSummaryQueryDto,
@@ -126,8 +158,16 @@ export class FinancesController {
     description: 'Registro',
     type: FinancialRecordResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Registro no encontrado' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Registro no encontrado',
+    type: ApiErrorResponse,
+  })
   findOne(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -148,10 +188,26 @@ export class FinancesController {
     description: 'Registro actualizado',
     type: FinancialRecordResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Registro no encontrado' })
-  @ApiResponse({ status: 422, description: 'Validacion fallida' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Registro no encontrado',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Validacion fallida',
+    type: ApiValidationErrorResponse,
+  })
   update(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -169,8 +225,16 @@ export class FinancesController {
   })
   @ApiParam({ name: 'id', description: 'UUID del registro' })
   @ApiResponse({ status: 204, description: 'Eliminado' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Registro no encontrado' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Registro no encontrado',
+    type: ApiErrorResponse,
+  })
   async remove(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) id: string,

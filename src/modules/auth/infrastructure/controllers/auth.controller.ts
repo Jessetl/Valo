@@ -39,6 +39,10 @@ import { RefreshResponseDto } from '../../application/dtos/refresh-response.dto'
 import { RegisterResponseDto } from '../../application/dtos/register-response.dto';
 import { UserResponseDto } from '../../application/dtos/user-response.dto';
 import {
+  ApiErrorResponse,
+  ApiValidationErrorResponse,
+} from '../../../../shared-kernel/application/responses/api-response.dto';
+import {
   DeviceIdHeader,
   DeviceInfo,
   DeviceInfoHeaders,
@@ -73,8 +77,16 @@ export class AuthController {
     description: 'Usuario registrado, correo de verificacion enviado',
     type: RegisterResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos o email en uso' })
-  @ApiResponse({ status: 409, description: 'Usuario ya existe' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos o email en uso',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Usuario ya existe',
+    type: ApiErrorResponse,
+  })
   register(@Body() dto: RegisterUserDto): Promise<RegisterResponseDto> {
     return this.registerUser.execute(dto);
   }
@@ -98,7 +110,11 @@ export class AuthController {
     description: 'Login exitoso',
     type: AuthResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Credenciales invalidas' })
+  @ApiResponse({
+    status: 401,
+    description: 'Credenciales invalidas',
+    type: ApiErrorResponse,
+  })
   login(
     @Body() dto: LoginUserDto,
     @DeviceInfoHeaders() device: DeviceInfo,
@@ -125,8 +141,16 @@ export class AuthController {
     description: 'Login con Google exitoso',
     type: AuthResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'google_id_token invalido' })
-  @ApiResponse({ status: 401, description: 'Token de Google rechazado' })
+  @ApiResponse({
+    status: 400,
+    description: 'google_id_token invalido',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de Google rechazado',
+    type: ApiErrorResponse,
+  })
   loginGoogle(
     @Body() dto: LoginGoogleDto,
     @DeviceInfoHeaders() device: DeviceInfo,
@@ -155,6 +179,7 @@ export class AuthController {
     status: 401,
     description:
       'Refresh token invalido, revocado, sin Authorization Bearer o device no autorizado',
+    type: ApiErrorResponse,
   })
   refresh(
     @DeviceIdHeader() deviceId: string,
@@ -181,8 +206,16 @@ export class AuthController {
       'Envia un correo de Firebase con el enlace para restablecer la contraseña. Responde 204 incluso si el email no existe, para evitar enumeracion de usuarios.',
   })
   @ApiResponse({ status: 204, description: 'Email de recuperacion enviado' })
-  @ApiResponse({ status: 400, description: 'Email invalido' })
-  @ApiResponse({ status: 422, description: 'Email mal formado' })
+  @ApiResponse({
+    status: 400,
+    description: 'Email invalido',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Email mal formado',
+    type: ApiValidationErrorResponse,
+  })
   recoverPassword(@Body() dto: RecoverPasswordDto): Promise<void> {
     return this.recoverPasswordUseCase.execute(dto);
   }
@@ -199,9 +232,21 @@ export class AuthController {
   @ApiHeader({ name: 'X-Device-Id', required: true })
   @ApiHeader({ name: 'X-Device-Name', required: true })
   @ApiResponse({ status: 204, description: 'Contraseña actualizada' })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Contraseña actual invalida' })
-  @ApiResponse({ status: 422, description: 'Contraseña nueva invalida' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Contraseña actual invalida',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Contraseña nueva invalida',
+    type: ApiValidationErrorResponse,
+  })
   async changePassword(
     @CurrentUserId() userId: string,
     @Body() dto: ChangePasswordDto,
@@ -221,8 +266,16 @@ export class AuthController {
   @ApiHeader({ name: 'X-Device-Id', required: true })
   @ApiHeader({ name: 'X-Device-Name', required: true })
   @ApiResponse({ status: 200, description: 'Perfil', type: UserResponseDto })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Usuario no encontrado',
+    type: ApiErrorResponse,
+  })
   async profile(@CurrentUserId() userId: string): Promise<UserResponseDto> {
     return this.getUserById.execute(userId);
   }
@@ -242,9 +295,21 @@ export class AuthController {
     description: 'Perfil actualizado',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 422, description: 'Validacion fallida' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Validacion fallida',
+    type: ApiValidationErrorResponse,
+  })
   async updateProfile(
     @CurrentUserId() userId: string,
     @Body() dto: UpdateProfileDto,
@@ -263,10 +328,15 @@ export class AuthController {
   @ApiHeader({ name: 'X-Device-Id', required: true })
   @ApiHeader({ name: 'X-Device-Name', required: true })
   @ApiResponse({ status: 204, description: 'Sesion cerrada' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   @ApiResponse({
     status: 404,
     description: 'Dispositivo no registrado para el usuario',
+    type: ApiErrorResponse,
   })
   async logout(
     @CurrentUserId() userId: string,

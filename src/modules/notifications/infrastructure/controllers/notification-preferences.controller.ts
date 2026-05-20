@@ -18,6 +18,10 @@ import { GetNotificationPreferencesUseCase } from '../../application/use-cases/g
 import { UpdateNotificationPreferencesUseCase } from '../../application/use-cases/update-notification-preferences.use-case';
 import { NotificationPreferencesResponseDto } from '../../application/dtos/notification-preferences-response.dto';
 import { UpdateNotificationPreferencesDto } from '../../application/dtos/update-notification-preferences.dto';
+import {
+  ApiErrorResponse,
+  ApiValidationErrorResponse,
+} from '../../../../shared-kernel/application/responses/api-response.dto';
 
 @ApiTags('Notifications')
 @ApiBearerAuth('jwt')
@@ -42,7 +46,11 @@ export class NotificationPreferencesController {
     description: 'Preferencias',
     type: NotificationPreferencesResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   get(
     @CurrentUserId() userId: string,
   ): Promise<NotificationPreferencesResponseDto> {
@@ -61,9 +69,21 @@ export class NotificationPreferencesController {
     description: 'Preferencias actualizadas',
     type: NotificationPreferencesResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 422, description: 'Validacion fallida' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Validacion fallida',
+    type: ApiValidationErrorResponse,
+  })
   update(
     @CurrentUserId() userId: string,
     @Body() dto: UpdateNotificationPreferencesDto,

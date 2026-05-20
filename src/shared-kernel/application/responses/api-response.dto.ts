@@ -36,23 +36,36 @@ export class ApiErrorResponse {
   @ApiProperty({
     example: 'Not Found',
     description:
-      'Etiqueta HTTP del status (ej. "Bad Request", "Unauthorized", "Not Found", "Conflict", "Unprocessable Entity").',
+      'Etiqueta HTTP del status (ej. "Bad Request", "Unauthorized", "Not Found", "Conflict").',
   })
   error!: string;
 
   @ApiProperty({
     example: 'El recurso solicitado no existe.',
-    description:
-      'Mensaje en espanol orientado al usuario final. En 422 puede acompanar el listado `fields`.',
+    description: 'Mensaje en español orientado al usuario final.',
   })
   message!: string;
+}
 
-  @ApiPropertyOptional({
-    type: [ApiValidationFieldError],
-    description:
-      'Lista de errores por campo. Solo presente cuando la validacion (`422`) detecta uno o mas campos invalidos.',
+export class ApiValidationErrorResponse extends ApiErrorResponse {
+  @ApiProperty({
+    example: 'Unprocessable Entity',
+    description: 'Etiqueta HTTP del status (siempre "Unprocessable Entity").',
   })
-  fields?: ApiValidationFieldError[];
+  declare error: string;
+
+  @ApiProperty({
+    example: 'Los datos enviados no son válidos.',
+    description:
+      'Mensaje en español orientado al usuario final. Acompaña el listado `fields`.',
+  })
+  declare message: string;
+
+  @ApiProperty({
+    type: [ApiValidationFieldError],
+    description: 'Lista de errores por campo detectados por la validación.',
+  })
+  fields!: ApiValidationFieldError[];
 }
 
 export class ApiPaginatedResponse<T> {

@@ -31,6 +31,10 @@ import { CompareShoppingListsDto } from '../../application/dtos/compare-shopping
 import { ShoppingListResponseDto } from '../../application/dtos/shopping-list-response.dto';
 import { PaginatedShoppingListsResponseDto } from '../../application/dtos/paginated-shopping-lists-response.dto';
 import { CompareShoppingListsResponseDto } from '../../application/dtos/compare-shopping-lists-response.dto';
+import {
+  ApiErrorResponse,
+  ApiValidationErrorResponse,
+} from '../../../../shared-kernel/application/responses/api-response.dto';
 
 @ApiTags('Shopping Lists')
 @ApiBearerAuth('jwt')
@@ -53,8 +57,21 @@ export class ShoppingListsController {
     description: 'Lista creada exitosamente',
     type: ShoppingListResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos de entrada invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos de entrada invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'exchangeRateSnapshot fuera de tolerancia (±1%) o validacion fallida',
+    type: ApiValidationErrorResponse,
+  })
   async create(
     @CurrentUserId() userId: string,
     @Body() dto: CreateShoppingListDto,
@@ -74,8 +91,16 @@ export class ShoppingListsController {
     description: 'Listado paginado',
     type: PaginatedShoppingListsResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Filtros invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
+  @ApiResponse({
+    status: 400,
+    description: 'Filtros invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
   async search(
     @CurrentUserId() userId: string,
     @Body() dto: SearchShoppingListsDto,
@@ -95,8 +120,16 @@ export class ShoppingListsController {
     description: 'Lista obtenida exitosamente',
     type: ShoppingListResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista no encontrada' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Lista no encontrada',
+    type: ApiErrorResponse,
+  })
   async findOne(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) listId: string,
@@ -120,9 +153,26 @@ export class ShoppingListsController {
     description: 'Lista actualizada',
     type: ShoppingListResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Datos invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista no encontrada' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Lista no encontrada',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'exchangeRateSnapshot fuera de tolerancia (±1%) o validacion fallida',
+    type: ApiValidationErrorResponse,
+  })
   async update(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) listId: string,
@@ -140,8 +190,16 @@ export class ShoppingListsController {
     type: String,
   })
   @ApiResponse({ status: 204, description: 'Lista eliminada' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Lista no encontrada' })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Lista no encontrada',
+    type: ApiErrorResponse,
+  })
   async remove(
     @CurrentUserId() userId: string,
     @Param('id', ParseUUIDPipe) listId: string,
@@ -161,9 +219,21 @@ export class ShoppingListsController {
     description: 'Comparacion generada',
     type: CompareShoppingListsResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Parametros invalidos' })
-  @ApiResponse({ status: 401, description: 'Token invalido o ausente' })
-  @ApiResponse({ status: 404, description: 'Alguna lista no encontrada' })
+  @ApiResponse({
+    status: 400,
+    description: 'Parametros invalidos',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token invalido o ausente',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Alguna lista no encontrada',
+    type: ApiErrorResponse,
+  })
   async compare(
     @CurrentUserId() userId: string,
     @Body() dto: CompareShoppingListsDto,
