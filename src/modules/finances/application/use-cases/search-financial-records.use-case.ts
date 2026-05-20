@@ -2,13 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import type { IFinancialRecordRepository } from '../../domain/interfaces/repositories/financial-record.repository.interface';
 import { FINANCIAL_RECORD_REPOSITORY } from '../../domain/interfaces/repositories/financial-record.repository.interface';
-import type { INotificationRepository } from '../../../notifications/domain/interfaces/repositories/notification.repository.interface';
-import { NOTIFICATION_REPOSITORY } from '../../../notifications/domain/interfaces/repositories/notification.repository.interface';
-import { Notification } from '../../../notifications/domain/entities/notification.entity';
+import type { IFinancialNotificationReader } from '../../../../shared-kernel/application/ports/financial-notification-reader.port';
+import { FINANCIAL_NOTIFICATION_READER } from '../../../../shared-kernel/application/ports/financial-notification-reader.port';
 import { SearchFinancialRecordsDto } from '../dtos/search-financial-records.dto';
 import { SearchFinancialRecordsResponseDto } from '../dtos/search-financial-records-response.dto';
 import { FinancialRecordMapper } from '../mappers/financial-record.mapper';
-import { NotificationStatus } from '../../../notifications/domain/enums/notification-status.enum';
 import { parseDateOnly } from '../utils/date.util';
 
 interface SearchFinancialRecordsInput {
@@ -24,8 +22,8 @@ export class SearchFinancialRecordsUseCase implements UseCase<
   constructor(
     @Inject(FINANCIAL_RECORD_REPOSITORY)
     private readonly recordRepository: IFinancialRecordRepository,
-    @Inject(NOTIFICATION_REPOSITORY)
-    private readonly notificationRepository: INotificationRepository,
+    @Inject(FINANCIAL_NOTIFICATION_READER)
+    private readonly notificationReader: IFinancialNotificationReader,
   ) {}
 
   async execute(
@@ -51,20 +49,10 @@ export class SearchFinancialRecordsUseCase implements UseCase<
       },
     });
 
-    const notificationsByFinancial = new Map<string, Notification>();
-
-    for (const record of data) {
-      const list = await this.notificationRepository.findByFinancialId(
-        record.id,
+    const notificationsByFinancial =
+      await this.notificationReader.findActiveByFinancialIds(
+        data.map((record) => record.id),
       );
-      const chosen =
-        list.find((n) => n.status === NotificationStatus.PENDING) ??
-        list[0] ??
-        null;
-      if (chosen) {
-        notificationsByFinancial.set(record.id, chosen);
-      }
-    }
 
     const items = data.map((record) =>
       FinancialRecordMapper.toSummaryItem(

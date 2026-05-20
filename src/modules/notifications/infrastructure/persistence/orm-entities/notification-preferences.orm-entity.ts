@@ -1,12 +1,9 @@
 import {
   Column,
   Entity,
-  JoinColumn,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserOrmEntity } from './user.orm-entity';
 
 @Entity('notification_preferences')
 export class NotificationPreferencesOrmEntity {
@@ -30,8 +27,4 @@ export class NotificationPreferencesOrmEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt!: Date;
-
-  @OneToOne(() => UserOrmEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user!: UserOrmEntity;
 }

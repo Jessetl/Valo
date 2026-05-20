@@ -1,9 +1,13 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import type { IFinancialRecordRepository } from '../../domain/interfaces/repositories/financial-record.repository.interface';
 import { FINANCIAL_RECORD_REPOSITORY } from '../../domain/interfaces/repositories/financial-record.repository.interface';
+import {
+  FINANCIAL_RECORD_DELETED,
+  FinancialRecordDeletedEvent,
+} from '../../../../shared-kernel/domain/events/financial-record.events';
 import { FinancialRecordNotFoundException } from '../../domain/exceptions/financial-record-not-found.exception';
-import { CancelFinancialNotificationsUseCase } from '../../../notifications/application/use-cases/cancel-financial-notifications.use-case';
 
 interface DeleteFinancialRecordInput {
   userId: string;
@@ -15,13 +19,10 @@ export class DeleteFinancialRecordUseCase implements UseCase<
   DeleteFinancialRecordInput,
   void
 > {
-  private readonly logger = new Logger(DeleteFinancialRecordUseCase.name);
-
   constructor(
     @Inject(FINANCIAL_RECORD_REPOSITORY)
     private readonly recordRepository: IFinancialRecordRepository,
-    @Optional()
-    private readonly cancelNotifications?: CancelFinancialNotificationsUseCase,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(input: DeleteFinancialRecordInput): Promise<void> {
@@ -34,14 +35,10 @@ export class DeleteFinancialRecordUseCase implements UseCase<
       throw new FinancialRecordNotFoundException(input.recordId);
     }
 
-    if (this.cancelNotifications) {
-      try {
-        await this.cancelNotifications.execute({ financialId: existing.id });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.error(`Failed to cancel notifications: ${message}`);
-      }
-    }
+    await this.eventEmitter.emitAsync(
+      FINANCIAL_RECORD_DELETED,
+      new FinancialRecordDeletedEvent(existing.id, existing.userId),
+    );
 
     await this.recordRepository.delete(existing.id);
   }

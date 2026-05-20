@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FinancialPriority } from '../../domain/enums/financial-priority.enum';
 import { FinancialType } from '../../domain/enums/financial-type.enum';
-import { NotificationStatus } from '../../../notifications/domain/enums/notification-status.enum';
+import { NotificationStatus } from '../../../../shared-kernel/domain/enums/notification-status.enum';
 
 export class FinancialRecordNotificationDto {
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })

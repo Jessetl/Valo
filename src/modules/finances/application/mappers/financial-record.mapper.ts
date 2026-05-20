@@ -1,5 +1,5 @@
 import { FinancialRecord } from '../../domain/entities/financial-record.entity';
-import { Notification } from '../../../notifications/domain/entities/notification.entity';
+import { FinancialNotificationView } from '../../../../shared-kernel/application/ports/financial-notification-reader.port';
 import {
   FinancialRecordNotificationDto,
   FinancialRecordResponseDto,
@@ -14,7 +14,7 @@ function toDateOnly(date: Date): string {
 export class FinancialRecordMapper {
   static toResponse(
     record: FinancialRecord,
-    notification: Notification | null,
+    notification: FinancialNotificationView | null,
   ): FinancialRecordResponseDto {
     const dto = new FinancialRecordResponseDto();
     dto.id = record.id;
@@ -36,7 +36,7 @@ export class FinancialRecordMapper {
   }
 
   static toNotificationDto(
-    notification: Notification,
+    notification: FinancialNotificationView,
   ): FinancialRecordNotificationDto {
     const dto = new FinancialRecordNotificationDto();
     dto.id = notification.id;
@@ -48,7 +48,7 @@ export class FinancialRecordMapper {
 
   static toSummaryItem(
     record: FinancialRecord,
-    notification: Notification | null,
+    notification: FinancialNotificationView | null,
   ): FinancialRecordSummaryItemDto {
     const dto = new FinancialRecordSummaryItemDto();
     dto.id = record.id;

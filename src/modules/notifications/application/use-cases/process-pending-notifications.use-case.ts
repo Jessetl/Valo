@@ -4,14 +4,14 @@ import type { INotificationRepository } from '../../domain/interfaces/repositori
 import { NOTIFICATION_REPOSITORY } from '../../domain/interfaces/repositories/notification.repository.interface';
 import type { INotificationQueueService } from '../../domain/interfaces/notification-queue.service.interface';
 import { NOTIFICATION_QUEUE_SERVICE } from '../../domain/interfaces/notification-queue.service.interface';
-import type { IUserRepository } from '../../../auth/domain/interfaces/repositories/user.repository.interface';
-import { USER_REPOSITORY } from '../../../auth/domain/interfaces/repositories/user.repository.interface';
-import type { INotificationPreferencesRepository } from '../../../auth/domain/interfaces/repositories/notification-preferences.repository.interface';
-import { NOTIFICATION_PREFERENCES_REPOSITORY } from '../../../auth/domain/interfaces/repositories/notification-preferences.repository.interface';
-import type { IFinancialRecordRepository } from '../../../finances/domain/interfaces/repositories/financial-record.repository.interface';
-import { FINANCIAL_RECORD_REPOSITORY } from '../../../finances/domain/interfaces/repositories/financial-record.repository.interface';
-import type { IUserDeviceRepository } from '../../../auth/domain/interfaces/repositories/user-device.repository.interface';
-import { USER_DEVICE_REPOSITORY } from '../../../auth/domain/interfaces/repositories/user-device.repository.interface';
+import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
+import { NOTIFICATION_PREFERENCES_REPOSITORY } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
+import type { IFinancialRecordReader } from '../../../../shared-kernel/application/ports/financial-record-reader.port';
+import { FINANCIAL_RECORD_READER } from '../../../../shared-kernel/application/ports/financial-record-reader.port';
+import type { IUserReader } from '../../../../shared-kernel/application/ports/user-reader.port';
+import { USER_READER } from '../../../../shared-kernel/application/ports/user-reader.port';
+import type { IUserDeviceReader } from '../../../../shared-kernel/application/ports/user-device-reader.port';
+import { USER_DEVICE_READER } from '../../../../shared-kernel/application/ports/user-device-reader.port';
 
 @Injectable()
 export class ProcessPendingNotificationsUseCase implements UseCase<
@@ -25,14 +25,14 @@ export class ProcessPendingNotificationsUseCase implements UseCase<
     private readonly notificationRepository: INotificationRepository,
     @Inject(NOTIFICATION_QUEUE_SERVICE)
     private readonly queueService: INotificationQueueService,
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: IUserRepository,
+    @Inject(USER_READER)
+    private readonly userReader: IUserReader,
     @Inject(NOTIFICATION_PREFERENCES_REPOSITORY)
     private readonly prefsRepository: INotificationPreferencesRepository,
-    @Inject(FINANCIAL_RECORD_REPOSITORY)
-    private readonly recordRepository: IFinancialRecordRepository,
-    @Inject(USER_DEVICE_REPOSITORY)
-    private readonly deviceRepository: IUserDeviceRepository,
+    @Inject(FINANCIAL_RECORD_READER)
+    private readonly recordReader: IFinancialRecordReader,
+    @Inject(USER_DEVICE_READER)
+    private readonly deviceReader: IUserDeviceReader,
   ) {}
 
   async execute(): Promise<number> {
@@ -45,25 +45,22 @@ export class ProcessPendingNotificationsUseCase implements UseCase<
 
     for (const notification of pending) {
       try {
-        const user = await this.userRepository.findById(notification.userId);
-        if (!user) continue;
+        const userExists = await this.userReader.existsById(notification.userId);
+        if (!userExists) continue;
 
         const prefs = await this.prefsRepository.findByUserId(
           notification.userId,
         );
         if (!prefs || !prefs.pushEnabled || !prefs.debtReminders) continue;
 
-        const record = await this.recordRepository.findById(
+        const record = await this.recordReader.findById(
           notification.financialId,
         );
         if (!record) continue;
 
-        const devices = await this.deviceRepository.findByUserId(
+        const fcmTokens = await this.deviceReader.findFcmTokensByUserId(
           notification.userId,
         );
-        const fcmTokens = devices
-          .map((d) => d.fcmToken)
-          .filter((t): t is string => typeof t === 'string' && t.length > 0);
 
         if (fcmTokens.length === 0) continue;
 

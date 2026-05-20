@@ -1,14 +1,16 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
 import { USER_REPOSITORY } from '../../domain/interfaces/repositories/user.repository.interface';
-import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
-import { NOTIFICATION_PREFERENCES_REPOSITORY } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
 import type { IFirebaseAuthService } from '../../domain/interfaces/services/firebase-auth.service.interface';
 import { FIREBASE_AUTH_SERVICE } from '../../domain/interfaces/services/firebase-auth.service.interface';
+import {
+  USER_REGISTERED,
+  UserRegisteredEvent,
+} from '../../../../shared-kernel/domain/events/user.events';
 import { User } from '../../domain/entities/user.entity';
-import { NotificationPreferences } from '../../domain/entities/notification-preferences.entity';
 import { UserAlreadyExistsException } from '../../domain/exceptions/user-already-exists.exception';
 import { RegisterUserDto } from '../dtos/register-user.dto';
 import { RegisterResponseDto } from '../dtos/register-response.dto';
@@ -26,10 +28,9 @@ export class RegisterUserUseCase implements UseCase<
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
-    @Inject(NOTIFICATION_PREFERENCES_REPOSITORY)
-    private readonly prefsRepository: INotificationPreferencesRepository,
     @Inject(FIREBASE_AUTH_SERVICE)
     private readonly firebaseAuth: IFirebaseAuthService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(dto: RegisterUserDto): Promise<RegisterResponseDto> {
@@ -48,6 +49,7 @@ export class RegisterUserUseCase implements UseCase<
       displayName,
     });
 
+    let savedUserId: string;
     try {
       const user = User.create(
         randomUUID(),
@@ -62,12 +64,7 @@ export class RegisterUserUseCase implements UseCase<
       );
 
       const savedUser = await this.userRepository.save(user);
-
-      const prefs = NotificationPreferences.createDefault(
-        randomUUID(),
-        savedUser.id,
-      );
-      await this.prefsRepository.save(prefs);
+      savedUserId = savedUser.id;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
@@ -84,6 +81,11 @@ export class RegisterUserUseCase implements UseCase<
       }
       throw error;
     }
+
+    await this.eventEmitter.emitAsync(
+      USER_REGISTERED,
+      new UserRegisteredEvent(savedUserId),
+    );
 
     try {
       await this.firebaseAuth.sendEmailVerification(firebaseResult.idToken);

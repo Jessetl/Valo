@@ -2,10 +2,11 @@ process.env.APP_ENCRYPTION_KEY ??=
   'a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=';
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { EventEmitter2 } from '@nestjs/event-emitter';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
-import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
 import type { IUserDeviceRepository } from '../../domain/interfaces/repositories/user-device.repository.interface';
 import type { IFirebaseAuthService } from '../../domain/interfaces/services/firebase-auth.service.interface';
+import { USER_REGISTERED } from '../../../../shared-kernel/domain/events/user.events';
 import { User } from '../../domain/entities/user.entity';
 import { EmailNotVerifiedException } from '../../domain/exceptions/email-not-verified.exception';
 import { JwtTokenService } from '../services/jwt-token.service';
@@ -13,10 +14,10 @@ import { LoginWithGoogleUseCase } from './login-with-google.use-case';
 
 describe('LoginWithGoogleUseCase', () => {
   let userRepository: jest.Mocked<IUserRepository>;
-  let prefsRepository: jest.Mocked<INotificationPreferencesRepository>;
   let deviceRepository: jest.Mocked<IUserDeviceRepository>;
   let firebaseAuth: jest.Mocked<IFirebaseAuthService>;
   let jwtTokenService: jest.Mocked<JwtTokenService>;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
   let useCase: LoginWithGoogleUseCase;
 
   const device = {
@@ -32,20 +33,22 @@ describe('LoginWithGoogleUseCase', () => {
       findByFirebaseUid: jest.fn(),
       save: jest.fn(),
     } as never;
-    prefsRepository = { save: jest.fn() } as never;
     deviceRepository = {
       findByDeviceId: jest.fn(),
       save: jest.fn(),
     } as never;
     firebaseAuth = { signInWithGoogle: jest.fn() } as never;
     jwtTokenService = { signFor: jest.fn() } as never;
+    eventEmitter = {
+      emitAsync: jest.fn().mockResolvedValue([] as never),
+    } as never;
 
     useCase = new LoginWithGoogleUseCase(
       userRepository,
-      prefsRepository,
       deviceRepository,
       firebaseAuth,
       jwtTokenService,
+      eventEmitter,
     );
 
     firebaseAuth.signInWithGoogle.mockResolvedValue({
@@ -91,7 +94,7 @@ describe('LoginWithGoogleUseCase', () => {
     expect(deviceRepository.save).not.toHaveBeenCalled();
   });
 
-  it('auto-crea user con perfil de Google cuando no existe', async () => {
+  it('auto-crea user con perfil de Google y emite USER_REGISTERED', async () => {
     userRepository.findByFirebaseUid.mockResolvedValue(null);
 
     const result = await useCase.execute({
@@ -106,11 +109,14 @@ describe('LoginWithGoogleUseCase', () => {
     expect(savedUser.lastName).toBe('Doe');
     expect(savedUser.avatarUrl).toBe('https://photo');
     expect(savedUser.countryCode).toBe('VE');
-    expect(prefsRepository.save).toHaveBeenCalled();
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+      USER_REGISTERED,
+      expect.objectContaining({ userId: expect.any(String) }),
+    );
     expect(result.access_token).toBe('jwt');
   });
 
-  it('reutiliza user existente sin crear prefs', async () => {
+  it('reutiliza user existente sin emitir USER_REGISTERED', async () => {
     const existing = User.create('u-1', 'fb-uid', 'jane@kashy.app', 'VE');
     userRepository.findByFirebaseUid.mockResolvedValue(existing);
 
@@ -120,7 +126,7 @@ describe('LoginWithGoogleUseCase', () => {
     });
 
     expect(userRepository.save).not.toHaveBeenCalled();
-    expect(prefsRepository.save).not.toHaveBeenCalled();
+    expect(eventEmitter.emitAsync).not.toHaveBeenCalled();
     expect(deviceRepository.save).toHaveBeenCalled();
   });
 });

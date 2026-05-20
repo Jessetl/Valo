@@ -2,16 +2,16 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserOrmEntity } from '../../../../auth/infrastructure/persistence/orm-entities/user.orm-entity';
-import { FinancialRecordOrmEntity } from '../../../../finances/infrastructure/persistence/orm-entities/financial-record.orm-entity';
-import { NotificationStatus } from '../../../domain/enums/notification-status.enum';
+import { NotificationStatus } from '../../../../../shared-kernel/domain/enums/notification-status.enum';
 
 @Entity('notifications')
+@Index(['userId'])
+@Index(['financialId'])
+@Index(['status', 'scheduledAt'])
 export class NotificationOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -47,12 +47,4 @@ export class NotificationOrmEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
-
-  @ManyToOne(() => UserOrmEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user: UserOrmEntity;
-
-  @ManyToOne(() => FinancialRecordOrmEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'financial_id' })
-  financialRecord: FinancialRecordOrmEntity;
 }

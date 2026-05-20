@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { EventEmitter2 } from '@nestjs/event-emitter';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
-import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
 import type { IFirebaseAuthService } from '../../domain/interfaces/services/firebase-auth.service.interface';
+import { USER_REGISTERED } from '../../../../shared-kernel/domain/events/user.events';
 import { User } from '../../domain/entities/user.entity';
 import { UserAlreadyExistsException } from '../../domain/exceptions/user-already-exists.exception';
 import { RegisterUserDto } from '../dtos/register-user.dto';
@@ -9,8 +10,8 @@ import { RegisterUserUseCase } from './register-user.use-case';
 
 describe('RegisterUserUseCase', () => {
   let userRepository: jest.Mocked<IUserRepository>;
-  let prefsRepository: jest.Mocked<INotificationPreferencesRepository>;
   let firebaseAuth: jest.Mocked<IFirebaseAuthService>;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
   let useCase: RegisterUserUseCase;
 
   const dto: RegisterUserDto = {
@@ -30,10 +31,6 @@ describe('RegisterUserUseCase', () => {
       delete: jest.fn(),
     } as never;
 
-    prefsRepository = {
-      save: jest.fn(),
-    } as never;
-
     firebaseAuth = {
       signUp: jest.fn(),
       signIn: jest.fn(),
@@ -47,10 +44,14 @@ describe('RegisterUserUseCase', () => {
       signInWithGoogle: jest.fn(),
     } as never;
 
+    eventEmitter = {
+      emitAsync: jest.fn().mockResolvedValue([] as never),
+    } as never;
+
     useCase = new RegisterUserUseCase(
       userRepository,
-      prefsRepository,
       firebaseAuth,
+      eventEmitter,
     );
 
     firebaseAuth.signUp.mockResolvedValue({
@@ -74,7 +75,7 @@ describe('RegisterUserUseCase', () => {
     expect(firebaseAuth.signUp).not.toHaveBeenCalled();
   });
 
-  it('crea user + prefs y envia verificacion', async () => {
+  it('crea user, emite USER_REGISTERED y envia verificacion', async () => {
     userRepository.findByEmail.mockResolvedValue(null);
 
     const result = await useCase.execute(dto);
@@ -85,7 +86,10 @@ describe('RegisterUserUseCase', () => {
       displayName: 'Jane Doe',
     });
     expect(userRepository.save).toHaveBeenCalled();
-    expect(prefsRepository.save).toHaveBeenCalled();
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+      USER_REGISTERED,
+      expect.objectContaining({ userId: expect.any(String) }),
+    );
     expect(firebaseAuth.sendEmailVerification).toHaveBeenCalledWith('id-tok');
     expect(result.email).toBe(dto.email);
   });

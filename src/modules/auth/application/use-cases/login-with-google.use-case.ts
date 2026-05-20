@@ -1,19 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import { encryptString } from '../../../../shared-kernel/utils/crypto.util';
 import { withMinDuration } from '../../../../shared-kernel/utils/constant-time.util';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
 import { USER_REPOSITORY } from '../../domain/interfaces/repositories/user.repository.interface';
-import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
-import { NOTIFICATION_PREFERENCES_REPOSITORY } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
 import type { IUserDeviceRepository } from '../../domain/interfaces/repositories/user-device.repository.interface';
 import { USER_DEVICE_REPOSITORY } from '../../domain/interfaces/repositories/user-device.repository.interface';
+import {
+  USER_REGISTERED,
+  UserRegisteredEvent,
+} from '../../../../shared-kernel/domain/events/user.events';
 import type { IFirebaseAuthService } from '../../domain/interfaces/services/firebase-auth.service.interface';
 import { FIREBASE_AUTH_SERVICE } from '../../domain/interfaces/services/firebase-auth.service.interface';
 import type { FirebaseGoogleSignInResult } from '../../domain/interfaces/services/firebase-auth.service.interface';
 import { User } from '../../domain/entities/user.entity';
-import { NotificationPreferences } from '../../domain/entities/notification-preferences.entity';
 import { UserDevice } from '../../domain/entities/user-device.entity';
 import { EmailNotVerifiedException } from '../../domain/exceptions/email-not-verified.exception';
 import { LoginGoogleDto } from '../dtos/login-google.dto';
@@ -37,13 +39,12 @@ export class LoginWithGoogleUseCase implements UseCase<
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
-    @Inject(NOTIFICATION_PREFERENCES_REPOSITORY)
-    private readonly prefsRepository: INotificationPreferencesRepository,
     @Inject(USER_DEVICE_REPOSITORY)
     private readonly deviceRepository: IUserDeviceRepository,
     @Inject(FIREBASE_AUTH_SERVICE)
     private readonly firebaseAuth: IFirebaseAuthService,
     private readonly jwtTokenService: JwtTokenService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   execute(input: LoginWithGoogleInput): Promise<AuthResponseDto> {
@@ -93,8 +94,10 @@ export class LoginWithGoogleUseCase implements UseCase<
     );
     const saved = await this.userRepository.save(user);
 
-    const prefs = NotificationPreferences.createDefault(randomUUID(), saved.id);
-    await this.prefsRepository.save(prefs);
+    await this.eventEmitter.emitAsync(
+      USER_REGISTERED,
+      new UserRegisteredEvent(saved.id),
+    );
 
     return saved;
   }

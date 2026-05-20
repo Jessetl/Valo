@@ -65,43 +65,50 @@ Frontend                         Backend                          Firebase
 
 ### 🟡 `POST /auth/register`
 
-> Registro de nuevo usuario. El backend crea la cuenta en Firebase, almacena el refresh token y devuelve un JWT custom.
+> Registro de nuevo usuario. El backend crea la cuenta en Firebase Auth, persiste el usuario en BD, emite el evento `USER_REGISTERED` (notifications crea las preferencias por defecto) y dispara un correo de verificación de Firebase. **No emite JWT** — el usuario debe verificar el email y luego iniciar sesión via `POST /auth/login`.
 
 **Auth:** ❌ Pública
-**Headers:** `X-Device-Id`, `X-Device-Name`
+**Headers:** Ninguno requerido (no requiere `X-Device-Id` / `X-Device-Name` porque no abre sesión).
 
 **Request Body:**
 
 ```json
 {
   "email": "string",
-  "password": "string",
-  "first_name": "string | null",
-  "last_name": "string | null"
+  "password": "string (min 8, max 64)",
+  "first_name": "string (max 80)",
+  "last_name": "string (max 80)",
+  "country_code": "string (ISO 3166-1 alpha-2, len 2)",
+  "latitude": "number | null",
+  "longitude": "number | null"
 }
 ```
+
+> **Campos requeridos:** `email`, `password`, `first_name`, `last_name`, `country_code`.
+> **Campos opcionales:** `latitude`, `longitude` (se persisten en `users` si vienen).
 
 **Response `201 Created`:**
 
 ```json
 {
-  "access_token": "string (JWT custom, 15 min)",
-  "expires_in": 900,
-  "user": {
-    "id": "uuid",
-    "email": "string",
-    "first_name": "string | null",
-    "last_name": "string | null",
-    "avatar_url": null,
-    "subscription_plan": "FREE",
-    "country_code": "VE"
-  }
+  "message": "Usuario registrado. Revisa tu correo para verificar la cuenta antes de iniciar sesion.",
+  "email": "string"
 }
 ```
 
-> El `refreshToken` de Firebase se almacena en `user_devices` asociado al `X-Device-Id`. Nunca se envía al frontend.
+**Flujo interno:**
 
-**Errores posibles:** `400`, `401`, `422`
+1. Backend valida que `email` no exista en BD.
+2. Llama a Firebase REST API `signUp` con `email`, `password` y `displayName = "{first_name} {last_name}"`.
+3. Persiste el usuario en `users` con los datos recibidos + `firebase_uid` de Firebase + `subscription_plan = FREE`.
+4. Si la persistencia falla, hace rollback eliminando el usuario en Firebase.
+5. Emite evento `USER_REGISTERED` — notifications crea fila default en `notification_preferences`.
+6. Llama a Firebase `sendOobCode` (`VERIFY_EMAIL`) con el `idToken` para enviar el correo de verificación.
+7. Si el envío del correo falla, el endpoint igual responde `201` (verify se puede re-disparar al intentar login).
+
+> **Por qué no emite JWT:** se exige verificación de email antes de poder iniciar sesión (`POST /auth/login` valida `emailVerified` y lanza `403 EmailNotVerified` si no lo está). Esto impide que cuentas no verificadas obtengan sesión activa. El refresh token de Firebase **no se almacena en este endpoint** — se almacena al primer login exitoso.
+
+**Errores posibles:** `400` (datos inválidos), `409` (`UserAlreadyExists`), `422`
 
 ---
 

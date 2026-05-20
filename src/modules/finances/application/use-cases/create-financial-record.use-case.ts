@@ -1,15 +1,19 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import type { IFinancialRecordRepository } from '../../domain/interfaces/repositories/financial-record.repository.interface';
 import { FINANCIAL_RECORD_REPOSITORY } from '../../domain/interfaces/repositories/financial-record.repository.interface';
-import type { INotificationRepository } from '../../../notifications/domain/interfaces/repositories/notification.repository.interface';
-import { NOTIFICATION_REPOSITORY } from '../../../notifications/domain/interfaces/repositories/notification.repository.interface';
+import type { IFinancialNotificationReader } from '../../../../shared-kernel/application/ports/financial-notification-reader.port';
+import { FINANCIAL_NOTIFICATION_READER } from '../../../../shared-kernel/application/ports/financial-notification-reader.port';
+import {
+  FINANCIAL_RECORD_CREATED,
+  FinancialRecordCreatedEvent,
+} from '../../../../shared-kernel/domain/events/financial-record.events';
 import { FinancialRecord } from '../../domain/entities/financial-record.entity';
 import { CreateFinancialRecordDto } from '../dtos/create-financial-record.dto';
 import { FinancialRecordResponseDto } from '../dtos/financial-record-response.dto';
 import { FinancialRecordMapper } from '../mappers/financial-record.mapper';
-import { ScheduleFinancialNotificationUseCase } from '../../../notifications/application/use-cases/schedule-financial-notification.use-case';
 import { parseDateOnly } from '../utils/date.util';
 
 interface CreateFinancialRecordInput {
@@ -22,15 +26,12 @@ export class CreateFinancialRecordUseCase implements UseCase<
   CreateFinancialRecordInput,
   FinancialRecordResponseDto
 > {
-  private readonly logger = new Logger(CreateFinancialRecordUseCase.name);
-
   constructor(
     @Inject(FINANCIAL_RECORD_REPOSITORY)
     private readonly recordRepository: IFinancialRecordRepository,
-    @Inject(NOTIFICATION_REPOSITORY)
-    private readonly notificationRepository: INotificationRepository,
-    @Optional()
-    private readonly scheduleNotification?: ScheduleFinancialNotificationUseCase,
+    @Inject(FINANCIAL_NOTIFICATION_READER)
+    private readonly notificationReader: IFinancialNotificationReader,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(
@@ -57,24 +58,14 @@ export class CreateFinancialRecordUseCase implements UseCase<
 
     const saved = await this.recordRepository.save(record);
 
-    let notificationId: string | null = null;
-    if (this.scheduleNotification) {
-      try {
-        const scheduled = await this.scheduleNotification.execute({
-          userId: saved.userId,
-          financialId: saved.id,
-          date: saved.date,
-        });
-        notificationId = scheduled?.id ?? null;
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.error(`Failed to schedule notification: ${message}`);
-      }
-    }
+    await this.eventEmitter.emitAsync(
+      FINANCIAL_RECORD_CREATED,
+      new FinancialRecordCreatedEvent(saved.id, saved.userId, saved.date),
+    );
 
-    const notification = notificationId
-      ? await this.notificationRepository.findById(notificationId)
-      : null;
+    const notification = await this.notificationReader.findActiveByFinancialId(
+      saved.id,
+    );
 
     return FinancialRecordMapper.toResponse(saved, notification);
   }

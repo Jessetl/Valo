@@ -2,10 +2,11 @@ process.env.APP_ENCRYPTION_KEY ??=
   'a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=';
 
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { EventEmitter2 } from '@nestjs/event-emitter';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
-import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
 import type { IUserDeviceRepository } from '../../domain/interfaces/repositories/user-device.repository.interface';
 import type { IFirebaseAuthService } from '../../domain/interfaces/services/firebase-auth.service.interface';
+import { USER_REGISTERED } from '../../../../shared-kernel/domain/events/user.events';
 import { User } from '../../domain/entities/user.entity';
 import { EmailNotVerifiedException } from '../../domain/exceptions/email-not-verified.exception';
 import { JwtTokenService } from '../services/jwt-token.service';
@@ -13,10 +14,10 @@ import { LoginUserUseCase } from './login-user.use-case';
 
 describe('LoginUserUseCase', () => {
   let userRepository: jest.Mocked<IUserRepository>;
-  let prefsRepository: jest.Mocked<INotificationPreferencesRepository>;
   let deviceRepository: jest.Mocked<IUserDeviceRepository>;
   let firebaseAuth: jest.Mocked<IFirebaseAuthService>;
   let jwtTokenService: jest.Mocked<JwtTokenService>;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
   let useCase: LoginUserUseCase;
 
   const device = {
@@ -35,7 +36,6 @@ describe('LoginUserUseCase', () => {
       save: jest.fn(),
       delete: jest.fn(),
     } as never;
-    prefsRepository = { save: jest.fn() } as never;
     deviceRepository = {
       findByDeviceId: jest.fn(),
       findByUserIdAndDeviceId: jest.fn(),
@@ -50,13 +50,16 @@ describe('LoginUserUseCase', () => {
     jwtTokenService = {
       signFor: jest.fn(),
     } as never;
+    eventEmitter = {
+      emitAsync: jest.fn().mockResolvedValue([] as never),
+    } as never;
 
     useCase = new LoginUserUseCase(
       userRepository,
-      prefsRepository,
       deviceRepository,
       firebaseAuth,
       jwtTokenService,
+      eventEmitter,
     );
 
     firebaseAuth.signIn.mockResolvedValue({
@@ -97,12 +100,12 @@ describe('LoginUserUseCase', () => {
     });
 
     expect(userRepository.save).not.toHaveBeenCalled();
-    expect(prefsRepository.save).not.toHaveBeenCalled();
+    expect(eventEmitter.emitAsync).not.toHaveBeenCalled();
     expect(deviceRepository.save).toHaveBeenCalled();
     expect(result.access_token).toBe('jwt');
   });
 
-  it('crea user + prefs cuando firebaseUid no existe', async () => {
+  it('crea user y emite USER_REGISTERED cuando firebaseUid no existe', async () => {
     userRepository.findByFirebaseUid.mockResolvedValue(null);
 
     await useCase.execute({
@@ -111,7 +114,10 @@ describe('LoginUserUseCase', () => {
     });
 
     expect(userRepository.save).toHaveBeenCalled();
-    expect(prefsRepository.save).toHaveBeenCalled();
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
+      USER_REGISTERED,
+      expect.objectContaining({ userId: expect.any(String) }),
+    );
   });
 
   it('respeta tiempo minimo de respuesta en happy path', async () => {

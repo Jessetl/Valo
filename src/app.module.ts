@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -26,6 +27,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    // EventEmitter global para comunicacion entre dominios (architecture.md:285)
+    EventEmitterModule.forRoot(),
 
     // PostgreSQL con TypeORM
     TypeOrmModule.forRootAsync({

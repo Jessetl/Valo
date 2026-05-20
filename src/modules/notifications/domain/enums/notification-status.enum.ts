@@ -1,5 +1,1 @@
-export enum NotificationStatus {
-  PENDING = 'PENDING',
-  SENT = 'SENT',
-  FAILED = 'FAILED',
-}
+export { NotificationStatus } from '../../../../shared-kernel/domain/enums/notification-status.enum';

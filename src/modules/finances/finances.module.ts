@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FinancialRecordOrmEntity } from './infrastructure/persistence/orm-entities/financial-record.orm-entity';
@@ -13,21 +13,24 @@ import { SearchFinancialRecordsUseCase } from './application/use-cases/search-fi
 import { GetFinancialSummaryUseCase } from './application/use-cases/get-financial-summary.use-case';
 import { GenerateRecurringFinancialRecordsUseCase } from './application/use-cases/generate-recurring-financial-records.use-case';
 import { RecurrenceScheduler } from './infrastructure/scheduling/recurrence.scheduler';
-import { AuthModule } from '../auth/auth.module';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { FinancialRecordReaderAdapter } from './infrastructure/ports/financial-record-reader.adapter';
+import { FINANCIAL_RECORD_READER } from '../../shared-kernel/application/ports/financial-record-reader.port';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([FinancialRecordOrmEntity]),
     ScheduleModule.forRoot(),
-    forwardRef(() => AuthModule),
-    forwardRef(() => NotificationsModule),
   ],
   controllers: [FinancesController],
   providers: [
     {
       provide: FINANCIAL_RECORD_REPOSITORY,
       useClass: TypeOrmFinancialRecordRepository,
+    },
+    {
+      provide: FINANCIAL_RECORD_READER,
+      useClass: FinancialRecordReaderAdapter,
     },
     CreateFinancialRecordUseCase,
     UpdateFinancialRecordUseCase,
@@ -38,6 +41,6 @@ import { NotificationsModule } from '../notifications/notifications.module';
     GenerateRecurringFinancialRecordsUseCase,
     RecurrenceScheduler,
   ],
-  exports: [FINANCIAL_RECORD_REPOSITORY],
+  exports: [FINANCIAL_RECORD_REPOSITORY, FINANCIAL_RECORD_READER],
 })
 export class FinancesModule {}

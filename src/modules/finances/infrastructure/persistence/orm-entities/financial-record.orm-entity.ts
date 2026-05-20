@@ -3,12 +3,9 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  JoinColumn,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserOrmEntity } from '../../../../auth/infrastructure/persistence/orm-entities/user.orm-entity';
 import { FinancialPriority } from '../../../domain/enums/financial-priority.enum';
 import { FinancialType } from '../../../domain/enums/financial-type.enum';
 
@@ -81,8 +78,4 @@ export class FinancialRecordOrmEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt: Date;
-
-  @ManyToOne(() => UserOrmEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user: UserOrmEntity;
 }

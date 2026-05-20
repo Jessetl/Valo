@@ -11,12 +11,10 @@ import { DeleteShoppingListUseCase } from './application/use-cases/delete-shoppi
 import { CompareShoppingListsUseCase } from './application/use-cases/compare-shopping-lists.use-case';
 import { SearchShoppingListsUseCase } from './application/use-cases/search-shopping-lists.use-case';
 import { ShoppingListsController } from './infrastructure/controllers/shopping-lists.controller';
-import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ShoppingListOrmEntity, ShoppingItemOrmEntity]),
-    AuthModule,
   ],
   controllers: [ShoppingListsController],
   providers: [

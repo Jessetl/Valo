@@ -12,11 +12,13 @@
 |  🟡   | `POST`   | `/shopping-lists`         |  ✅  | Crear lista con todos sus items.               |
 |  🟡   | `POST`   | `/shopping-lists/search`  |  ✅  | Listar listas con filtros y paginación.        |
 |  🟢   | `GET`    | `/shopping-lists/:id`     |  ✅  | Obtener detalle de una lista con sus items.    |
-|  🟠   | `PATCH`  | `/shopping-lists/:id`     |  ✅  | Actualizar lista y reemplazar items completos. |
+|  🟠   | `PATCH`  | `/shopping-lists/:id`     |  ✅  | Actualizar lista y sincronizar items por upsert. |
 |  🔴   | `DELETE` | `/shopping-lists/:id`     |  ✅  | Eliminar una lista y todos sus items.          |
 |  🟡   | `POST`   | `/shopping-lists/compare` |  ✅  | Comparar productos entre 2 listas.             |
 
 > **Nota:** Todas las rutas llevan el prefijo `/api/v1`. Los headers `Authorization`, `X-Device-Id` y `X-Device-Name` son obligatorios en todos los endpoints.
+
+> **Convención de nombrado:** Request y response usan **camelCase** en los keys JSON (`storeName`, `unitPriceLocal`, `subtotalLocal`, etc.). Los valores enum permanecen en `UPPER_SNAKE_CASE` (`TEMPLATE`, `RECEIPT`) y los discriminantes de comparación en `snake_case` (`list_a`, `list_b`, `equal`).
 
 ---
 
@@ -34,23 +36,23 @@
 ```json
 {
   "name": "string",
-  "store_name": "string | null",
-  "list_type": "TEMPLATE | RECEIPT",
-  "country_code": "string",
-  "currency_code": "string",
-  "exchange_rate_snapshot": 0.0,
-  "iva_enabled": false,
-  "scheduled_date": "timestamp | null",
+  "storeName": "string | null",
+  "listType": "TEMPLATE | RECEIPT",
+  "countryCode": "string",
+  "currencyCode": "string",
+  "exchangeRateSnapshot": 0.0,
+  "ivaEnabled": false,
+  "scheduledDate": "timestamp | null",
   "latitude": 0.0,
   "longitude": 0.0,
   "items": [
     {
-      "product_name": "string",
+      "productName": "string",
       "category": "string",
       "quantity": 1,
-      "unit_price_local": 0.0,
-      "unit_price_usd": 0.0,
-      "is_checked": false
+      "unitPriceLocal": 0.0,
+      "unitPriceUsd": 0.0,
+      "isChecked": false
     }
   ]
 }
@@ -61,33 +63,50 @@
 ```json
 {
   "id": "uuid",
-  "user_id": "uuid",
+  "userId": "uuid",
   "name": "string",
-  "store_name": "string | null",
-  "list_type": "TEMPLATE",
-  "country_code": "string",
-  "currency_code": "string",
-  "exchange_rate_snapshot": 0.0,
-  "iva_enabled": false,
-  "scheduled_date": "timestamp | null",
+  "storeName": "string | null",
+  "listType": "TEMPLATE",
+  "countryCode": "string",
+  "currencyCode": "string",
+  "exchangeRateSnapshot": 0.0,
+  "ivaEnabled": false,
+  "scheduledDate": "timestamp | null",
   "latitude": 0.0,
   "longitude": 0.0,
-  "is_active": true,
+  "isActive": true,
+  "subtotalLocal": 0.0,
+  "subtotalUsd": 0.0,
+  "ivaLocal": 0.0,
+  "ivaUsd": 0.0,
+  "totalLocal": 0.0,
+  "totalUsd": 0.0,
   "items": [
     {
       "id": "uuid",
-      "product_name": "string",
+      "listId": "uuid",
+      "productName": "string",
       "category": "string",
       "quantity": 1,
-      "unit_price_local": 0.0,
-      "unit_price_usd": 0.0,
-      "is_checked": false
+      "unitPriceLocal": 0.0,
+      "unitPriceUsd": 0.0,
+      "isChecked": false
     }
   ]
 }
 ```
 
 > La lista y todos sus items se crean en una sola transacción. Si falla un item, no se crea nada.
+
+> **Totales calculados en backend** (per `business-rules.md` — listas):
+> - `subtotalLocal = Σ (unitPriceLocal × quantity)` sobre todos los items.
+> - `subtotalUsd = Σ (unitPriceUsd × quantity)`. `null` si algún item carece de `unitPriceUsd`.
+> - `ivaLocal = subtotalLocal × 0.16` si `ivaEnabled`, sino `0`.
+> - `ivaUsd = subtotalUsd × 0.16` si `ivaEnabled`, sino `0`. `null` si `subtotalUsd` es `null`.
+> - `totalLocal = subtotalLocal + ivaLocal`.
+> - `totalUsd = subtotalUsd + ivaUsd`. `null` si `subtotalUsd` es `null`.
+>
+> El cliente no recalcula: usa los totales del backend para evitar drift.
 
 **Errores posibles:** `400`, `401`, `422`
 
@@ -107,11 +126,11 @@
   "page": 1,
   "limit": 20,
   "filters": {
-    "list_type": "TEMPLATE | RECEIPT | null",
-    "store_name": "string | null",
-    "is_active": "boolean | null",
-    "scheduled_date_from": "timestamp | null",
-    "scheduled_date_to": "timestamp | null"
+    "listType": "TEMPLATE | RECEIPT | null",
+    "storeName": "string | null",
+    "isActive": "boolean | null",
+    "scheduledDateFrom": "timestamp | null",
+    "scheduledDateTo": "timestamp | null"
   }
 }
 ```
@@ -124,25 +143,33 @@
     {
       "id": "uuid",
       "name": "string",
-      "store_name": "string | null",
-      "list_type": "TEMPLATE",
-      "currency_code": "string",
-      "is_active": true,
-      "scheduled_date": "timestamp | null",
-      "items_count": 12,
-      "checked_count": 5
+      "storeName": "string | null",
+      "listType": "TEMPLATE",
+      "currencyCode": "string",
+      "isActive": true,
+      "scheduledDate": "timestamp | null",
+      "itemsCount": 12,
+      "checkedCount": 5,
+      "totalLocal": 0.0,
+      "totalUsd": 0.0
     }
   ],
   "meta": {
     "page": 1,
     "limit": 20,
     "total": 45,
-    "total_pages": 3
+    "totalPages": 3
   }
 }
 ```
 
-> El listado devuelve un resumen de cada lista con conteo de items y marcados. No incluye el detalle de items para mantener el payload liviano.
+> El listado devuelve un resumen de cada lista con conteo de items, marcados y totales computados. No incluye el detalle de items para mantener el payload liviano.
+
+> **Totales del summary** (per `business-rules.md`):
+> - `totalLocal = subtotalLocal + ivaLocal` sobre todos los items.
+> - `totalUsd = subtotalUsd + ivaUsd`. `null` si algún item carece de `unitPriceUsd`.
+>
+> El cálculo es idéntico al del detalle (`GET /shopping-lists/:id`).
 
 **Errores posibles:** `400`, `401`
 
@@ -150,7 +177,7 @@
 
 ### 🟢 `GET /shopping-lists/:id`
 
-> Obtiene el detalle completo de una lista con todos sus items.
+> Obtiene el detalle completo de una lista con todos sus items y los totales computados.
 
 **Auth:** ✅ Bearer token
 **Headers:** `Authorization`, `X-Device-Id`, `X-Device-Name`
@@ -160,31 +187,40 @@
 ```json
 {
   "id": "uuid",
-  "user_id": "uuid",
+  "userId": "uuid",
   "name": "string",
-  "store_name": "string | null",
-  "list_type": "TEMPLATE",
-  "country_code": "string",
-  "currency_code": "string",
-  "exchange_rate_snapshot": 0.0,
-  "iva_enabled": false,
-  "scheduled_date": "timestamp | null",
+  "storeName": "string | null",
+  "listType": "TEMPLATE",
+  "countryCode": "string",
+  "currencyCode": "string",
+  "exchangeRateSnapshot": 0.0,
+  "ivaEnabled": false,
+  "scheduledDate": "timestamp | null",
   "latitude": 0.0,
   "longitude": 0.0,
-  "is_active": true,
+  "isActive": true,
+  "subtotalLocal": 0.0,
+  "subtotalUsd": 0.0,
+  "ivaLocal": 0.0,
+  "ivaUsd": 0.0,
+  "totalLocal": 0.0,
+  "totalUsd": 0.0,
   "items": [
     {
       "id": "uuid",
-      "product_name": "string",
+      "listId": "uuid",
+      "productName": "string",
       "category": "string",
       "quantity": 1,
-      "unit_price_local": 0.0,
-      "unit_price_usd": 0.0,
-      "is_checked": false
+      "unitPriceLocal": 0.0,
+      "unitPriceUsd": 0.0,
+      "isChecked": false
     }
   ]
 }
 ```
+
+> **Totales calculados en backend** — mismo shape y reglas que `POST /shopping-lists`. `subtotalUsd`, `ivaUsd` y `totalUsd` son `null` si algún item carece de `unitPriceUsd`.
 
 **Errores posibles:** `401`, `404`
 
@@ -192,7 +228,7 @@
 
 ### 🟠 `PATCH /shopping-lists/:id`
 
-> Actualiza los datos de la lista y reemplaza todos los items. El array de items enviado sustituye completamente a los anteriores (delete + insert en una sola transacción).
+> Actualiza los datos de la lista y sincroniza sus items mediante upsert por `id`. El array de items enviado representa el estado final deseado: los items con `id` existente se actualizan, los items sin `id` se crean con un nuevo UUID, y los items existentes no incluidos en el array se eliminan. Toda la operación ocurre en una sola transacción.
 
 **Auth:** ✅ Bearer token
 **Headers:** `Authorization`, `X-Device-Id`, `X-Device-Name`
@@ -202,27 +238,30 @@
 ```json
 {
   "name": "string | null",
-  "store_name": "string | null",
-  "list_type": "TEMPLATE | RECEIPT | null",
-  "currency_code": "string | null",
-  "exchange_rate_snapshot": "number | null",
-  "iva_enabled": "boolean | null",
-  "scheduled_date": "timestamp | null",
+  "storeName": "string | null",
+  "listType": "TEMPLATE | RECEIPT | null",
+  "currencyCode": "string | null",
+  "exchangeRateSnapshot": "number | null",
+  "ivaEnabled": "boolean | null",
+  "scheduledDate": "timestamp | null",
   "latitude": "number | null",
   "longitude": "number | null",
-  "is_active": "boolean | null",
+  "isActive": "boolean | null",
   "items": [
     {
-      "product_name": "string",
+      "id": "uuid | null",
+      "productName": "string",
       "category": "string",
       "quantity": 1,
-      "unit_price_local": 0.0,
-      "unit_price_usd": 0.0,
-      "is_checked": false
+      "unitPriceLocal": 0.0,
+      "unitPriceUsd": 0.0,
+      "isChecked": false
     }
   ]
 }
 ```
+
+> **Sobre `items`:** si el campo `items` se omite del body, los items existentes se conservan sin cambios. Si se envía (aunque sea `[]`), se aplica la sincronización completa descrita abajo.
 
 **Response `200 OK`:**
 
@@ -230,10 +269,14 @@
 
 **Flujo interno:**
 
-1. Actualiza los campos de la lista que vengan en el body.
-2. Elimina todos los `shopping_items` existentes de esa lista.
-3. Inserta los nuevos items del array.
-4. Todo en una sola transacción — si falla, rollback completo.
+1. Actualiza los campos de la lista que vengan en el body (los omitidos conservan su valor previo).
+2. Si `items` viene en el body, sincroniza el conjunto de `shopping_items`:
+   - Item con `id` que pertenece a la lista → se actualizan sus campos.
+   - Item sin `id` (o con `id` desconocido) → se crea con un nuevo UUID.
+   - Item existente cuyo `id` no aparece en el array → se elimina.
+3. Todo en una sola transacción — si falla cualquier paso, rollback completo.
+
+> **Por qué upsert en vez de delete + insert:** preservar los `id` de items existentes permite que el cliente mantenga su estado local (selecciones, scroll, sync optimista) sin necesidad de re-mapear referencias después de cada PATCH. También evita romper relaciones futuras que apunten al `id` del item.
 
 **Errores posibles:** `400`, `401`, `404`, `422`
 
@@ -271,8 +314,8 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 
 ```json
 {
-  "list_a_id": "uuid",
-  "list_b_id": "uuid"
+  "listAId": "uuid",
+  "listBId": "uuid"
 }
 ```
 
@@ -280,64 +323,66 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 
 ```json
 {
-  "list_a": {
+  "listA": {
     "id": "uuid",
     "name": "string",
-    "store_name": "string | null"
+    "storeName": "string | null"
   },
-  "list_b": {
+  "listB": {
     "id": "uuid",
     "name": "string",
-    "store_name": "string | null"
+    "storeName": "string | null"
   },
-  "matched_items": [
+  "matchedItems": [
     {
-      "product_name": "string",
+      "productName": "string",
       "category": "string",
-      "list_a_price_local": 0.0,
-      "list_a_price_usd": 0.0,
-      "list_a_quantity": 1,
-      "list_b_price_local": 0.0,
-      "list_b_price_usd": 0.0,
-      "list_b_quantity": 1,
-      "price_diff_local": 0.0,
-      "price_diff_usd": 0.0,
-      "cheaper_in": "list_a | list_b | equal"
+      "listAPriceLocal": 0.0,
+      "listAPriceUsd": 0.0,
+      "listAQuantity": 1,
+      "listBPriceLocal": 0.0,
+      "listBPriceUsd": 0.0,
+      "listBQuantity": 1,
+      "priceDiffLocal": 0.0,
+      "priceDiffUsd": 0.0,
+      "cheaperIn": "list_a | list_b | equal"
     }
   ],
-  "unmatched_items": {
-    "only_in_list_a": [
+  "unmatchedItems": {
+    "onlyInListA": [
       {
-        "product_name": "string",
+        "productName": "string",
         "category": "string",
         "quantity": 1,
-        "unit_price_local": 0.0,
-        "unit_price_usd": 0.0
+        "unitPriceLocal": 0.0,
+        "unitPriceUsd": 0.0
       }
     ],
-    "only_in_list_b": [
+    "onlyInListB": [
       {
-        "product_name": "string",
+        "productName": "string",
         "category": "string",
         "quantity": 1,
-        "unit_price_local": 0.0,
-        "unit_price_usd": 0.0
+        "unitPriceLocal": 0.0,
+        "unitPriceUsd": 0.0
       }
     ]
   },
   "summary": {
-    "total_matched": 8,
-    "total_unmatched_a": 2,
-    "total_unmatched_b": 3,
-    "list_a_total_local": 0.0,
-    "list_b_total_local": 0.0,
-    "savings_local": 0.0,
-    "savings_usd": 0.0,
-    "recommended": "list_a | list_b"
+    "totalMatched": 8,
+    "totalUnmatchedA": 2,
+    "totalUnmatchedB": 3,
+    "listATotalLocal": 0.0,
+    "listBTotalLocal": 0.0,
+    "savingsLocal": 0.0,
+    "savingsUsd": 0.0,
+    "recommended": "list_a | list_b | equal"
   }
 }
 ```
 
-> **Lógica de match:** se cruzan productos por `product_name` (case-insensitive, trim). Si un producto aparece en ambas listas, entra en `matched_items` con la diferencia de precio. Si solo aparece en una, va a `unmatched_items` bajo su lista de origen. El `summary` muestra totales y cuál lista es más económica en los productos que hacen match.
+> **Lógica de match:** se cruzan productos por `productName` (case-insensitive, trim). Si un producto aparece en ambas listas, entra en `matchedItems` con la diferencia de precio. Si solo aparece en una, va a `unmatchedItems` bajo su lista de origen. El `summary` muestra totales y cuál lista es más económica en los productos que hacen match.
+
+> **Valores de discriminación:** `cheaperIn` y `recommended` retornan `'list_a'`, `'list_b'` o `'equal'` (snake_case como discriminantes, no como keys). Esto preserva un identificador estable independiente del nombre de la lista.
 
 **Errores posibles:** `400`, `401`, `404`

@@ -1,10 +1,14 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import type { IFinancialRecordRepository } from '../../domain/interfaces/repositories/financial-record.repository.interface';
 import { FINANCIAL_RECORD_REPOSITORY } from '../../domain/interfaces/repositories/financial-record.repository.interface';
 import { FinancialRecord } from '../../domain/entities/financial-record.entity';
-import { ScheduleFinancialNotificationUseCase } from '../../../notifications/application/use-cases/schedule-financial-notification.use-case';
+import {
+  FINANCIAL_RECORD_CREATED,
+  FinancialRecordCreatedEvent,
+} from '../../../../shared-kernel/domain/events/financial-record.events';
 import {
   effectiveRecurrenceDate,
   monthBounds,
@@ -16,15 +20,10 @@ export class GenerateRecurringFinancialRecordsUseCase implements UseCase<
   void,
   number
 > {
-  private readonly logger = new Logger(
-    GenerateRecurringFinancialRecordsUseCase.name,
-  );
-
   constructor(
     @Inject(FINANCIAL_RECORD_REPOSITORY)
     private readonly recordRepository: IFinancialRecordRepository,
-    @Optional()
-    private readonly scheduleNotification?: ScheduleFinancialNotificationUseCase,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(): Promise<number> {
@@ -87,21 +86,10 @@ export class GenerateRecurringFinancialRecordsUseCase implements UseCase<
       const saved = await this.recordRepository.save(child);
       created++;
 
-      if (this.scheduleNotification) {
-        try {
-          await this.scheduleNotification.execute({
-            userId: saved.userId,
-            financialId: saved.id,
-            date: saved.date,
-          });
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : String(error);
-          this.logger.error(
-            `Failed to schedule notification for recurring ${saved.id}: ${message}`,
-          );
-        }
-      }
+      await this.eventEmitter.emitAsync(
+        FINANCIAL_RECORD_CREATED,
+        new FinancialRecordCreatedEvent(saved.id, saved.userId, saved.date),
+      );
     }
 
     return created;

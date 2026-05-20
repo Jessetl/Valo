@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { UseCase } from '../../../../shared-kernel/application/use-case';
 import {
@@ -8,10 +9,11 @@ import {
 } from '../../../../shared-kernel/domain/interfaces/firebase-user-sync.port';
 import type { IUserRepository } from '../../domain/interfaces/repositories/user.repository.interface';
 import { USER_REPOSITORY } from '../../domain/interfaces/repositories/user.repository.interface';
-import type { INotificationPreferencesRepository } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
-import { NOTIFICATION_PREFERENCES_REPOSITORY } from '../../domain/interfaces/repositories/notification-preferences.repository.interface';
+import {
+  USER_REGISTERED,
+  UserRegisteredEvent,
+} from '../../../../shared-kernel/domain/events/user.events';
 import { User } from '../../domain/entities/user.entity';
-import { NotificationPreferences } from '../../domain/entities/notification-preferences.entity';
 
 @Injectable()
 export class SyncFirebaseUserUseCase
@@ -22,8 +24,7 @@ export class SyncFirebaseUserUseCase
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
-    @Inject(NOTIFICATION_PREFERENCES_REPOSITORY)
-    private readonly prefsRepository: INotificationPreferencesRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async execute(input: SyncFirebaseUserInput): Promise<SyncedUserIdentity> {
@@ -48,8 +49,10 @@ export class SyncFirebaseUserUseCase
 
     const saved = await this.userRepository.save(user);
 
-    const prefs = NotificationPreferences.createDefault(randomUUID(), saved.id);
-    await this.prefsRepository.save(prefs);
+    await this.eventEmitter.emitAsync(
+      USER_REGISTERED,
+      new UserRegisteredEvent(saved.id),
+    );
 
     return { id: saved.id };
   }
