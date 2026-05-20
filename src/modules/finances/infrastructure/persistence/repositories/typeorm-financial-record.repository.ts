@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 import { FinancialRecord } from '../../../domain/entities/financial-record.entity';
 import { FinancialType } from '../../../domain/enums/financial-type.enum';
 import type {
@@ -34,6 +34,12 @@ export class TypeOrmFinancialRecordRepository implements IFinancialRecordReposit
   ): Promise<FinancialRecord | null> {
     const orm = await this.ormRepository.findOne({ where: { id, userId } });
     return orm ? FinancialRecordPersistenceMapper.toDomain(orm) : null;
+  }
+
+  async findByIds(ids: string[]): Promise<FinancialRecord[]> {
+    if (ids.length === 0) return [];
+    const orms = await this.ormRepository.find({ where: { id: In(ids) } });
+    return orms.map((orm) => FinancialRecordPersistenceMapper.toDomain(orm));
   }
 
   async search(

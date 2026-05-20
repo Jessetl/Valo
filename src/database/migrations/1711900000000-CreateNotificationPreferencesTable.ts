@@ -37,7 +37,7 @@ export class CreateNotificationPreferencesTable1711900000000 implements Migratio
           {
             name: 'price_alerts',
             type: 'boolean',
-            default: false,
+            default: true,
           },
           {
             name: 'list_reminders',

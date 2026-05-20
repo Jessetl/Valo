@@ -17,9 +17,18 @@ import { NotificationCronService } from './infrastructure/scheduling/notificatio
 import { ScheduleFinancialNotificationUseCase } from './application/use-cases/schedule-financial-notification.use-case';
 import { CancelFinancialNotificationsUseCase } from './application/use-cases/cancel-financial-notifications.use-case';
 import { ProcessPendingNotificationsUseCase } from './application/use-cases/process-pending-notifications.use-case';
+import { SearchNotificationsUseCase } from './application/use-cases/search-notifications.use-case';
+import { GetUnreadCountUseCase } from './application/use-cases/get-unread-count.use-case';
+import { MarkNotificationReadUseCase } from './application/use-cases/mark-notification-read.use-case';
+import { MarkAllNotificationsReadUseCase } from './application/use-cases/mark-all-notifications-read.use-case';
+import { DeleteNotificationUseCase } from './application/use-cases/delete-notification.use-case';
+import { GetNotificationPreferencesUseCase } from './application/use-cases/get-notification-preferences.use-case';
+import { UpdateNotificationPreferencesUseCase } from './application/use-cases/update-notification-preferences.use-case';
 import { FinancialRecordEventsHandler } from './application/event-handlers/financial-record.handler';
 import { UserEventsHandler } from './application/event-handlers/user.handler';
 import { FinancialNotificationReaderAdapter } from './infrastructure/ports/financial-notification-reader.adapter';
+import { NotificationController } from './infrastructure/controllers/notification.controller';
+import { NotificationPreferencesController } from './infrastructure/controllers/notification-preferences.controller';
 import { rabbitmqConfig } from './infrastructure/messaging/rabbitmq.config';
 import { FINANCIAL_NOTIFICATION_READER } from '../../shared-kernel/application/ports/financial-notification-reader.port';
 
@@ -33,6 +42,7 @@ import { FINANCIAL_NOTIFICATION_READER } from '../../shared-kernel/application/p
     ScheduleModule.forRoot(),
     ConfigModule.forFeature(rabbitmqConfig),
   ],
+  controllers: [NotificationController, NotificationPreferencesController],
   providers: [
     {
       provide: NOTIFICATION_REPOSITORY,
@@ -57,6 +67,13 @@ import { FINANCIAL_NOTIFICATION_READER } from '../../shared-kernel/application/p
     ScheduleFinancialNotificationUseCase,
     CancelFinancialNotificationsUseCase,
     ProcessPendingNotificationsUseCase,
+    SearchNotificationsUseCase,
+    GetUnreadCountUseCase,
+    MarkNotificationReadUseCase,
+    MarkAllNotificationsReadUseCase,
+    DeleteNotificationUseCase,
+    GetNotificationPreferencesUseCase,
+    UpdateNotificationPreferencesUseCase,
     RabbitMqNotificationConsumer,
     NotificationCronService,
     FinancialRecordEventsHandler,

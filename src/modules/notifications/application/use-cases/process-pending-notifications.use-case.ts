@@ -41,6 +41,10 @@ export class ProcessPendingNotificationsUseCase implements UseCase<
 
     if (pending.length === 0) return 0;
 
+    const financialIds = pending.map((n) => n.financialId);
+    const records = await this.recordReader.findByIds(financialIds);
+    const recordsMap = new Map(records.map((r) => [r.id, r]));
+
     let published = 0;
 
     for (const notification of pending) {
@@ -53,9 +57,7 @@ export class ProcessPendingNotificationsUseCase implements UseCase<
         );
         if (!prefs || !prefs.pushEnabled || !prefs.debtReminders) continue;
 
-        const record = await this.recordReader.findById(
-          notification.financialId,
-        );
+        const record = recordsMap.get(notification.financialId);
         if (!record) continue;
 
         const fcmTokens = await this.deviceReader.findFcmTokensByUserId(

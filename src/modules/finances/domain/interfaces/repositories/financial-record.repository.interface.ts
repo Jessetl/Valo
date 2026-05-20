@@ -39,6 +39,7 @@ export interface IFinancialRecordRepository {
     id: string,
     userId: string,
   ): Promise<FinancialRecord | null>;
+  findByIds(ids: string[]): Promise<FinancialRecord[]>;
   search(
     params: SearchFinancialRecordsParams,
   ): Promise<PaginatedFinancialRecords>;

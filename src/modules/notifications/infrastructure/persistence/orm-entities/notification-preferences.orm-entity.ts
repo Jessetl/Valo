@@ -19,7 +19,7 @@ export class NotificationPreferencesOrmEntity {
   @Column({ name: 'debt_reminders', type: 'boolean', default: true })
   debtReminders!: boolean;
 
-  @Column({ name: 'price_alerts', type: 'boolean', default: false })
+  @Column({ name: 'price_alerts', type: 'boolean', default: true })
   priceAlerts!: boolean;
 
   @Column({ name: 'list_reminders', type: 'boolean', default: true })

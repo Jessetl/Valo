@@ -73,6 +73,19 @@ export class Notification extends BaseEntity {
     });
   }
 
+  markAsRead(): Notification {
+    if (this.isRead) return this;
+    return new Notification(this.id, {
+      userId: this.userId,
+      financialId: this.financialId,
+      type: this.type,
+      scheduledAt: this.scheduledAt,
+      sentAt: this.sentAt,
+      status: this.status,
+      isRead: true,
+    });
+  }
+
   static reconstitute(id: string, props: NotificationProps): Notification {
     return new Notification(id, props);
   }

@@ -4,8 +4,13 @@ export interface FinancialRecordView {
   id: string;
   userId: string;
   title: string;
+  type: string;
+  amountLocal: number;
+  amountUsd: number;
+  date: Date;
 }
 
 export interface IFinancialRecordReader {
   findById(id: string): Promise<FinancialRecordView | null>;
+  findByIds(ids: string[]): Promise<FinancialRecordView[]>;
 }

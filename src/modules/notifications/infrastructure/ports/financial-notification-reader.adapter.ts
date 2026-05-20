@@ -30,13 +30,23 @@ export class FinancialNotificationReaderAdapter
     financialIds: string[],
   ): Promise<Map<string, FinancialNotificationView>> {
     const result = new Map<string, FinancialNotificationView>();
+    if (financialIds.length === 0) return result;
 
-    for (const id of financialIds) {
-      const notifications =
-        await this.notificationRepository.findByFinancialId(id);
-      const chosen = this.pickActive(notifications);
+    const unique = Array.from(new Set(financialIds));
+    const notifications =
+      await this.notificationRepository.findByFinancialIds(unique);
+
+    const grouped = new Map<string, Notification[]>();
+    for (const n of notifications) {
+      const bucket = grouped.get(n.financialId) ?? [];
+      bucket.push(n);
+      grouped.set(n.financialId, bucket);
+    }
+
+    for (const [financialId, bucket] of grouped) {
+      const chosen = this.pickActive(bucket);
       if (chosen) {
-        result.set(id, this.toView(chosen));
+        result.set(financialId, this.toView(chosen));
       }
     }
 

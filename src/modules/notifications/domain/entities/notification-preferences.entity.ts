@@ -32,8 +32,36 @@ export class NotificationPreferences extends BaseEntity {
       userId,
       pushEnabled: true,
       debtReminders: true,
-      priceAlerts: false,
+      priceAlerts: true,
       listReminders: true,
+      updatedAt: new Date(),
+    });
+  }
+
+  updateFields(partial: {
+    pushEnabled?: boolean | null;
+    debtReminders?: boolean | null;
+    priceAlerts?: boolean | null;
+    listReminders?: boolean | null;
+  }): NotificationPreferences {
+    return new NotificationPreferences(this.id, {
+      userId: this.userId,
+      pushEnabled:
+        partial.pushEnabled !== undefined && partial.pushEnabled !== null
+          ? partial.pushEnabled
+          : this.pushEnabled,
+      debtReminders:
+        partial.debtReminders !== undefined && partial.debtReminders !== null
+          ? partial.debtReminders
+          : this.debtReminders,
+      priceAlerts:
+        partial.priceAlerts !== undefined && partial.priceAlerts !== null
+          ? partial.priceAlerts
+          : this.priceAlerts,
+      listReminders:
+        partial.listReminders !== undefined && partial.listReminders !== null
+          ? partial.listReminders
+          : this.listReminders,
       updatedAt: new Date(),
     });
   }
