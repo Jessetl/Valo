@@ -55,13 +55,9 @@ import { AuthController } from './infrastructure/controllers/auth.controller';
     },
   ],
   exports: [
-    USER_REPOSITORY,
-    USER_DEVICE_REPOSITORY,
     USER_READER,
     USER_DEVICE_READER,
     FIREBASE_USER_SYNC_PORT,
-    SyncFirebaseUserUseCase,
-    JwtTokenService,
   ],
 })
 export class AuthModule {}

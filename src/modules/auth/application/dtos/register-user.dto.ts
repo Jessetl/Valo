@@ -21,13 +21,13 @@ export class RegisterUserDto {
   @MaxLength(64)
   password!: string;
 
-  @ApiPropertyOptional({ example: 'Jane' })
+  @ApiProperty({ example: 'Jane', maxLength: 80 })
   @IsString()
   @MaxLength(80)
   @Expose({ name: 'first_name' })
   first_name!: string;
 
-  @ApiPropertyOptional({ example: 'Doe' })
+  @ApiProperty({ example: 'Doe', maxLength: 80 })
   @IsString()
   @MaxLength(80)
   @Expose({ name: 'last_name' })

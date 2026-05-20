@@ -83,6 +83,9 @@ export class LoginWithGoogleUseCase implements UseCase<
     );
     if (existing) return existing;
 
+    // Auto-registro Google: el body no trae country_code. Default 'VE'
+    // (mercado primario MVP); el usuario lo actualiza vía PATCH /auth/profile.
+    // Ver authentication.md.
     const user = User.create(
       randomUUID(),
       fb.firebaseUid,

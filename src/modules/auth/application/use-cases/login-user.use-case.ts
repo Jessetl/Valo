@@ -88,6 +88,9 @@ export class LoginUserUseCase implements UseCase<
     const existing = await this.userRepository.findByFirebaseUid(firebaseUid);
     if (existing) return existing;
 
+    // Orphan recovery: Firebase tiene el usuario pero la BD no. country_code
+    // queda en 'VE' (mercado primario MVP); el usuario lo actualiza vía
+    // PATCH /auth/profile. Ver authentication.md.
     const user = User.create(randomUUID(), firebaseUid, email, 'VE');
     const saved = await this.userRepository.save(user);
 

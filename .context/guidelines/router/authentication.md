@@ -50,7 +50,7 @@ Frontend                         Backend                          Firebase
 |  🟡   | `POST`  | `/auth/register`         |  ❌  | Registro con email y contraseña.                    |
 |  🟡   | `POST`  | `/auth/login`            |  ❌  | Login con email y contraseña.                       |
 |  🟡   | `POST`  | `/auth/login/google`     |  ❌  | Login con token de Google/Firebase.                 |
-|  🟡   | `POST`  | `/auth/refresh`          |  ❌  | Renovación de JWT usando refresh token del backend. |
+|  🟡   | `POST`  | `/auth/refresh`          |  ⚠️  | Renovación de JWT. Requiere JWT expirado como proof-of-possession + `X-Device-Id`. |
 |  🟡   | `POST`  | `/auth/recover-password` |  ❌  | Envío de email de recuperación.                     |
 |  🟡   | `POST`  | `/auth/change-password`  |  ✅  | Cambio de contraseña.                               |
 |  🟢   | `GET`   | `/auth/profile`          |  ✅  | Obtener perfil del usuario.                         |
@@ -141,7 +141,9 @@ Frontend                         Backend                          Firebase
     "last_name": "string | null",
     "avatar_url": "string | null",
     "subscription_plan": "string",
-    "country_code": "string"
+    "country_code": "string",
+    "latitude": "number | null",
+    "longitude": "number | null"
   }
 }
 ```
@@ -154,6 +156,8 @@ Frontend                         Backend                          Firebase
 4. Guarda `refreshToken` encriptado en `user_devices` (upsert por `X-Device-Id`).
 5. Genera JWT custom con `userId`, `email`, `role` y expira en 15 min.
 6. Devuelve el JWT custom + datos del usuario.
+
+> **`country_code` por defecto:** El flujo normal asume que el usuario ya existe en BD (persistido por `POST /auth/register`, que valida `country_code` del body). Si el usuario existe en Firebase pero **no** en BD (caso orphan: BD perdida, migración, registro fuera de banda), `login` auto-crea la fila con `country_code = 'VE'` como fallback. El usuario debe actualizarlo vía `PATCH /auth/profile`. No se infiere de IP ni de headers — Venezuela es el mercado primario del MVP.
 
 **Errores posibles:** `400`, `401`
 
@@ -187,7 +191,9 @@ Frontend                         Backend                          Firebase
     "last_name": "string | null",
     "avatar_url": "string | null",
     "subscription_plan": "string",
-    "country_code": "string"
+    "country_code": "string",
+    "latitude": "number | null",
+    "longitude": "number | null"
   }
 }
 ```
@@ -200,6 +206,8 @@ Frontend                         Backend                          Firebase
 4. Guarda `refreshToken` encriptado en `user_devices`.
 5. Genera JWT custom y devuelve.
 
+> **`country_code` por defecto:** El flujo Google no recibe `country_code` en el body (sólo `google_id_token`). En auto-registro, el backend persiste el usuario con `country_code = 'VE'` (mercado primario del MVP). El usuario puede actualizarlo vía `PATCH /auth/profile`. No se infiere de IP, locale del idToken ni headers.
+
 **Errores posibles:** `400`, `401`
 
 ---
@@ -208,8 +216,12 @@ Frontend                         Backend                          Firebase
 
 > Renueva el JWT custom. El backend usa el refresh token almacenado en BD para obtener un nuevo idToken de Firebase y genera un nuevo JWT.
 
-**Auth:** ❌ Pública (el JWT puede estar expirado)
-**Headers:** `X-Device-Id`, `X-Device-Name`
+**Auth:** ⚠️ Bearer token **obligatorio** como proof-of-possession (acepta JWT expirado — la firma se valida ignorando expiración).
+**Headers:**
+
+- `Authorization: Bearer {jwt}` — JWT actual o expirado del cliente. **Obligatorio**. Si falta, responde `401 Unauthorized`.
+- `X-Device-Id` — Obligatorio. Debe corresponder al dispositivo dueño del refresh token.
+- `X-Device-Name` — Opcional en esta ruta.
 
 **Request Body:** _(vacío)_
 
@@ -224,15 +236,21 @@ Frontend                         Backend                          Firebase
 
 **Flujo interno:**
 
-1. Backend busca el `firebase_refresh_token` en `user_devices` usando `X-Device-Id`.
-2. Llama a Firebase REST API `token` endpoint con el refresh token.
-3. Firebase devuelve un nuevo `idToken` (y opcionalmente un nuevo `refreshToken`).
-4. Si Firebase devuelve nuevo `refreshToken`, actualiza en BD.
-5. Genera nuevo JWT custom y devuelve.
+1. Backend extrae el JWT del header `Authorization: Bearer`. Si está ausente, responde `401`.
+2. Verifica la firma del JWT con `ignoreExpiration: true` para obtener el `sub` (`userId`). Si la firma es inválida, responde `401`.
+3. Busca el dispositivo en `user_devices` por `X-Device-Id`. Si no existe, responde `401`.
+4. Verifica que `user_devices.user_id` coincida con `jwt.sub` (proof-of-possession). Si no coincide, responde `401` y registra warning.
+5. Desencripta el `firebase_refresh_token` del dispositivo. Si la desencripción falla, responde `401`.
+6. Llama a Firebase REST API `token` endpoint con el refresh token.
+7. Firebase devuelve un nuevo `idToken` (y opcionalmente un nuevo `refreshToken`). Si Firebase rechaza el refresh, responde `401`.
+8. Si Firebase devuelve un nuevo `refreshToken` distinto al actual, lo encripta y actualiza en `user_devices`.
+9. Genera nuevo JWT custom y devuelve.
 
-**Errores posibles:** `400`, `401`, `404`
+**Errores posibles:** `400`, `401`
 
-> **Importante:** Si Firebase revoca el refresh token (por cambio de contraseña, deshabilitación de cuenta, etc.), este endpoint devuelve `401` y el frontend debe redirigir al login.
+> **Importante:** Si Firebase revoca el refresh token (por cambio de contraseña, deshabilitación de cuenta, etc.) o si el `X-Device-Id` no pertenece al usuario del JWT, este endpoint devuelve `401` y el frontend debe redirigir al login.
+
+> **Por qué el Bearer es obligatorio:** Sin proof-of-possession, cualquiera con acceso a un `X-Device-Id` podría rotar refresh tokens ajenos. El JWT expirado prueba que el cliente fue dueño de la sesión.
 
 ---
 
@@ -255,7 +273,9 @@ Frontend                         Backend                          Firebase
 
 _(Sin body — el HTTP status confirma el envío.)_
 
-**Errores posibles:** `400`, `422`
+> **Siempre responde `204`**, incluso si el email no existe, está mal formado o Firebase rechaza el request. Anti-enumeración: el backend traga errores transitorios y los registra como warning. La única forma de fallo visible es `400` por validación de schema (`@IsEmail` ausente o tipo inválido) antes de entrar al use case.
+
+**Errores posibles:** `204` (éxito o fallo silenciado), `400` (body no es JSON válido o falta `email`).
 
 ---
 
@@ -308,7 +328,9 @@ _(Sin body — el HTTP status confirma el cambio.)_
   "last_name": "string | null",
   "avatar_url": "string | null",
   "subscription_plan": "string",
-  "country_code": "string"
+  "country_code": "string",
+  "latitude": "number | null",
+  "longitude": "number | null"
 }
 ```
 
@@ -342,11 +364,13 @@ _(Sin body — el HTTP status confirma el cambio.)_
 {
   "id": "uuid",
   "email": "string",
-  "first_name": "string",
-  "last_name": "string",
+  "first_name": "string | null",
+  "last_name": "string | null",
   "avatar_url": "string | null",
   "subscription_plan": "string",
-  "country_code": "string"
+  "country_code": "string",
+  "latitude": "number | null",
+  "longitude": "number | null"
 }
 ```
 
@@ -370,7 +394,9 @@ _(Sin body — el HTTP status confirma el cierre de sesión.)_
 **Flujo interno:**
 
 1. Backend busca `user_devices` por `user_id` + `X-Device-Id`.
-2. Elimina el registro (refresh token + FCM token).
-3. Opcionalmente revoca el refresh token en Firebase para ese dispositivo.
+2. Elimina el registro (refresh token encriptado + FCM token).
+3. **No** se llama a Firebase. El backend ya no posee el refresh token, así que no puede renovar sesión para ese device.
+
+> **Por qué no se revoca en Firebase:** Firebase Admin SDK sólo expone `revokeRefreshTokens(uid)`, que invalida **todos** los refresh tokens del usuario (user-wide, sin filtro per-device). Llamarlo en logout cerraría también la sesión de otros devices activos — efecto colateral no deseado. Eliminar la fila de `user_devices` basta: el backend pierde la capacidad de renovar JWT para ese device. Riesgo residual: si un atacante exfiltró el refresh token de Firebase **antes** del logout, puede usarlo directamente contra `securetoken.googleapis.com` hasta que (a) Firebase lo expire, o (b) el usuario cambie contraseña (`change-password` sí llama `revokeRefreshTokens` para forzar re-login global). Aceptado para MVP.
 
 **Errores posibles:** `401`, `404`

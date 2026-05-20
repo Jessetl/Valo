@@ -34,7 +34,7 @@
 | `user_id`                | UUID      | FK → users          | Usuario dueño del dispositivo.                                                               |
 | `device_id`              | String    | Unique, Not Null    | `X-Device-Id` del dispositivo.                                                               |
 | `device_name`            | String    | Not Null            | `X-Device-Name` (formato: `[OS] [VERSION] [MARCA] [MODEL]`).                                 |
-| `firebase_fcm_token`     | String    | Unique, Not Null    | Token FCM para notificaciones push.                                                          |
+| `firebase_fcm_token`     | String    | Nullable            | Token FCM para notificaciones push. Nullable porque el cliente puede registrar el dispositivo antes de obtener permiso de notificaciones; se actualiza vía login/refresh cuando el token está disponible. |
 | `firebase_refresh_token` | String    | Not Null, Encrypted | Refresh token de Firebase. Encriptado en reposo. Usado por el backend para renovar sesiones. |
 | `platform`               | String    | Not Null            | `ios` / `android`.                                                                           |
 | `app_version`            | String    | Nullable            | Versión de la app instalada.                                                                 |
