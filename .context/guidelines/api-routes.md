@@ -71,7 +71,7 @@ Las siguientes rutas **no requieren** `Authorization`, `X-Device-Id` ni `X-Devic
 | Método   | Ruta                            | Descripción                |
 | -------- | ------------------------------- | -------------------------- |
 | 🟢 `GET` | `/api/v1/health`                | Health check del servidor. |
-| 🟢 `GET` | `/api/v1/exchange-rate/current` | Tasa de cambio actual.     |
+| 🟢 `GET` | `/api/v1/exchange-rates/current` | Tasa de cambio actual.    |
 
 ---
 

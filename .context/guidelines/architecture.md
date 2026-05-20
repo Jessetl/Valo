@@ -194,8 +194,8 @@ src/
 │       └── consumers/
 │           └── notification-send.consumer.ts
 │
-├── exchange-rate/
-│   ├── exchange-rate.module.ts
+├── exchange-rates/
+│   ├── exchange-rates.module.ts
 │   ├── domain/
 │   │   └── interfaces/
 │   │       └── exchange-rate.service.interface.ts
@@ -206,7 +206,7 @@ src/
 │   │       └── exchange-rate-response.dto.ts
 │   └── infrastructure/
 │       ├── controllers/
-│       │   └── exchange-rate.controller.ts
+│       │   └── exchange-rates.controller.ts
 │       └── adapters/
 │           └── dolarapi.adapter.ts
 │

@@ -157,7 +157,7 @@ https://ve.dolarapi.com
 
 ### Uso en Kashy
 
-- El endpoint público `GET /api/v1/exchange-rate/current` de Kashy consume DolarAPI internamente y devuelve la tasa formateada al frontend.
+- El endpoint público `GET /api/v1/exchange-rates/current` de Kashy consume DolarAPI internamente y devuelve la tasa formateada al frontend.
 - Se usa para calcular `exchange_rate_snapshot` al crear listas de compras.
 - Se usa para las conversiones `amount_local` ↔ `amount_usd` en registros financieros.
 

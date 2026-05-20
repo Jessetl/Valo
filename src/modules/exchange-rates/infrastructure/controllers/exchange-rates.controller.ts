@@ -1,5 +1,5 @@
-import { Controller, Get, Headers } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../../../shared-kernel/infrastructure/decorators/public.decorator';
 import { GetCurrentExchangeRateUseCase } from '../../application/use-cases/get-current-exchange-rate.use-case';
 import { ExchangeRateResponseDto } from '../../application/dtos/exchange-rate-response.dto';
@@ -13,14 +13,11 @@ export class ExchangeRatesController {
 
   @Public()
   @Get('current')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Obtener tasa de cambio local/USD vigente según moneda del país',
-  })
-  @ApiHeader({
-    name: 'X-Currency',
-    description: 'Código de moneda ISO 4217 (VES, ARS, CLP, PEN). Default: VES',
-    required: false,
-    example: 'VES',
+    summary: 'Obtener tasa de cambio VES/USD vigente',
+    description:
+      'Endpoint publico. Consume DolarAPI (Venezuela oficial) con cache TTL configurable via DOLARAPI_CACHE_TTL.',
   })
   @ApiResponse({
     status: 200,
@@ -31,7 +28,7 @@ export class ExchangeRatesController {
     status: 503,
     description: 'Servicio de tasa de cambio no disponible',
   })
-  async getCurrent(@Headers('X-Currency') currency?: string) {
-    return this.getCurrentExchangeRate.execute(currency);
+  getCurrent(): Promise<ExchangeRateResponseDto> {
+    return this.getCurrentExchangeRate.execute();
   }
 }

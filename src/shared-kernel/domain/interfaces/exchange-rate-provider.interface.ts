@@ -7,5 +7,5 @@ export interface ExchangeRateSnapshot {
 export const EXCHANGE_RATE_PROVIDER = Symbol('EXCHANGE_RATE_PROVIDER');
 
 export interface IExchangeRateProvider {
-  getCurrent(currency?: string): Promise<ExchangeRateSnapshot>;
+  getCurrent(): Promise<ExchangeRateSnapshot>;
 }
