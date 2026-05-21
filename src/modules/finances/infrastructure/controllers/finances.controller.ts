@@ -159,6 +159,11 @@ export class FinancesController {
     type: FinancialRecordResponseDto,
   })
   @ApiResponse({
+    status: 400,
+    description: 'UUID invalido',
+    type: ApiErrorResponse,
+  })
+  @ApiResponse({
     status: 401,
     description: 'Token invalido o ausente',
     type: ApiErrorResponse,
@@ -225,6 +230,11 @@ export class FinancesController {
   })
   @ApiParam({ name: 'id', description: 'UUID del registro' })
   @ApiResponse({ status: 204, description: 'Eliminado' })
+  @ApiResponse({
+    status: 400,
+    description: 'UUID invalido',
+    type: ApiErrorResponse,
+  })
   @ApiResponse({
     status: 401,
     description: 'Token invalido o ausente',

@@ -143,7 +143,13 @@ describe('AuthController', () => {
   it('profile devuelve user via getUserById', async () => {
     getUserById.execute.mockResolvedValue({ id: userId, email: 'a@b.com' });
 
-    const result = await controller.profile(userId);
+    const result = await controller.profile(userId, {
+      deviceId: 'dev-1',
+      deviceName: 'iPhone 15',
+      fcmToken: null,
+      platform: 'ios',
+      appVersion: null,
+    });
 
     expect(getUserById.execute).toHaveBeenCalledWith(userId);
     expect(result).toEqual({ id: userId, email: 'a@b.com' });
@@ -153,7 +159,13 @@ describe('AuthController', () => {
     updateProfile.execute.mockResolvedValue({ id: userId });
     const dto = { first_name: 'Jane' };
 
-    await controller.updateProfile(userId, dto as never);
+    await controller.updateProfile(userId, dto as never, {
+      deviceId: 'dev-1',
+      deviceName: 'iPhone 15',
+      fcmToken: null,
+      platform: 'ios',
+      appVersion: null,
+    });
 
     expect(updateProfile.execute).toHaveBeenCalledWith({ userId, dto });
   });
@@ -161,7 +173,13 @@ describe('AuthController', () => {
   it('logout delega userId + deviceId', async () => {
     logout.execute.mockResolvedValue(undefined);
 
-    await controller.logout(userId, 'dev-1');
+    await controller.logout(userId, {
+      deviceId: 'dev-1',
+      deviceName: 'iPhone 15',
+      fcmToken: null,
+      platform: 'ios',
+      appVersion: null,
+    });
 
     expect(logout.execute).toHaveBeenCalledWith({ userId, deviceId: 'dev-1' });
   });

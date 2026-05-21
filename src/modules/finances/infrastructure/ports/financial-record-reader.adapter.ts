@@ -16,18 +16,26 @@ export class FinancialRecordReaderAdapter implements IFinancialRecordReader {
 
   async findById(id: string): Promise<FinancialRecordView | null> {
     const record = await this.repo.findById(id);
-    if (!record) return null;
-    return this.toView(record);
+    if (!record || !record.date) {
+      return null;
+    }
+    return this.toView(record, record.date);
   }
 
   async findByIds(ids: string[]): Promise<FinancialRecordView[]> {
-    if (ids.length === 0) return [];
+    if (ids.length === 0) {
+      return [];
+    }
     const unique = Array.from(new Set(ids));
     const records = await this.repo.findByIds(unique);
-    return records.map((r) => this.toView(r));
+    const views: FinancialRecordView[] = [];
+    for (const r of records) {
+      if (r.date) views.push(this.toView(r, r.date));
+    }
+    return views;
   }
 
-  private toView(record: FinancialRecord): FinancialRecordView {
+  private toView(record: FinancialRecord, date: Date): FinancialRecordView {
     return {
       id: record.id,
       userId: record.userId,
@@ -35,7 +43,7 @@ export class FinancialRecordReaderAdapter implements IFinancialRecordReader {
       type: record.type,
       amountLocal: record.amountLocal,
       amountUsd: record.amountUsd,
-      date: record.date,
+      date,
     };
   }
 }

@@ -28,18 +28,18 @@
 
 > Dispositivos registrados para notificaciones push y gestión de sesiones. Almacena el refresh token de Firebase encriptado para renovación transparente de JWT.
 
-| Campo                    | Tipo      | Constraints         | Descripción                                                                                  |
-| :----------------------- | :-------- | :------------------ | :------------------------------------------------------------------------------------------- |
-| `id`                     | UUID      | PK                  | Identificador único.                                                                         |
-| `user_id`                | UUID      | FK → users          | Usuario dueño del dispositivo.                                                               |
-| `device_id`              | String    | Unique, Not Null    | `X-Device-Id` del dispositivo.                                                               |
-| `device_name`            | String    | Not Null            | `X-Device-Name` (formato: `[OS] [VERSION] [MARCA] [MODEL]`).                                 |
+| Campo                    | Tipo      | Constraints         | Descripción                                                                                                                                                                                               |
+| :----------------------- | :-------- | :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                     | UUID      | PK                  | Identificador único.                                                                                                                                                                                      |
+| `user_id`                | UUID      | FK → users          | Usuario dueño del dispositivo.                                                                                                                                                                            |
+| `device_id`              | String    | Unique, Not Null    | `X-Device-Id` del dispositivo.                                                                                                                                                                            |
+| `device_name`            | String    | Not Null            | `X-Device-Name` (formato: `[OS] [VERSION] [MARCA] [MODEL]`).                                                                                                                                              |
 | `firebase_fcm_token`     | String    | Nullable            | Token FCM para notificaciones push. Nullable porque el cliente puede registrar el dispositivo antes de obtener permiso de notificaciones; se actualiza vía login/refresh cuando el token está disponible. |
-| `firebase_refresh_token` | String    | Not Null, Encrypted | Refresh token de Firebase. Encriptado en reposo. Usado por el backend para renovar sesiones. |
-| `platform`               | String    | Not Null            | `ios` / `android`.                                                                           |
-| `app_version`            | String    | Nullable            | Versión de la app instalada.                                                                 |
-| `last_active_at`         | Timestamp | Not Null            | Última actividad del dispositivo.                                                            |
-| `created_at`             | Timestamp | Not Null            | Fecha de registro del dispositivo.                                                           |
+| `firebase_refresh_token` | String    | Not Null, Encrypted | Refresh token de Firebase. Encriptado en reposo. Usado por el backend para renovar sesiones.                                                                                                              |
+| `platform`               | String    | Not Null            | `ios` / `android`.                                                                                                                                                                                        |
+| `app_version`            | String    | Nullable            | Versión de la app instalada.                                                                                                                                                                              |
+| `last_active_at`         | Timestamp | Not Null            | Última actividad del dispositivo.                                                                                                                                                                         |
+| `created_at`             | Timestamp | Not Null            | Fecha de registro del dispositivo.                                                                                                                                                                        |
 
 ## 🛒 MÓDULO: COMPRAS
 
@@ -97,7 +97,7 @@
 | `amount_usd`     | Decimal   | Not Null    | Monto en USD.                        |
 | `priority`       | Enum      | Nullable    | `HIGH` / `MEDIUM` / `LOW`.           |
 | `interest_rate`  | Decimal   | Nullable    | Tasa de interés (si aplica).         |
-| `date`           | Date      | Not Null    | Fecha del registro.                  |
+| `date`           | Date      | Nullable    | Fecha del registro. Si es `null`, el registro no programa notificacion (recordatorio opcional). |
 | `is_recurring`   | Boolean   | Not Null    | Si es recurrente.                    |
 | `recurrence_day` | Integer   | Nullable    | Día del mes (1-31) si es recurrente. |
 | `created_at`     | Timestamp | Not Null    | Fecha de creación.                   |

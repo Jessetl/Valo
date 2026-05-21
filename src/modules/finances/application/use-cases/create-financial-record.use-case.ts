@@ -46,7 +46,7 @@ export class CreateFinancialRecordUseCase implements UseCase<
       dto.title,
       dto.amount_local,
       dto.amount_usd,
-      parseDateOnly(dto.date),
+      dto.date ? parseDateOnly(dto.date) : null,
       {
         description: dto.description ?? null,
         priority: dto.priority ?? null,
@@ -58,10 +58,12 @@ export class CreateFinancialRecordUseCase implements UseCase<
 
     const saved = await this.recordRepository.save(record);
 
-    await this.eventEmitter.emitAsync(
-      FINANCIAL_RECORD_CREATED,
-      new FinancialRecordCreatedEvent(saved.id, saved.userId, saved.date),
-    );
+    if (saved.date) {
+      await this.eventEmitter.emitAsync(
+        FINANCIAL_RECORD_CREATED,
+        new FinancialRecordCreatedEvent(saved.id, saved.userId, saved.date),
+      );
+    }
 
     const notification = await this.notificationReader.findActiveByFinancialId(
       saved.id,

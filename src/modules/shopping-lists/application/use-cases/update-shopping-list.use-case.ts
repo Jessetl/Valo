@@ -10,6 +10,8 @@ import { ShoppingListResponseDto } from '../dtos/shopping-list-response.dto';
 import { ShoppingListMapper } from '../mappers/shopping-list.mapper';
 import { ShoppingListNotFoundException } from '../../domain/exceptions/shopping-list-not-found.exception';
 import { ExchangeRateSnapshotValidator } from '../services/exchange-rate-snapshot.validator';
+import { ShoppingListType } from '../../domain/enums/shopping-list-type.enum';
+import { ValidationException } from '../../../../shared-kernel/domain/exceptions/validation.exception';
 
 interface UpdateShoppingListInput {
   listId: string;
@@ -41,6 +43,19 @@ export class UpdateShoppingListUseCase implements UseCase<
     }
 
     if (input.dto.exchangeRateSnapshot !== undefined) {
+      if (existing.listType === ShoppingListType.RECEIPT) {
+        throw new ValidationException(
+          'exchangeRateSnapshot es inmutable en listas tipo RECEIPT.',
+          [
+            {
+              field: 'exchangeRateSnapshot',
+              value: input.dto.exchangeRateSnapshot,
+              error:
+                'El snapshot de tasa solo puede actualizarse en listas TEMPLATE.',
+            },
+          ],
+        );
+      }
       await this.exchangeRateValidator.validate(input.dto.exchangeRateSnapshot);
     }
 

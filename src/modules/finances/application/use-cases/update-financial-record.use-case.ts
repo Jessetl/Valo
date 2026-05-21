@@ -55,29 +55,29 @@ export class UpdateFinancialRecordUseCase implements UseCase<
     const updated = existing.update({
       type: dto.type,
       title: dto.title,
-      description: dto.description !== undefined ? dto.description : undefined,
+      description: dto.description ?? undefined,
       amountLocal: dto.amount_local,
       amountUsd: dto.amount_usd,
-      priority: dto.priority !== undefined ? dto.priority : undefined,
-      interestRate:
-        dto.interest_rate !== undefined ? dto.interest_rate : undefined,
-      date: dateProvided && parsedDate ? parsedDate : undefined,
+      priority: dto.priority ?? undefined,
+      interestRate: dto.interest_rate ?? undefined,
+      date: dateProvided ? parsedDate : undefined,
       isRecurring: dto.is_recurring,
-      recurrenceDay:
-        dto.recurrence_day !== undefined ? dto.recurrence_day : undefined,
+      recurrenceDay: dto.recurrence_day ?? undefined,
     });
 
     const saved = await this.recordRepository.save(updated);
 
-    await this.eventEmitter.emitAsync(
-      FINANCIAL_RECORD_UPDATED,
-      new FinancialRecordUpdatedEvent(
-        saved.id,
-        saved.userId,
-        dateProvided,
-        dateProvided ? parsedDate : null,
-      ),
-    );
+    if (dateProvided) {
+      await this.eventEmitter.emitAsync(
+        FINANCIAL_RECORD_UPDATED,
+        new FinancialRecordUpdatedEvent(
+          saved.id,
+          saved.userId,
+          dateProvided,
+          saved.date,
+        ),
+      );
+    }
 
     const notification = await this.notificationReader.findActiveByFinancialId(
       saved.id,

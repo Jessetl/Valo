@@ -55,9 +55,15 @@ export class CreateFinancialRecordDto {
   @Min(0)
   interest_rate?: number | null;
 
-  @ApiProperty({ example: '2026-06-15' })
+  @ApiPropertyOptional({
+    example: '2026-06-15',
+    nullable: true,
+    description:
+      'Fecha del registro. Opcional: si se omite o es null, no se programa notificacion.',
+  })
+  @IsOptional()
   @IsDateString()
-  date!: string;
+  date?: string | null;
 
   @ApiPropertyOptional({ example: false, default: false })
   @IsOptional()

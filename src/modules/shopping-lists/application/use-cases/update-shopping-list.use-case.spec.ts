@@ -8,12 +8,14 @@ import { UpdateShoppingListUseCase } from './update-shopping-list.use-case';
 import { ExchangeRateSnapshotValidator } from '../services/exchange-rate-snapshot.validator';
 import { ValidationException } from '../../../../shared-kernel/domain/exceptions/validation.exception';
 
-function makeList(overrides: { items?: ShoppingItem[] } = {}): ShoppingList {
+function makeList(
+  overrides: { items?: ShoppingItem[]; listType?: ShoppingListType } = {},
+): ShoppingList {
   return ShoppingList.create({
     id: 'l1',
     userId: 'u1',
     name: 'Lista',
-    listType: ShoppingListType.TEMPLATE,
+    listType: overrides.listType ?? ShoppingListType.TEMPLATE,
     countryCode: 'VE',
     currencyCode: 'VES',
     exchangeRateSnapshot: 36.5,
@@ -83,6 +85,39 @@ describe('UpdateShoppingListUseCase', () => {
     ).rejects.toBeInstanceOf(ValidationException);
 
     expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it('rechaza update de snapshot en RECEIPT (inmutable) y no valida tasa', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(
+      makeList({ listType: ShoppingListType.RECEIPT }),
+    );
+
+    await expect(
+      useCase.execute({
+        listId: 'l1',
+        userId: 'u1',
+        dto: { exchangeRateSnapshot: 37 } as never,
+      }),
+    ).rejects.toBeInstanceOf(ValidationException);
+
+    expect(validator.validate).not.toHaveBeenCalled();
+    expect(repo.save).not.toHaveBeenCalled();
+  });
+
+  it('permite update sin snapshot en RECEIPT (preserva tasa existente)', async () => {
+    repo.findByIdAndUserId.mockResolvedValue(
+      makeList({ listType: ShoppingListType.RECEIPT }),
+    );
+
+    await useCase.execute({
+      listId: 'l1',
+      userId: 'u1',
+      dto: { name: 'Nombre nuevo' } as never,
+    });
+
+    expect(validator.validate).not.toHaveBeenCalled();
+    const saved = repo.save.mock.calls[0][0];
+    expect(saved.exchangeRateSnapshot).toBe(36.5);
   });
 
   it('throws cuando lista no existe O pertenece a otro user', async () => {

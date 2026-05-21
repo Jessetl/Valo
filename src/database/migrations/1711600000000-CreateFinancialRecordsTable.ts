@@ -71,7 +71,7 @@ export class CreateFinancialRecordsTable1711600000000 implements MigrationInterf
           {
             name: 'date',
             type: 'date',
-            isNullable: false,
+            isNullable: true,
           },
           {
             name: 'is_recurring',

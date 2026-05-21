@@ -58,7 +58,7 @@
   "amount_usd": 0.0,
   "priority": "HIGH | MEDIUM | LOW | null",
   "interest_rate": 0.0,
-  "date": "2026-06-15",
+  "date": "2026-06-15 | null",
   "is_recurring": false,
   "recurrence_day": "integer (1-31) | null"
 }
@@ -77,12 +77,13 @@
   "amount_usd": 0.0,
   "priority": "HIGH | null",
   "interest_rate": 0.0,
-  "date": "2026-06-15",
+  "date": "2026-06-15 | null",
   "is_recurring": false,
   "recurrence_day": null,
   "notification": {
     "id": "uuid",
     "scheduled_at": "2026-06-14",
+    "sent_at": null,
     "status": "PENDING"
   }
 }
@@ -135,7 +136,7 @@
       "amount_local": 0.0,
       "amount_usd": 0.0,
       "priority": "HIGH | null",
-      "date": "2026-06-15",
+      "date": "2026-06-15 | null",
       "is_recurring": false,
       "notification_status": "PENDING | SENT | FAILED | null"
     }
@@ -175,7 +176,7 @@
   "amount_usd": 0.0,
   "priority": "HIGH | null",
   "interest_rate": 0.0,
-  "date": "2026-06-15",
+  "date": "2026-06-15 | null",
   "is_recurring": true,
   "recurrence_day": 15,
   "notification": {

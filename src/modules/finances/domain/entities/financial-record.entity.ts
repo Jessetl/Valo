@@ -11,7 +11,7 @@ export interface FinancialRecordProps {
   amountUsd: number;
   priority: FinancialPriority | null;
   interestRate: number | null;
-  date: Date;
+  date: Date | null;
   isRecurring: boolean;
   recurrenceDay: number | null;
 }
@@ -25,7 +25,7 @@ export class FinancialRecord extends BaseEntity {
   readonly amountUsd: number;
   readonly priority: FinancialPriority | null;
   readonly interestRate: number | null;
-  readonly date: Date;
+  readonly date: Date | null;
   readonly isRecurring: boolean;
   readonly recurrenceDay: number | null;
 
@@ -51,7 +51,7 @@ export class FinancialRecord extends BaseEntity {
     title: string,
     amountLocal: number,
     amountUsd: number,
-    date: Date,
+    date: Date | null,
     options: {
       description?: string | null;
       priority?: FinancialPriority | null;
@@ -86,7 +86,7 @@ export class FinancialRecord extends BaseEntity {
     amountUsd?: number;
     priority?: FinancialPriority | null;
     interestRate?: number | null;
-    date?: Date;
+    date?: Date | null;
     isRecurring?: boolean;
     recurrenceDay?: number | null;
   }): FinancialRecord {
@@ -110,7 +110,7 @@ export class FinancialRecord extends BaseEntity {
         props.interestRate !== undefined
           ? props.interestRate
           : this.interestRate,
-      date: props.date ?? this.date,
+      date: props.date !== undefined ? props.date : this.date,
       isRecurring: nextIsRecurring,
       recurrenceDay: nextRecurrenceDay,
     });

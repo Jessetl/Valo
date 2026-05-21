@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiHeader,
 } from '@nestjs/swagger';
 import { CurrentUserId } from '../../../../shared-kernel/infrastructure/decorators/current-user-id.decorator';
 import { ParseUUIDPipe } from '../../../../shared-kernel/infrastructure/pipes/parse-uuid.pipe';
@@ -38,6 +39,8 @@ import {
 
 @ApiTags('Shopping Lists')
 @ApiBearerAuth('jwt')
+@ApiHeader({ name: 'X-Device-Id', required: true })
+@ApiHeader({ name: 'X-Device-Name', required: true })
 @Controller('shopping-lists')
 export class ShoppingListsController {
   constructor(

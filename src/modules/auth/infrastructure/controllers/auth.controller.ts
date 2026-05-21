@@ -276,7 +276,11 @@ export class AuthController {
     description: 'Usuario no encontrado',
     type: ApiErrorResponse,
   })
-  async profile(@CurrentUserId() userId: string): Promise<UserResponseDto> {
+  async profile(
+    @CurrentUserId() userId: string,
+    @DeviceInfoHeaders() _device: DeviceInfo,
+  ): Promise<UserResponseDto> {
+    void _device;
     return this.getUserById.execute(userId);
   }
 
@@ -313,7 +317,9 @@ export class AuthController {
   async updateProfile(
     @CurrentUserId() userId: string,
     @Body() dto: UpdateProfileDto,
+    @DeviceInfoHeaders() _device: DeviceInfo,
   ): Promise<UserResponseDto> {
+    void _device;
     return this.updateProfileUseCase.execute({ userId, dto });
   }
 
@@ -340,9 +346,9 @@ export class AuthController {
   })
   async logout(
     @CurrentUserId() userId: string,
-    @DeviceIdHeader() deviceId: string,
+    @DeviceInfoHeaders() device: DeviceInfo,
   ): Promise<void> {
-    await this.logoutUseCase.execute({ userId, deviceId });
+    await this.logoutUseCase.execute({ userId, deviceId: device.deviceId });
   }
 }
 

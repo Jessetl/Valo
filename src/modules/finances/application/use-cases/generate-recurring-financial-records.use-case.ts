@@ -51,6 +51,7 @@ export class GenerateRecurringFinancialRecordsUseCase implements UseCase<
       if (target.getTime() > today.getTime()) continue;
 
       if (
+        template.date &&
         template.date.getUTCFullYear() === currentYear &&
         template.date.getUTCMonth() === currentMonth0
       ) {
@@ -86,10 +87,12 @@ export class GenerateRecurringFinancialRecordsUseCase implements UseCase<
       const saved = await this.recordRepository.save(child);
       created++;
 
-      await this.eventEmitter.emitAsync(
-        FINANCIAL_RECORD_CREATED,
-        new FinancialRecordCreatedEvent(saved.id, saved.userId, saved.date),
-      );
+      if (saved.date) {
+        await this.eventEmitter.emitAsync(
+          FINANCIAL_RECORD_CREATED,
+          new FinancialRecordCreatedEvent(saved.id, saved.userId, saved.date),
+        );
+      }
     }
 
     return created;

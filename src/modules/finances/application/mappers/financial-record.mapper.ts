@@ -26,7 +26,7 @@ export class FinancialRecordMapper {
     dto.amount_usd = record.amountUsd;
     dto.priority = record.priority;
     dto.interest_rate = record.interestRate;
-    dto.date = toDateOnly(record.date);
+    dto.date = record.date ? toDateOnly(record.date) : null;
     dto.is_recurring = record.isRecurring;
     dto.recurrence_day = record.recurrenceDay;
     dto.notification = notification
@@ -57,7 +57,7 @@ export class FinancialRecordMapper {
     dto.amount_local = record.amountLocal;
     dto.amount_usd = record.amountUsd;
     dto.priority = record.priority;
-    dto.date = toDateOnly(record.date);
+    dto.date = record.date ? toDateOnly(record.date) : null;
     dto.is_recurring = record.isRecurring;
     dto.notification_status = notification ? notification.status : null;
     return dto;
@@ -71,7 +71,7 @@ export class FinancialRecordMapper {
     dto.title = record.title;
     dto.amount_local = record.amountLocal;
     dto.amount_usd = record.amountUsd;
-    dto.date = toDateOnly(record.date);
+    dto.date = record.date ? toDateOnly(record.date) : null;
     dto.priority = record.priority;
     return dto;
   }

@@ -20,12 +20,12 @@ describe('Shopping lists domain contracts', () => {
 
     expect(listError.name).toBe('ShoppingListNotFoundException');
     expect(listError.message).toContain(
-      'ShoppingList with id "list-404" not found',
+      'ShoppingList con identificador "list-404" no encontrado',
     );
 
     expect(itemError.name).toBe('ShoppingItemNotFoundException');
     expect(itemError.message).toContain(
-      'ShoppingItem with id "item-404" not found',
+      'ShoppingItem con identificador "item-404" no encontrado',
     );
   });
 

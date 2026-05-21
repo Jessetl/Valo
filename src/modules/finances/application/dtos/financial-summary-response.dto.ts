@@ -14,8 +14,8 @@ export class FinancialSummaryUpcomingExpenseDto {
   @ApiProperty({ example: 100.0 })
   amount_usd!: number;
 
-  @ApiProperty({ example: '2026-06-15' })
-  date!: string;
+  @ApiProperty({ example: '2026-06-15', nullable: true })
+  date!: string | null;
 
   @ApiPropertyOptional({ enum: FinancialPriority, nullable: true })
   priority!: FinancialPriority | null;

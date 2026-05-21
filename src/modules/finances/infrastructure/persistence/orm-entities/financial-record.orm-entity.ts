@@ -64,8 +64,8 @@ export class FinancialRecordOrmEntity {
   })
   interestRate: string | null;
 
-  @Column({ type: 'date' })
-  date: string;
+  @Column({ type: 'date', nullable: true })
+  date: string | null;
 
   @Column({ name: 'is_recurring', type: 'boolean', default: false })
   isRecurring: boolean;

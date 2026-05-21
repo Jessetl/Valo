@@ -26,7 +26,7 @@ export class FinancialRecordPersistenceMapper {
       amountUsd: Number(orm.amountUsd),
       priority: orm.priority,
       interestRate: orm.interestRate !== null ? Number(orm.interestRate) : null,
-      date: toUtcDate(orm.date),
+      date: orm.date ? toUtcDate(orm.date) : null,
       isRecurring: orm.isRecurring,
       recurrenceDay: orm.recurrenceDay,
     });
@@ -44,7 +44,7 @@ export class FinancialRecordPersistenceMapper {
     orm.priority = record.priority;
     orm.interestRate =
       record.interestRate !== null ? record.interestRate.toFixed(2) : null;
-    orm.date = toDateOnly(record.date);
+    orm.date = record.date ? toDateOnly(record.date) : null;
     orm.isRecurring = record.isRecurring;
     orm.recurrenceDay = record.recurrenceDay;
     return orm;

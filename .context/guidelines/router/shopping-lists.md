@@ -282,7 +282,11 @@
 
 > **Por qué upsert en vez de delete + insert:** preservar los `id` de items existentes permite que el cliente mantenga su estado local (selecciones, scroll, sync optimista) sin necesidad de re-mapear referencias después de cada PATCH. También evita romper relaciones futuras que apunten al `id` del item.
 
-> **Validación de `exchangeRateSnapshot`:** si el body incluye `exchangeRateSnapshot`, el backend valida que esté dentro de ±1% respecto a la tasa actual del provider (per `business-rules.md`). Si el campo se omite, se preserva el valor existente sin re-validar. Si excede, responde `422`.
+> **Validación de `exchangeRateSnapshot` (mutabilidad híbrida):**
+>
+> - Si `listType = TEMPLATE` y el body incluye `exchangeRateSnapshot`, el backend valida que esté dentro de ±1% respecto a la tasa actual del provider (per `business-rules.md`) y persiste el nuevo valor.
+> - Si `listType = RECEIPT` y el body incluye `exchangeRateSnapshot`, el backend responde `422` (snapshot inmutable post-compra).
+> - Si el body omite `exchangeRateSnapshot`, se preserva el valor existente sin re-validar (aplica a ambos tipos).
 
 **Errores posibles:** `400`, `401`, `404`, `422`
 

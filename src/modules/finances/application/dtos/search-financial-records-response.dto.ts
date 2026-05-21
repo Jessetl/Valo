@@ -22,8 +22,8 @@ export class FinancialRecordSummaryItemDto {
   @ApiPropertyOptional({ enum: FinancialPriority, nullable: true })
   priority!: FinancialPriority | null;
 
-  @ApiProperty({ example: '2026-06-15' })
-  date!: string;
+  @ApiPropertyOptional({ example: '2026-06-15', nullable: true })
+  date!: string | null;
 
   @ApiProperty({ example: false })
   is_recurring!: boolean;

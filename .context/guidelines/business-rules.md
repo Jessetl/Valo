@@ -15,21 +15,9 @@
 | **Moneda de referencia** | Dólar estadounidense (USD).                                                                                |
 | **Fuente de tasa**       | DolarAPI — tasa oficial BCV (`/v1/dolares/oficial`).                                                       |
 | **Dual currency**        | Todo monto se almacena en moneda local **y** en USD.                                                       |
-| **Quién calcula**        | El frontend calcula la conversión para UX inmediata. El backend valida la conversión al recibir los datos. |
+| **Quién calcula**        | El frontend calcula la conversión usando la tasa actual y envía ambos montos al backend.                   |
 
-### Regla de validación en backend
-
-El backend recibe `amount_local`, `amount_usd` y la tasa de cambio. Al validar, aplica una tolerancia de ±1% para cubrir diferencias por redondeo o microsegundos de desfase en la tasa.
-
-```
-expected_usd = amount_local / exchange_rate
-tolerance = expected_usd * 0.01
-
-if abs(amount_usd - expected_usd) > tolerance:
-    return 422 "Los montos no son consistentes con la tasa de cambio"
-```
-
-> Si la validación falla, el backend devuelve `422 Unprocessable Entity` con el detalle del campo inconsistente. Nunca corrige silenciosamente — el frontend debe enviar valores coherentes.
+> La única validación de tasa con tolerancia ±1% existe en **listas de compras** sobre `exchangeRateSnapshot` (ver sección [Exchange Rate Snapshot](#-exchange-rate-snapshot)). En registros financieros el backend **no valida** la consistencia entre `amount_local` y `amount_usd`: confía en el cálculo del frontend y persiste ambos valores tal cual.
 
 ### Escalabilidad multi-país (Post-MVP)
 
@@ -95,18 +83,19 @@ total_usd = subtotal_usd + iva_amount_usd
 | Regla                  | Detalle                                                                                                              |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------- |
 | **Cuándo se captura**  | Al momento de crear la lista de compras.                                                                             |
-| **Inmutable**          | Una vez creada la lista, el `exchange_rate_snapshot` **no cambia**, ni siquiera si se edita la lista.                |
+| **Mutabilidad**        | Híbrida según `listType`: en `TEMPLATE` el snapshot se puede re-cotizar (PATCH lo acepta); en `RECEIPT` es **inmutable** (PATCH lo rechaza con `422`). |
 | **Propósito**          | Garantizar que las comparaciones entre listas reflejen la tasa vigente al momento de cada compra, no la tasa actual. |
 | **Fuente**             | Campo `promedio` del endpoint `/v1/dolares/oficial` de DolarAPI.                                                     |
-| **Validación backend** | El backend valida que `exchangeRateSnapshot` recibido del cliente esté dentro de una tolerancia de ±1% respecto a la tasa actual del provider. Si excede, responde `422`. |
+| **Validación backend** | Cuando el cliente envía `exchangeRateSnapshot` (en `POST` o en `PATCH` sobre `TEMPLATE`), el backend valida que esté dentro de ±1% respecto a la tasa actual del provider. Si excede, responde `422`. |
 
-### ¿Por qué es inmutable?
+### ¿Por qué inmutable solo en RECEIPT?
 
-Si dos listas se crearon en fechas diferentes con tasas diferentes, la comparadora debe reflejar lo que el usuario realmente pagó en cada momento. Si el snapshot se actualizara, se perderían los precios reales y las métricas serían incorrectas.
+- `TEMPLATE` = lista pre-compra (en cotización). El usuario aún ajusta items y la tasa de referencia puede refrescarse mientras la lista no se cierre.
+- `RECEIPT` = lista post-compra (precios reales). La tasa del momento del pago queda congelada para que la comparadora refleje lo que el usuario realmente pagó. Si el snapshot se actualizara en `RECEIPT`, se perderían los precios históricos y las métricas serían incorrectas.
 
 ### Validación de tolerancia
 
-El cliente obtiene la tasa actual vía `GET /api/v1/exchange-rates/current` y la envía como `exchangeRateSnapshot` al crear/actualizar la lista. El backend re-consulta su propio provider (con cache TTL) y valida:
+El cliente obtiene la tasa actual vía `GET /api/v1/exchange-rates/current` y la envía como `exchangeRateSnapshot` al crear o actualizar la lista. El backend re-consulta su propio provider (con cache TTL) y valida:
 
 ```
 current_rate = exchange_rate_provider.getCurrent().rateLocalPerUsd
@@ -116,7 +105,13 @@ if abs(exchange_rate_snapshot - current_rate) > tolerance:
     return 422 "exchangeRateSnapshot fuera de tolerancia (±1%) respecto a la tasa actual"
 ```
 
-Cubre desfases por cache, latencia o redondeo. Rechaza tasas manipuladas o stale. En `PATCH`, la validación solo aplica si el cliente envía `exchangeRateSnapshot` en el body (si se omite, se preserva el valor existente sin re-validar).
+Cubre desfases por cache, latencia o redondeo. Rechaza tasas manipuladas o stale.
+
+**En `PATCH`:**
+
+- Si `listType = TEMPLATE` y el body incluye `exchangeRateSnapshot`, el backend valida tolerancia y persiste el nuevo valor.
+- Si `listType = RECEIPT` y el body incluye `exchangeRateSnapshot`, el backend responde `422` (inmutabilidad).
+- Si el body omite `exchangeRateSnapshot`, se preserva el valor existente sin re-validar (aplica a ambos tipos).
 
 ---
 
@@ -126,10 +121,10 @@ Cubre desfases por cache, latencia o redondeo. Rechaza tasas manipuladas o stale
 
 | Regla                     | Detalle                                                                     |
 | :------------------------ | :-------------------------------------------------------------------------- |
-| **Quién elige la moneda** | El usuario elige si ingresa en VES o USD.                                   |
-| **Conversión**            | El frontend calcula el monto en la otra moneda usando la tasa actual.       |
-| **Almacenamiento**        | Se guardan ambos: `amount_local` y `amount_usd`.                            |
-| **Validación backend**    | El backend valida la consistencia entre ambos montos con tolerancia de ±1%. |
+| **Quién elige la moneda** | El usuario elige si ingresa en VES o USD.                                          |
+| **Conversión**            | El frontend calcula el monto en la otra moneda usando la tasa actual.              |
+| **Almacenamiento**        | Se guardan ambos: `amount_local` y `amount_usd`.                                   |
+| **Validación backend**    | El backend **no valida** la consistencia entre ambos montos. Confía en el frontend. |
 
 ### Balance mensual
 

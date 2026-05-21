@@ -6,7 +6,7 @@ export class FinancialRecordCreatedEvent {
   constructor(
     public readonly financialId: string,
     public readonly userId: string,
-    public readonly date: Date | null,
+    public readonly date: Date,
   ) {}
 }
 
