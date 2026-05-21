@@ -142,9 +142,11 @@ export class FinancesController {
     @CurrentUserId() userId: string,
     @Query() query: FinancialSummaryQueryDto,
   ): Promise<FinancialSummaryResponseDto> {
-    const month = query.month ? Number(query.month) : undefined;
-    const year = query.year ? Number(query.year) : undefined;
-    return this.getSummary.execute({ userId, month, year });
+    return this.getSummary.execute({
+      userId,
+      month: query.month,
+      year: query.year,
+    });
   }
 
   @Get(':id')

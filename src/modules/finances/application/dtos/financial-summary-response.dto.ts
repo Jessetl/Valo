@@ -1,4 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
 import { FinancialPriority } from '../../domain/enums/financial-priority.enum';
 
 export class FinancialSummaryUpcomingExpenseDto {
@@ -51,6 +53,19 @@ export class FinancialSummaryResponseDto {
 }
 
 export class FinancialSummaryQueryDto {
+  @ApiPropertyOptional({ example: 6, minimum: 1, maximum: 12 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(12)
   month?: number;
+
+  @ApiPropertyOptional({ example: 2026, minimum: 2000, maximum: 2100 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
   year?: number;
 }
