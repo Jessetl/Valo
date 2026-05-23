@@ -68,10 +68,10 @@ Todas las peticiones a la API **deben** incluir headers que identifiquen al disp
 
 Las siguientes rutas **no requieren** `Authorization`, `X-Device-Id` ni `X-Device-Name`.
 
-| Método   | Ruta                            | Descripción                |
-| -------- | ------------------------------- | -------------------------- |
-| 🟢 `GET` | `/api/v1/health`                | Health check del servidor. |
-| 🟢 `GET` | `/api/v1/exchange-rates/current` | Tasa de cambio actual.    |
+| Método   | Ruta                             | Descripción                |
+| -------- | -------------------------------- | -------------------------- |
+| 🟢 `GET` | `/api/v1/health`                 | Health check del servidor. |
+| 🟢 `GET` | `/api/v1/exchange-rates/current` | Tasa de cambio actual.     |
 
 ---
 
@@ -244,7 +244,7 @@ Los siguientes errores pueden ocurrir en **cualquier** endpoint y **no se repite
 
 | Servicio           | Archivo                                                  | Descripción                                                       | Estado      |
 | ------------------ | -------------------------------------------------------- | ----------------------------------------------------------------- | ----------- |
-| **Auth**           | [`router/authentication.md`](./router/authentication.md) | Registro, login, Google, contraseña, perfil, logout.              | 📝 Borrador |
+| **Auth**           | [`router/authentication.md`](./router/authentication.md) | Registro, Refresh, login, Google, contraseña, perfil, logout.     | 📝 Borrador |
 | **Shopping Lists** | [`router/shopping-lists.md`](./router/shopping-lists.md) | CRUD de listas de compras (batch items). Comparadora de métricas. | 📝 Borrador |
 | **Finances**       | [`router/finances.md`](./router/finances.md)             | CRUD de ingresos/egresos. Recurrencia, recordatorios y summary.   | 📝 Borrador |
 | **Notifications**  | [`router/notifications.md`](./router/notifications.md)   | Listado, lectura, eliminación de notificaciones y preferencias.   | 📝 Borrador |

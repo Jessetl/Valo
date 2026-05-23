@@ -3,6 +3,8 @@
 > CRUD de registros financieros (ingresos y egresos) con soporte para recurrencia automática y recordatorios.
 > Todas las operaciones son exclusivas del rol KASHY (autenticado).
 
+> **Convención de nombrado:** Request y response usan **camelCase** en los keys JSON (`amountLocal`, `amountUsd`, `interestRate`, `isRecurring`, etc.). Los valores enum permanecen en `UPPER_SNAKE_CASE` (`INCOME`, `EXPENSE`, `HIGH`, `MEDIUM`, `LOW`, `PENDING`, `SENT`, `FAILED`).
+
 ---
 
 ## Lógica de Recordatorios y Recurrencia
@@ -15,11 +17,11 @@
 
 ### Recurrencia automática
 
-- Si un registro tiene `is_recurring: true` y `recurrence_day` (1-31), el backend genera automáticamente:
-  1. Un nuevo `financial_record` cada mes en el `recurrence_day`.
+- Si un registro tiene `isRecurring: true` y `recurrenceDay` (1-31), el backend genera automáticamente:
+  1. Un nuevo `financialRecord` cada mes en el `recurrenceDay`.
   2. Una notificación programada 1 día antes del nuevo registro.
 - El proceso de recurrencia se ejecuta vía un cron job / scheduler en el backend.
-- Si `recurrence_day` es 31 y el mes tiene menos días, se usa el último día del mes.
+- Si `recurrenceDay` es 31 y el mes tiene menos días, se usa el último día del mes.
 
 ---
 
@@ -54,13 +56,13 @@
   "type": "INCOME | EXPENSE",
   "title": "string",
   "description": "string | null",
-  "amount_local": 0.0,
-  "amount_usd": 0.0,
+  "amountLocal": 0.0,
+  "amountUsd": 0.0,
   "priority": "HIGH | MEDIUM | LOW | null",
-  "interest_rate": 0.0,
+  "interestRate": 0.0,
   "date": "2026-06-15 | null",
-  "is_recurring": false,
-  "recurrence_day": "integer (1-31) | null"
+  "isRecurring": false,
+  "recurrenceDay": "integer (1-31) | null"
 }
 ```
 
@@ -69,21 +71,21 @@
 ```json
 {
   "id": "uuid",
-  "user_id": "uuid",
+  "userId": "uuid",
   "type": "EXPENSE",
   "title": "string",
   "description": "string | null",
-  "amount_local": 0.0,
-  "amount_usd": 0.0,
+  "amountLocal": 0.0,
+  "amountUsd": 0.0,
   "priority": "HIGH | null",
-  "interest_rate": 0.0,
+  "interestRate": 0.0,
   "date": "2026-06-15 | null",
-  "is_recurring": false,
-  "recurrence_day": null,
+  "isRecurring": false,
+  "recurrenceDay": null,
   "notification": {
     "id": "uuid",
-    "scheduled_at": "2026-06-14",
-    "sent_at": null,
+    "scheduledAt": "2026-06-14",
+    "sentAt": null,
     "status": "PENDING"
   }
 }
@@ -93,9 +95,9 @@
 
 **Flujo interno:**
 
-1. Crea el `financial_record`.
-2. Si `date` no es `null`, crea una `notification` con `scheduled_at = date - 1 día` y `status = PENDING`.
-3. Si `is_recurring: true`, registra el `recurrence_day` para el cron job.
+1. Crea el `financialRecord`.
+2. Si `date` no es `null`, crea una `notification` con `scheduledAt = date - 1 día` y `status = PENDING`.
+3. Si `isRecurring: true`, registra el `recurrenceDay` para el cron job.
 
 **Errores posibles:** `400`, `401`, `422`
 
@@ -117,9 +119,9 @@
   "filters": {
     "type": "INCOME | EXPENSE | null",
     "priority": "HIGH | MEDIUM | LOW | null",
-    "is_recurring": "boolean | null",
-    "date_from": "date | null",
-    "date_to": "date | null"
+    "isRecurring": "boolean | null",
+    "dateFrom": "date | null",
+    "dateTo": "date | null"
   }
 }
 ```
@@ -133,24 +135,24 @@
       "id": "uuid",
       "type": "EXPENSE",
       "title": "string",
-      "amount_local": 0.0,
-      "amount_usd": 0.0,
+      "amountLocal": 0.0,
+      "amountUsd": 0.0,
       "priority": "HIGH | null",
       "date": "2026-06-15 | null",
-      "is_recurring": false,
-      "notification_status": "PENDING | SENT | FAILED | null"
+      "isRecurring": false,
+      "notificationStatus": "PENDING | SENT | FAILED | null"
     }
   ],
   "meta": {
     "page": 1,
     "limit": 20,
     "total": 35,
-    "total_pages": 2
+    "totalPages": 2
   }
 }
 ```
 
-> El listado devuelve un resumen de cada registro con el estado de su notificación. No incluye `description`, `interest_rate` ni detalle completo para mantener el payload liviano.
+> El listado devuelve un resumen de cada registro con el estado de su notificación. No incluye `description`, `interestRate` ni detalle completo para mantener el payload liviano.
 
 **Errores posibles:** `400`, `401`
 
@@ -168,21 +170,21 @@
 ```json
 {
   "id": "uuid",
-  "user_id": "uuid",
+  "userId": "uuid",
   "type": "EXPENSE",
   "title": "string",
   "description": "string | null",
-  "amount_local": 0.0,
-  "amount_usd": 0.0,
+  "amountLocal": 0.0,
+  "amountUsd": 0.0,
   "priority": "HIGH | null",
-  "interest_rate": 0.0,
+  "interestRate": 0.0,
   "date": "2026-06-15 | null",
-  "is_recurring": true,
-  "recurrence_day": 15,
+  "isRecurring": true,
+  "recurrenceDay": 15,
   "notification": {
     "id": "uuid",
-    "scheduled_at": "2026-06-14",
-    "sent_at": "2026-06-14 | null",
+    "scheduledAt": "2026-06-14",
+    "sentAt": "2026-06-14 | null",
     "status": "PENDING"
   }
 }
@@ -190,7 +192,7 @@
 
 > Si el registro no tiene notificación, `notification` es `null`.
 
-**Errores posibles:** `400`, `401`, `404`
+**Errores posibles:** `401`, `404`
 
 ---
 
@@ -208,13 +210,13 @@
   "type": "INCOME | EXPENSE | null",
   "title": "string | null",
   "description": "string | null",
-  "amount_local": "number | null",
-  "amount_usd": "number | null",
+  "amountLocal": "number | null",
+  "amountUsd": "number | null",
   "priority": "HIGH | MEDIUM | LOW | null",
-  "interest_rate": "number | null",
+  "interestRate": "number | null",
   "date": "date | null",
-  "is_recurring": "boolean | null",
-  "recurrence_day": "integer (1-31) | null"
+  "isRecurring": "boolean | null",
+  "recurrenceDay": "integer (1-31) | null"
 }
 ```
 
@@ -224,11 +226,11 @@
 
 **Flujo interno:**
 
-1. Actualiza los campos del `financial_record` que vengan en el body.
-2. Si `date` cambió y tenía notificación `PENDING`, actualiza `scheduled_at = nueva date - 1 día`.
+1. Actualiza los campos del `financialRecord` que vengan en el body.
+2. Si `date` cambió y tenía notificación `PENDING`, actualiza `scheduledAt = nueva date - 1 día`.
 3. Si `date` cambió y no tenía notificación, crea una nueva.
 4. Si `date` se envía como `null`, elimina la notificación `PENDING` existente.
-5. Si `is_recurring` cambia a `false`, limpia `recurrence_day`.
+5. Si `isRecurring` cambia a `false`, limpia `recurrenceDay`.
 
 **Errores posibles:** `400`, `401`, `404`, `422`
 
@@ -248,10 +250,10 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 **Flujo interno:**
 
 1. Elimina todas las `notifications` asociadas al registro.
-2. Elimina el `financial_record`.
+2. Elimina el `financialRecord`.
 3. Transacción única.
 
-**Errores posibles:** `400`, `401`, `404`
+**Errores posibles:** `401`, `404`
 
 ---
 
@@ -275,34 +277,34 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 {
   "month": 6,
   "year": 2026,
-  "total_income_local": 0.0,
-  "total_income_usd": 0.0,
-  "total_expense_local": 0.0,
-  "total_expense_usd": 0.0,
-  "net_balance_local": 0.0,
-  "net_balance_usd": 0.0,
-  "upcoming_expenses": [
+  "totalIncomeLocal": 0.0,
+  "totalIncomeUsd": 0.0,
+  "totalExpenseLocal": 0.0,
+  "totalExpenseUsd": 0.0,
+  "netBalanceLocal": 0.0,
+  "netBalanceUsd": 0.0,
+  "upcomingExpenses": [
     {
       "id": "uuid",
       "title": "string",
-      "amount_local": 0.0,
-      "amount_usd": 0.0,
+      "amountLocal": 0.0,
+      "amountUsd": 0.0,
       "date": "2026-06-15",
       "priority": "HIGH | null"
     },
     {
       "id": "uuid",
       "title": "string",
-      "amount_local": 0.0,
-      "amount_usd": 0.0,
+      "amountLocal": 0.0,
+      "amountUsd": 0.0,
       "date": "2026-06-20",
       "priority": "MEDIUM | null"
     },
     {
       "id": "uuid",
       "title": "string",
-      "amount_local": 0.0,
-      "amount_usd": 0.0,
+      "amountLocal": 0.0,
+      "amountUsd": 0.0,
       "date": "2026-06-28",
       "priority": "LOW | null"
     }
@@ -310,6 +312,6 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 }
 ```
 
-> `upcoming_expenses` devuelve los próximos 3 egresos por vencer (ordenados por fecha ascendente). Solo incluye egresos con `date >= hoy`.
+> `upcomingExpenses` devuelve los próximos 3 egresos por vencer (ordenados por fecha ascendente). Solo incluye egresos con `date >= hoy`.
 
 **Errores posibles:** `400`, `401`

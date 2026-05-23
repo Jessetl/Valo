@@ -3,6 +3,8 @@
 > Autenticación, gestión de contraseña, perfil y sesión del usuario.
 > Firebase es un detalle de implementación del backend — el frontend nunca interactúa directamente con Firebase.
 
+> **Convención de nombrado:** Request y response usan **camelCase** en los keys JSON (`accessToken`, `firstName`, `avatarUrl`, `countryCode`, etc.). Los valores enum permanecen en `UPPER_SNAKE_CASE` (`FREE`).
+
 ---
 
 ## Flujo de Autenticación
@@ -45,17 +47,17 @@ Frontend                         Backend                          Firebase
 
 ## Resumen de Endpoints
 
-| Emoji | Método  | Ruta                     | Auth | Descripción                                         |
-| :---: | ------- | ------------------------ | :--: | --------------------------------------------------- |
-|  🟡   | `POST`  | `/auth/register`         |  ❌  | Registro con email y contraseña.                    |
-|  🟡   | `POST`  | `/auth/login`            |  ❌  | Login con email y contraseña.                       |
-|  🟡   | `POST`  | `/auth/login/google`     |  ❌  | Login con token de Google/Firebase.                 |
+| Emoji | Método  | Ruta                     | Auth | Descripción                                                                        |
+| :---: | ------- | ------------------------ | :--: | ---------------------------------------------------------------------------------- |
+|  🟡   | `POST`  | `/auth/register`         |  ❌  | Registro con email y contraseña.                                                   |
+|  🟡   | `POST`  | `/auth/login`            |  ❌  | Login con email y contraseña.                                                      |
+|  🟡   | `POST`  | `/auth/login/google`     |  ❌  | Login con token de Google/Firebase.                                                |
 |  🟡   | `POST`  | `/auth/refresh`          |  ⚠️  | Renovación de JWT. Requiere JWT expirado como proof-of-possession + `X-Device-Id`. |
-|  🟡   | `POST`  | `/auth/recover-password` |  ❌  | Envío de email de recuperación.                     |
-|  🟡   | `POST`  | `/auth/change-password`  |  ✅  | Cambio de contraseña.                               |
-|  🟢   | `GET`   | `/auth/profile`          |  ✅  | Obtener perfil del usuario.                         |
-|  🟠   | `PATCH` | `/auth/profile`          |  ✅  | Actualizar datos del perfil.                        |
-|  🟡   | `POST`  | `/auth/logout`           |  ✅  | Cerrar sesión y eliminar device token.              |
+|  🟡   | `POST`  | `/auth/recover-password` |  ❌  | Envío de email de recuperación.                                                    |
+|  🟡   | `POST`  | `/auth/change-password`  |  ✅  | Cambio de contraseña.                                                              |
+|  🟢   | `GET`   | `/auth/profile`          |  ✅  | Obtener perfil del usuario.                                                        |
+|  🟠   | `PATCH` | `/auth/profile`          |  ✅  | Actualizar datos del perfil.                                                       |
+|  🟡   | `POST`  | `/auth/logout`           |  ✅  | Cerrar sesión y eliminar device token.                                             |
 
 > **Nota:** Todas las rutas llevan el prefijo `/api/v1`. Los headers `X-Device-Id` y `X-Device-Name` son obligatorios en todos los endpoints de auth (excepto `recover-password`). Los endpoints con Auth ✅ requieren además `Authorization: Bearer {jwt}`.
 
@@ -76,15 +78,15 @@ Frontend                         Backend                          Firebase
 {
   "email": "string",
   "password": "string (min 8, max 64)",
-  "first_name": "string (max 80)",
-  "last_name": "string (max 80)",
-  "country_code": "string (ISO 3166-1 alpha-2, len 2)",
+  "firstName": "string (max 80)",
+  "lastName": "string (max 80)",
+  "countryCode": "string (ISO 3166-1 alpha-2, len 2)",
   "latitude": "number | null",
   "longitude": "number | null"
 }
 ```
 
-> **Campos requeridos:** `email`, `password`, `first_name`, `last_name`, `country_code`.
+> **Campos requeridos:** `email`, `password`, `firstName`, `lastName`, `countryCode`.
 > **Campos opcionales:** `latitude`, `longitude` (se persisten en `users` si vienen).
 
 **Response `201 Created`:**
@@ -99,7 +101,7 @@ Frontend                         Backend                          Firebase
 **Flujo interno:**
 
 1. Backend valida que `email` no exista en BD.
-2. Llama a Firebase REST API `signUp` con `email`, `password` y `displayName = "{first_name} {last_name}"`.
+2. Llama a Firebase REST API `signUp` con `email`, `password` y `displayName = "{firstName} {lastName}"`.
 3. Persiste el usuario en `users` con los datos recibidos + `firebase_uid` de Firebase + `subscription_plan = FREE`.
 4. Si la persistencia falla, hace rollback eliminando el usuario en Firebase.
 5. Emite evento `USER_REGISTERED` — notifications crea fila default en `notification_preferences`.
@@ -132,16 +134,16 @@ Frontend                         Backend                          Firebase
 
 ```json
 {
-  "access_token": "string (JWT custom, 15 min)",
-  "expires_in": 900,
+  "accessToken": "string (JWT custom, 15 min)",
+  "expiresIn": 900,
   "user": {
     "id": "uuid",
     "email": "string",
-    "first_name": "string | null",
-    "last_name": "string | null",
-    "avatar_url": "string | null",
-    "subscription_plan": "string",
-    "country_code": "string",
+    "firstName": "string | null",
+    "lastName": "string | null",
+    "avatarUrl": "string | null",
+    "subscriptionPlan": "string",
+    "countryCode": "string",
     "latitude": "number | null",
     "longitude": "number | null"
   }
@@ -157,7 +159,7 @@ Frontend                         Backend                          Firebase
 5. Genera JWT custom con `userId`, `email`, `role` y expira en 15 min.
 6. Devuelve el JWT custom + datos del usuario.
 
-> **`country_code` por defecto:** El flujo normal asume que el usuario ya existe en BD (persistido por `POST /auth/register`, que valida `country_code` del body). Si el usuario existe en Firebase pero **no** en BD (caso orphan: BD perdida, migración, registro fuera de banda), `login` auto-crea la fila con `country_code = 'VE'` como fallback. El usuario debe actualizarlo vía `PATCH /auth/profile`. No se infiere de IP ni de headers — Venezuela es el mercado primario del MVP.
+> **`countryCode` por defecto:** El flujo normal asume que el usuario ya existe en BD (persistido por `POST /auth/register`, que valida `countryCode` del body). Si el usuario existe en Firebase pero **no** en BD (caso orphan: BD perdida, migración, registro fuera de banda), `login` auto-crea la fila con `countryCode = 'VE'` como fallback. El usuario debe actualizarlo vía `PATCH /auth/profile`. No se infiere de IP ni de headers — Venezuela es el mercado primario del MVP.
 
 **Errores posibles:** `400`, `401`
 
@@ -174,7 +176,7 @@ Frontend                         Backend                          Firebase
 
 ```json
 {
-  "google_id_token": "string"
+  "googleIdToken": "string"
 }
 ```
 
@@ -182,16 +184,16 @@ Frontend                         Backend                          Firebase
 
 ```json
 {
-  "access_token": "string (JWT custom, 15 min)",
-  "expires_in": 900,
+  "accessToken": "string (JWT custom, 15 min)",
+  "expiresIn": 900,
   "user": {
     "id": "uuid",
     "email": "string",
-    "first_name": "string | null",
-    "last_name": "string | null",
-    "avatar_url": "string | null",
-    "subscription_plan": "string",
-    "country_code": "string",
+    "firstName": "string | null",
+    "lastName": "string | null",
+    "avatarUrl": "string | null",
+    "subscriptionPlan": "string",
+    "countryCode": "string",
     "latitude": "number | null",
     "longitude": "number | null"
   }
@@ -200,13 +202,13 @@ Frontend                         Backend                          Firebase
 
 **Flujo interno:**
 
-1. Backend verifica el `google_id_token` con Firebase Admin SDK.
+1. Backend verifica el `googleIdToken` con Firebase Admin SDK.
 2. Si el usuario no existe, lo crea en BD (auto-registro).
 3. Obtiene `refreshToken` de Firebase vía token exchange.
 4. Guarda `refreshToken` encriptado en `user_devices`.
 5. Genera JWT custom y devuelve.
 
-> **`country_code` por defecto:** El flujo Google no recibe `country_code` en el body (sólo `google_id_token`). En auto-registro, el backend persiste el usuario con `country_code = 'VE'` (mercado primario del MVP). El usuario puede actualizarlo vía `PATCH /auth/profile`. No se infiere de IP, locale del idToken ni headers.
+> **`countryCode` por defecto:** El flujo Google no recibe `countryCode` en el body (sólo `googleIdToken`). En auto-registro, el backend persiste el usuario con `countryCode = 'VE'` (mercado primario del MVP). El usuario puede actualizarlo vía `PATCH /auth/profile`. No se infiere de IP, locale del idToken ni headers.
 
 **Errores posibles:** `400`, `401`
 
@@ -229,8 +231,8 @@ Frontend                         Backend                          Firebase
 
 ```json
 {
-  "access_token": "string (nuevo JWT custom, 15 min)",
-  "expires_in": 900
+  "accessToken": "string (nuevo JWT custom, 15 min)",
+  "expiresIn": 900
 }
 ```
 
@@ -290,8 +292,8 @@ _(Sin body — el HTTP status confirma el envío.)_
 
 ```json
 {
-  "current_password": "string",
-  "new_password": "string"
+  "currentPassword": "string",
+  "newPassword": "string"
 }
 ```
 
@@ -301,7 +303,7 @@ _(Sin body — el HTTP status confirma el cambio.)_
 
 **Flujo interno:**
 
-1. Backend verifica `current_password` contra Firebase.
+1. Backend verifica `currentPassword` contra Firebase.
 2. Actualiza la contraseña en Firebase.
 3. Revoca refresh tokens de Firebase (`revokeRefreshTokens`).
 4. Elimina todos los `firebase_refresh_token` de `user_devices` del usuario excepto el dispositivo actual.
@@ -324,11 +326,11 @@ _(Sin body — el HTTP status confirma el cambio.)_
 {
   "id": "uuid",
   "email": "string",
-  "first_name": "string | null",
-  "last_name": "string | null",
-  "avatar_url": "string | null",
-  "subscription_plan": "string",
-  "country_code": "string",
+  "firstName": "string | null",
+  "lastName": "string | null",
+  "avatarUrl": "string | null",
+  "subscriptionPlan": "string",
+  "countryCode": "string",
   "latitude": "number | null",
   "longitude": "number | null"
 }
@@ -349,10 +351,10 @@ _(Sin body — el HTTP status confirma el cambio.)_
 
 ```json
 {
-  "first_name": "string | null",
-  "last_name": "string | null",
-  "avatar_url": "string | null",
-  "country_code": "string | null",
+  "firstName": "string | null",
+  "lastName": "string | null",
+  "avatarUrl": "string | null",
+  "countryCode": "string | null",
   "latitude": "number | null",
   "longitude": "number | null"
 }
@@ -364,11 +366,11 @@ _(Sin body — el HTTP status confirma el cambio.)_
 {
   "id": "uuid",
   "email": "string",
-  "first_name": "string | null",
-  "last_name": "string | null",
-  "avatar_url": "string | null",
-  "subscription_plan": "string",
-  "country_code": "string",
+  "firstName": "string | null",
+  "lastName": "string | null",
+  "avatarUrl": "string | null",
+  "subscriptionPlan": "string",
+  "countryCode": "string",
   "latitude": "number | null",
   "longitude": "number | null"
 }

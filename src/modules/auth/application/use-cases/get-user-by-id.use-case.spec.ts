@@ -30,9 +30,9 @@ describe('GetUserByIdUseCase', () => {
     expect(result).toMatchObject({
       id: 'u-1',
       email: 'a@b.com',
-      first_name: 'Jane',
-      last_name: 'Doe',
-      country_code: 'VE',
+      firstName: 'Jane',
+      lastName: 'Doe',
+      countryCode: 'VE',
     });
   });
 });

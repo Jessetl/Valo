@@ -143,7 +143,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: 400,
-    description: 'google_id_token invalido',
+    description: 'googleIdToken invalido',
     type: ApiErrorResponse,
   })
   @ApiResponse({

@@ -125,7 +125,7 @@ describe('RefreshTokenUseCase', () => {
     const result = await useCase.execute(input);
 
     expect(deviceRepository.save).toHaveBeenCalled();
-    expect(result.access_token).toBe('jwt');
+    expect(result.accessToken).toBe('jwt');
   });
 
   it('no rota cuando Firebase devuelve mismo refresh token', async () => {

@@ -66,13 +66,13 @@ describe('ChangePasswordUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'u-1',
-        dto: { current_password: 'a', new_password: 'b' } as never,
+        dto: { currentPassword: 'a', newPassword: 'b' } as never,
         device,
       }),
     ).rejects.toBeInstanceOf(UserNotFoundException);
   });
 
-  it('propaga error si current_password invalido', async () => {
+  it('propaga error si currentPassword invalido', async () => {
     firebaseAuth.signIn.mockRejectedValueOnce(
       new UnauthorizedException('Credenciales invalidas'),
     );
@@ -80,7 +80,7 @@ describe('ChangePasswordUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'u-1',
-        dto: { current_password: 'wrong', new_password: 'b' } as never,
+        dto: { currentPassword: 'wrong', newPassword: 'b' } as never,
         device,
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
@@ -91,7 +91,7 @@ describe('ChangePasswordUseCase', () => {
   it('ejecuta secuencia: verify → update → revoke → delete devices → re-signin → upsert', async () => {
     await useCase.execute({
       userId: 'u-1',
-      dto: { current_password: 'old', new_password: 'new' } as never,
+      dto: { currentPassword: 'old', newPassword: 'new' } as never,
       device,
     });
 

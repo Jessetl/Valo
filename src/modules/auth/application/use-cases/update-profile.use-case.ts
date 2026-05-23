@@ -31,10 +31,10 @@ export class UpdateProfileUseCase implements UseCase<
     }
 
     const updated = user.updateProfile({
-      firstName: dto.first_name,
-      lastName: dto.last_name,
-      avatarUrl: dto.avatar_url,
-      countryCode: dto.country_code,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      avatarUrl: dto.avatarUrl,
+      countryCode: dto.countryCode,
       latitude: dto.latitude,
       longitude: dto.longitude,
     });

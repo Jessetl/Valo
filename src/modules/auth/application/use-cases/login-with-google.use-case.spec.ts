@@ -86,7 +86,7 @@ describe('LoginWithGoogleUseCase', () => {
 
     await expect(
       useCase.execute({
-        dto: { google_id_token: 'gid' } as never,
+        dto: { googleIdToken: 'gid' } as never,
         device,
       }),
     ).rejects.toBeInstanceOf(EmailNotVerifiedException);
@@ -98,7 +98,7 @@ describe('LoginWithGoogleUseCase', () => {
     userRepository.findByFirebaseUid.mockResolvedValue(null);
 
     const result = await useCase.execute({
-      dto: { google_id_token: 'gid' } as never,
+      dto: { googleIdToken: 'gid' } as never,
       device,
     });
 
@@ -113,7 +113,7 @@ describe('LoginWithGoogleUseCase', () => {
       USER_REGISTERED,
       expect.objectContaining({ userId: expect.any(String) }),
     );
-    expect(result.access_token).toBe('jwt');
+    expect(result.accessToken).toBe('jwt');
   });
 
   it('reutiliza user existente sin emitir USER_REGISTERED', async () => {
@@ -121,7 +121,7 @@ describe('LoginWithGoogleUseCase', () => {
     userRepository.findByFirebaseUid.mockResolvedValue(existing);
 
     await useCase.execute({
-      dto: { google_id_token: 'gid' } as never,
+      dto: { googleIdToken: 'gid' } as never,
       device,
     });
 

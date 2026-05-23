@@ -40,7 +40,7 @@ export class RegisterUserUseCase implements UseCase<
     }
 
     const displayName =
-      [dto.first_name, dto.last_name].filter(Boolean).join(' ').trim() ||
+      [dto.firstName, dto.lastName].filter(Boolean).join(' ').trim() ||
       undefined;
 
     const firebaseResult = await this.firebaseAuth.signUp({
@@ -55,9 +55,9 @@ export class RegisterUserUseCase implements UseCase<
         randomUUID(),
         firebaseResult.firebaseUid,
         dto.email,
-        dto.country_code,
-        dto.first_name,
-        dto.last_name,
+        dto.countryCode,
+        dto.firstName,
+        dto.lastName,
         null,
         dto.latitude ?? null,
         dto.longitude ?? null,

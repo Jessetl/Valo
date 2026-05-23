@@ -75,8 +75,8 @@ export class LoginUserUseCase implements UseCase<
     const signed = await this.jwtTokenService.signFor(user);
 
     return {
-      access_token: signed.accessToken,
-      expires_in: signed.expiresIn,
+      accessToken: signed.accessToken,
+      expiresIn: signed.expiresIn,
       user: UserMapper.toResponse(user),
     };
   }

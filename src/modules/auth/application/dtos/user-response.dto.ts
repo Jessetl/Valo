@@ -9,22 +9,22 @@ export class UserResponseDto {
   email!: string;
 
   @ApiPropertyOptional({ example: 'Jane', nullable: true })
-  first_name!: string | null;
+  firstName!: string | null;
 
   @ApiPropertyOptional({ example: 'Doe', nullable: true })
-  last_name!: string | null;
+  lastName!: string | null;
 
   @ApiPropertyOptional({
     example: 'https://cdn.kashy.app/avatars/jane.png',
     nullable: true,
   })
-  avatar_url!: string | null;
+  avatarUrl!: string | null;
 
   @ApiProperty({ enum: SubscriptionPlan, example: SubscriptionPlan.FREE })
-  subscription_plan!: SubscriptionPlan;
+  subscriptionPlan!: SubscriptionPlan;
 
   @ApiProperty({ example: 'VE' })
-  country_code!: string;
+  countryCode!: string;
 
   @ApiPropertyOptional({ example: 10.4806, nullable: true })
   latitude!: number | null;

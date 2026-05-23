@@ -6,11 +6,11 @@ export class UserMapper {
     const dto = new UserResponseDto();
     dto.id = user.id;
     dto.email = user.email;
-    dto.first_name = user.firstName;
-    dto.last_name = user.lastName;
-    dto.avatar_url = user.avatarUrl;
-    dto.subscription_plan = user.subscriptionPlan;
-    dto.country_code = user.countryCode;
+    dto.firstName = user.firstName;
+    dto.lastName = user.lastName;
+    dto.avatarUrl = user.avatarUrl;
+    dto.subscriptionPlan = user.subscriptionPlan;
+    dto.countryCode = user.countryCode;
     dto.latitude = user.latitude;
     dto.longitude = user.longitude;
     return dto;

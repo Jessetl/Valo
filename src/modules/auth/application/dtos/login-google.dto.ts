@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
 import { IsString, MinLength } from 'class-validator';
 
 export class LoginGoogleDto {
@@ -10,6 +9,5 @@ export class LoginGoogleDto {
   })
   @IsString()
   @MinLength(10)
-  @Expose({ name: 'google_id_token' })
-  google_id_token!: string;
+  googleIdToken!: string;
 }

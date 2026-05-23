@@ -1,5 +1,4 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
 import {
   IsEmail,
   IsNumber,
@@ -24,20 +23,17 @@ export class RegisterUserDto {
   @ApiProperty({ example: 'Jane', maxLength: 80 })
   @IsString()
   @MaxLength(80)
-  @Expose({ name: 'first_name' })
-  first_name!: string;
+  firstName!: string;
 
   @ApiProperty({ example: 'Doe', maxLength: 80 })
   @IsString()
   @MaxLength(80)
-  @Expose({ name: 'last_name' })
-  last_name!: string;
+  lastName!: string;
 
   @ApiProperty({ example: 'VE', description: 'Codigo ISO 3166-1 alpha-2' })
   @IsString()
   @Length(2, 2)
-  @Expose({ name: 'country_code' })
-  country_code!: string;
+  countryCode!: string;
 
   @ApiPropertyOptional({ example: 10.4806 })
   @IsOptional()

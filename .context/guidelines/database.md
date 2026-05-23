@@ -86,22 +86,22 @@
 
 > Registros de ingresos y egresos con soporte para recurrencia y prioridad.
 
-| Campo            | Tipo      | Constraints | Descripción                          |
-| :--------------- | :-------- | :---------- | :----------------------------------- |
-| `id`             | UUID      | PK          | Identificador único.                 |
-| `user_id`        | UUID      | FK → users  | Usuario dueño del registro.          |
-| `type`           | Enum      | Not Null    | `INCOME` / `EXPENSE`.                |
-| `title`          | String    | Not Null    | Título del registro.                 |
-| `description`    | String    | Nullable    | Descripción adicional.               |
-| `amount_local`   | Decimal   | Not Null    | Monto en moneda local.               |
-| `amount_usd`     | Decimal   | Not Null    | Monto en USD.                        |
-| `priority`       | Enum      | Nullable    | `HIGH` / `MEDIUM` / `LOW`.           |
-| `interest_rate`  | Decimal   | Nullable    | Tasa de interés (si aplica).         |
+| Campo            | Tipo      | Constraints | Descripción                                                                                     |
+| :--------------- | :-------- | :---------- | :---------------------------------------------------------------------------------------------- |
+| `id`             | UUID      | PK          | Identificador único.                                                                            |
+| `user_id`        | UUID      | FK → users  | Usuario dueño del registro.                                                                     |
+| `type`           | Enum      | Not Null    | `INCOME` / `EXPENSE`.                                                                           |
+| `title`          | String    | Not Null    | Título del registro.                                                                            |
+| `description`    | String    | Nullable    | Descripción adicional.                                                                          |
+| `amount_local`   | Decimal   | Not Null    | Monto en moneda local.                                                                          |
+| `amount_usd`     | Decimal   | Not Null    | Monto en USD.                                                                                   |
+| `priority`       | Enum      | Nullable    | `HIGH` / `MEDIUM` / `LOW`.                                                                      |
+| `interest_rate`  | Decimal   | Nullable    | Tasa de interés (si aplica).                                                                    |
 | `date`           | Date      | Nullable    | Fecha del registro. Si es `null`, el registro no programa notificacion (recordatorio opcional). |
-| `is_recurring`   | Boolean   | Not Null    | Si es recurrente.                    |
-| `recurrence_day` | Integer   | Nullable    | Día del mes (1-31) si es recurrente. |
-| `created_at`     | Timestamp | Not Null    | Fecha de creación.                   |
-| `updated_at`     | Timestamp | Not Null    | Última actualización.                |
+| `is_recurring`   | Boolean   | Not Null    | Si es recurrente.                                                                               |
+| `recurrence_day` | Integer   | Nullable    | Día del mes (1-31) si es recurrente.                                                            |
+| `created_at`     | Timestamp | Not Null    | Fecha de creación.                                                                              |
+| `updated_at`     | Timestamp | Not Null    | Última actualización.                                                                           |
 
 ### `financial_goals` _(Premium — Post-MVP)_
 

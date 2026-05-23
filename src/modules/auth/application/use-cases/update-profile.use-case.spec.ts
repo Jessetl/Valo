@@ -23,7 +23,7 @@ describe('UpdateProfileUseCase', () => {
     await expect(
       useCase.execute({
         userId: 'u-1',
-        dto: { first_name: 'Jane' } as never,
+        dto: { firstName: 'Jane' } as never,
       }),
     ).rejects.toBeInstanceOf(UserNotFoundException);
   });
@@ -42,12 +42,12 @@ describe('UpdateProfileUseCase', () => {
 
     const result = await useCase.execute({
       userId: 'u-1',
-      dto: { first_name: 'NewFirst', latitude: 10.5 } as never,
+      dto: { firstName: 'NewFirst', latitude: 10.5 } as never,
     });
 
-    expect(result.first_name).toBe('NewFirst');
-    expect(result.last_name).toBe('OldLast');
-    expect(result.avatar_url).toBe('old-avatar');
+    expect(result.firstName).toBe('NewFirst');
+    expect(result.lastName).toBe('OldLast');
+    expect(result.avatarUrl).toBe('old-avatar');
     expect(result.latitude).toBe(10.5);
     expect(result.email).toBe('a@b.com');
   });
@@ -66,11 +66,11 @@ describe('UpdateProfileUseCase', () => {
 
     const result = await useCase.execute({
       userId: 'u-1',
-      dto: { avatar_url: null } as never,
+      dto: { avatarUrl: null } as never,
     });
 
-    expect(result.avatar_url).toBeNull();
-    expect(result.first_name).toBe('Jane');
+    expect(result.avatarUrl).toBeNull();
+    expect(result.firstName).toBe('Jane');
   });
 
   it('no modifica email aunque venga en dto (campo ignorado)', async () => {
@@ -79,7 +79,7 @@ describe('UpdateProfileUseCase', () => {
 
     const result = await useCase.execute({
       userId: 'u-1',
-      dto: { email: 'hacker@evil.com', first_name: 'Jane' } as never,
+      dto: { email: 'hacker@evil.com', firstName: 'Jane' } as never,
     });
 
     expect(result.email).toBe('a@b.com');

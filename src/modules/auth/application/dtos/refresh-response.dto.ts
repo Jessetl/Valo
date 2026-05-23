@@ -5,8 +5,8 @@ export class RefreshResponseDto {
     example: 'eyJhbGciOiJIUzI1NiIs...',
     description: 'Nuevo JWT custom firmado por el backend (TTL 15 min)',
   })
-  access_token!: string;
+  accessToken!: string;
 
   @ApiProperty({ example: 900, description: 'TTL del JWT en segundos' })
-  expires_in!: number;
+  expiresIn!: number;
 }

@@ -102,7 +102,7 @@ describe('LoginUserUseCase', () => {
     expect(userRepository.save).not.toHaveBeenCalled();
     expect(eventEmitter.emitAsync).not.toHaveBeenCalled();
     expect(deviceRepository.save).toHaveBeenCalled();
-    expect(result.access_token).toBe('jwt');
+    expect(result.accessToken).toBe('jwt');
   });
 
   it('crea user y emite USER_REGISTERED cuando firebaseUid no existe', async () => {

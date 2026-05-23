@@ -45,10 +45,10 @@ export class ChangePasswordUseCase implements UseCase<
 
     await this.firebaseAuth.signIn({
       email: user.email,
-      password: dto.current_password,
+      password: dto.currentPassword,
     });
 
-    await this.firebaseAuth.updatePassword(user.firebaseUid, dto.new_password);
+    await this.firebaseAuth.updatePassword(user.firebaseUid, dto.newPassword);
 
     await this.firebaseAuth.revokeRefreshTokens(user.firebaseUid);
 
@@ -59,7 +59,7 @@ export class ChangePasswordUseCase implements UseCase<
 
     const reSignIn = await this.firebaseAuth.signIn({
       email: user.email,
-      password: dto.new_password,
+      password: dto.newPassword,
     });
 
     const encrypted = encryptString(reSignIn.refreshToken);

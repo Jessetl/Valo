@@ -20,6 +20,8 @@
 
 > **Nota:** Todas las rutas llevan el prefijo `/api/v1`. Los headers `Authorization`, `X-Device-Id` y `X-Device-Name` son obligatorios en todos los endpoints.
 
+> **Convención de nombrado:** Request y response usan **camelCase** en los keys JSON (`isRead`, `sentAt`, `unreadCount`, `pushEnabled`, etc.). Los valores enum permanecen en `UPPER_SNAKE_CASE` (`PENDING`, `SENT`, `FAILED`, `EXPENSE`).
+
 ---
 
 ## Endpoints
@@ -38,11 +40,11 @@
   "page": 1,
   "limit": 20,
   "filters": {
-    "is_read": "boolean | null",
+    "isRead": "boolean | null",
     "status": "PENDING | SENT | FAILED | null",
     "type": "string | null",
-    "scheduled_date_from": "date | null",
-    "scheduled_date_to": "date | null"
+    "scheduledDateFrom": "date | null",
+    "scheduledDateTo": "date | null"
   }
 }
 ```
@@ -55,16 +57,16 @@
     {
       "id": "uuid",
       "type": "string",
-      "scheduled_at": "2026-06-14",
-      "sent_at": "2026-06-14 | null",
+      "scheduledAt": "2026-06-14",
+      "sentAt": "2026-06-14 | null",
       "status": "SENT",
-      "is_read": false,
-      "financial_record": {
+      "isRead": false,
+      "financialRecord": {
         "id": "uuid",
         "title": "string",
         "type": "EXPENSE",
-        "amount_local": 0.0,
-        "amount_usd": 0.0,
+        "amountLocal": 0.0,
+        "amountUsd": 0.0,
         "date": "2026-06-15"
       }
     }
@@ -73,7 +75,7 @@
     "page": 1,
     "limit": 20,
     "total": 25,
-    "total_pages": 2
+    "totalPages": 2
   }
 }
 ```
@@ -95,7 +97,7 @@
 
 ```json
 {
-  "unread_count": 5
+  "unreadCount": 5
 }
 ```
 
@@ -116,22 +118,22 @@
 {
   "id": "uuid",
   "type": "string",
-  "scheduled_at": "2026-06-14",
-  "sent_at": "2026-06-14 | null",
+  "scheduledAt": "2026-06-14",
+  "sentAt": "2026-06-14 | null",
   "status": "SENT",
-  "is_read": true,
-  "financial_record": {
+  "isRead": true,
+  "financialRecord": {
     "id": "uuid",
     "title": "string",
     "type": "EXPENSE",
-    "amount_local": 0.0,
-    "amount_usd": 0.0,
+    "amountLocal": 0.0,
+    "amountUsd": 0.0,
     "date": "2026-06-15"
   }
 }
 ```
 
-> Devuelve la notificación actualizada con `is_read: true`.
+> Devuelve la notificación actualizada con `isRead: true`.
 
 **Errores posibles:** `400`, `401`, `404`
 
@@ -150,7 +152,7 @@
 
 ```json
 {
-  "marked_count": 5
+  "markedCount": 5
 }
 ```
 
@@ -188,10 +190,10 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 
 ```json
 {
-  "push_enabled": true,
-  "debt_reminders": true,
-  "price_alerts": false,
-  "list_reminders": true
+  "pushEnabled": true,
+  "debtReminders": true,
+  "priceAlerts": false,
+  "listReminders": true
 }
 ```
 
@@ -212,10 +214,10 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 
 ```json
 {
-  "push_enabled": "boolean | null",
-  "debt_reminders": "boolean | null",
-  "price_alerts": "boolean | null",
-  "list_reminders": "boolean | null"
+  "pushEnabled": "boolean | null",
+  "debtReminders": "boolean | null",
+  "priceAlerts": "boolean | null",
+  "listReminders": "boolean | null"
 }
 ```
 
@@ -223,10 +225,10 @@ _(Sin body — el HTTP status confirma la eliminación.)_
 
 ```json
 {
-  "push_enabled": true,
-  "debt_reminders": true,
-  "price_alerts": true,
-  "list_reminders": false
+  "pushEnabled": true,
+  "debtReminders": true,
+  "priceAlerts": true,
+  "listReminders": false
 }
 ```
 

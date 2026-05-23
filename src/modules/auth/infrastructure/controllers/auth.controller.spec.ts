@@ -76,7 +76,7 @@ describe('AuthController', () => {
   });
 
   it('login delega dto + device', async () => {
-    loginUser.execute.mockResolvedValue({ access_token: 't' });
+    loginUser.execute.mockResolvedValue({ accessToken: 't' });
     const dto = { email: 'a@b.com', password: 'pw' };
 
     await controller.login(dto as never, device);
@@ -85,8 +85,8 @@ describe('AuthController', () => {
   });
 
   it('loginGoogle delega dto + device', async () => {
-    loginWithGoogle.execute.mockResolvedValue({ access_token: 't' });
-    const dto = { google_id_token: 'gid' };
+    loginWithGoogle.execute.mockResolvedValue({ accessToken: 't' });
+    const dto = { googleIdToken: 'gid' };
 
     await controller.loginGoogle(dto as never, device);
 
@@ -94,7 +94,7 @@ describe('AuthController', () => {
   });
 
   it('refresh delega deviceId + accessTokenHint extraido del header', async () => {
-    refreshToken.execute.mockResolvedValue({ access_token: 't' });
+    refreshToken.execute.mockResolvedValue({ accessToken: 't' });
 
     await controller.refresh('dev-1', 'Bearer jwt-expirado');
 
@@ -129,7 +129,7 @@ describe('AuthController', () => {
 
   it('changePassword delega userId + dto + device', async () => {
     changePassword.execute.mockResolvedValue(undefined);
-    const dto = { current_password: 'a', new_password: 'b' };
+    const dto = { currentPassword: 'a', newPassword: 'b' };
 
     await controller.changePassword(userId, dto as never, device);
 
@@ -157,7 +157,7 @@ describe('AuthController', () => {
 
   it('updateProfile delega userId + dto', async () => {
     updateProfile.execute.mockResolvedValue({ id: userId });
-    const dto = { first_name: 'Jane' };
+    const dto = { firstName: 'Jane' };
 
     await controller.updateProfile(userId, dto as never, {
       deviceId: 'dev-1',

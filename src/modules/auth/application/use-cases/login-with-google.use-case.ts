@@ -55,7 +55,7 @@ export class LoginWithGoogleUseCase implements UseCase<
     const { dto, device } = input;
 
     const firebaseResult = await this.firebaseAuth.signInWithGoogle(
-      dto.google_id_token,
+      dto.googleIdToken,
     );
 
     if (!firebaseResult.emailVerified) {
@@ -69,8 +69,8 @@ export class LoginWithGoogleUseCase implements UseCase<
     const signed = await this.jwtTokenService.signFor(user);
 
     return {
-      access_token: signed.accessToken,
-      expires_in: signed.expiresIn,
+      accessToken: signed.accessToken,
+      expiresIn: signed.expiresIn,
       user: UserMapper.toResponse(user),
     };
   }

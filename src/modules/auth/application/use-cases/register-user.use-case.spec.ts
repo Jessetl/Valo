@@ -17,9 +17,9 @@ describe('RegisterUserUseCase', () => {
   const dto: RegisterUserDto = {
     email: 'jane@kashy.app',
     password: 'StrongPass123',
-    first_name: 'Jane',
-    last_name: 'Doe',
-    country_code: 'VE',
+    firstName: 'Jane',
+    lastName: 'Doe',
+    countryCode: 'VE',
   };
 
   beforeEach(() => {
