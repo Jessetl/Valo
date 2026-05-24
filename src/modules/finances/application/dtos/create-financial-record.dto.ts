@@ -33,12 +33,12 @@ export class CreateFinancialRecordDto {
   @ApiProperty({ example: 3618000.0 })
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  amount_local!: number;
+  amountLocal!: number;
 
   @ApiProperty({ example: 100.0 })
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  amount_usd!: number;
+  amountUsd!: number;
 
   @ApiPropertyOptional({
     enum: FinancialPriority,
@@ -53,7 +53,7 @@ export class CreateFinancialRecordDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  interest_rate?: number | null;
+  interestRate?: number | null;
 
   @ApiPropertyOptional({
     example: '2026-06-15',
@@ -68,12 +68,12 @@ export class CreateFinancialRecordDto {
   @ApiPropertyOptional({ example: false, default: false })
   @IsOptional()
   @IsBoolean()
-  is_recurring?: boolean;
+  isRecurring?: boolean;
 
   @ApiPropertyOptional({ example: 15, minimum: 1, maximum: 31, nullable: true })
   @IsOptional()
   @IsInt()
   @Min(1)
   @Max(31)
-  recurrence_day?: number | null;
+  recurrenceDay?: number | null;
 }

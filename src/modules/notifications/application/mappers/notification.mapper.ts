@@ -14,13 +14,13 @@ export class NotificationMapper {
   static toResponse(notification: Notification): NotificationResponseDto {
     const dto = new NotificationResponseDto();
     dto.id = notification.id;
-    dto.user_id = notification.userId;
-    dto.financial_id = notification.financialId;
+    dto.userId = notification.userId;
+    dto.financialId = notification.financialId;
     dto.type = notification.type;
-    dto.scheduled_at = toDateOnly(notification.scheduledAt);
-    dto.sent_at = notification.sentAt ? toDateOnly(notification.sentAt) : null;
+    dto.scheduledAt = toDateOnly(notification.scheduledAt);
+    dto.sentAt = notification.sentAt ? toDateOnly(notification.sentAt) : null;
     dto.status = notification.status;
-    dto.is_read = notification.isRead;
+    dto.isRead = notification.isRead;
     return dto;
   }
 
@@ -31,11 +31,11 @@ export class NotificationMapper {
     const dto = new NotificationListItemDto();
     dto.id = notification.id;
     dto.type = notification.type;
-    dto.scheduled_at = toDateOnly(notification.scheduledAt);
-    dto.sent_at = notification.sentAt ? toDateOnly(notification.sentAt) : null;
+    dto.scheduledAt = toDateOnly(notification.scheduledAt);
+    dto.sentAt = notification.sentAt ? toDateOnly(notification.sentAt) : null;
     dto.status = notification.status;
-    dto.is_read = notification.isRead;
-    dto.financial_record = this.toFinancialSummary(financialRecord);
+    dto.isRead = notification.isRead;
+    dto.financialRecord = this.toFinancialSummary(financialRecord);
     return dto;
   }
 
@@ -46,8 +46,8 @@ export class NotificationMapper {
     dto.id = record.id;
     dto.title = record.title;
     dto.type = record.type;
-    dto.amount_local = record.amountLocal;
-    dto.amount_usd = record.amountUsd;
+    dto.amountLocal = record.amountLocal;
+    dto.amountUsd = record.amountUsd;
     dto.date = toDateOnly(record.date);
     return dto;
   }

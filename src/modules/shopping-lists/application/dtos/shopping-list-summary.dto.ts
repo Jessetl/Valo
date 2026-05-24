@@ -35,7 +35,7 @@ export class ShoppingListSummaryDto {
   @ApiProperty({
     example: 105.56,
     description:
-      'Total local computed (subtotal + iva si iva_enabled). Sobre todos los items.',
+      'Total local computed (subtotal + iva si ivaEnabled). Sobre todos los items.',
   })
   totalLocal!: number;
 

@@ -36,13 +36,13 @@ export class UpdateFinancialRecordDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  amount_local?: number;
+  amountLocal?: number;
 
   @ApiPropertyOptional({ example: 100.0 })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  amount_usd?: number;
+  amountUsd?: number;
 
   @ApiPropertyOptional({ enum: FinancialPriority, nullable: true })
   @IsOptional()
@@ -53,7 +53,7 @@ export class UpdateFinancialRecordDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
-  interest_rate?: number | null;
+  interestRate?: number | null;
 
   @ApiPropertyOptional({ example: '2026-06-15', nullable: true })
   @IsOptional()
@@ -63,12 +63,12 @@ export class UpdateFinancialRecordDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
-  is_recurring?: boolean;
+  isRecurring?: boolean;
 
   @ApiPropertyOptional({ minimum: 1, maximum: 31, nullable: true })
   @IsOptional()
   @IsInt()
   @Min(1)
   @Max(31)
-  recurrence_day?: number | null;
+  recurrenceDay?: number | null;
 }

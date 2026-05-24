@@ -41,11 +41,11 @@ export class SearchFinancialRecordsUseCase implements UseCase<
         type: filters.type ?? null,
         priority: filters.priority ?? null,
         isRecurring:
-          filters.is_recurring === undefined || filters.is_recurring === null
+          filters.isRecurring === undefined || filters.isRecurring === null
             ? null
-            : filters.is_recurring,
-        dateFrom: filters.date_from ? parseDateOnly(filters.date_from) : null,
-        dateTo: filters.date_to ? parseDateOnly(filters.date_to) : null,
+            : filters.isRecurring,
+        dateFrom: filters.dateFrom ? parseDateOnly(filters.dateFrom) : null,
+        dateTo: filters.dateTo ? parseDateOnly(filters.dateTo) : null,
       },
     });
 
@@ -67,7 +67,7 @@ export class SearchFinancialRecordsUseCase implements UseCase<
         page,
         limit,
         total,
-        total_pages: limit > 0 ? Math.ceil(total / limit) : 0,
+        totalPages: limit > 0 ? Math.ceil(total / limit) : 0,
       },
     };
   }

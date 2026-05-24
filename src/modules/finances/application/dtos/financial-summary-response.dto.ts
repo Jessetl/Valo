@@ -11,10 +11,10 @@ export class FinancialSummaryUpcomingExpenseDto {
   title!: string;
 
   @ApiProperty({ example: 3618000.0 })
-  amount_local!: number;
+  amountLocal!: number;
 
   @ApiProperty({ example: 100.0 })
-  amount_usd!: number;
+  amountUsd!: number;
 
   @ApiProperty({ example: '2026-06-15', nullable: true })
   date!: string | null;
@@ -31,25 +31,25 @@ export class FinancialSummaryResponseDto {
   year!: number;
 
   @ApiProperty({ example: 0.0 })
-  total_income_local!: number;
+  totalIncomeLocal!: number;
 
   @ApiProperty({ example: 0.0 })
-  total_income_usd!: number;
+  totalIncomeUsd!: number;
 
   @ApiProperty({ example: 0.0 })
-  total_expense_local!: number;
+  totalExpenseLocal!: number;
 
   @ApiProperty({ example: 0.0 })
-  total_expense_usd!: number;
+  totalExpenseUsd!: number;
 
   @ApiProperty({ example: 0.0 })
-  net_balance_local!: number;
+  netBalanceLocal!: number;
 
   @ApiProperty({ example: 0.0 })
-  net_balance_usd!: number;
+  netBalanceUsd!: number;
 
   @ApiProperty({ type: [FinancialSummaryUpcomingExpenseDto] })
-  upcoming_expenses!: FinancialSummaryUpcomingExpenseDto[];
+  upcomingExpenses!: FinancialSummaryUpcomingExpenseDto[];
 }
 
 export class FinancialSummaryQueryDto {

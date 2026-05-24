@@ -2,14 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class NotificationPreferencesResponseDto {
   @ApiProperty({ example: true })
-  push_enabled!: boolean;
+  pushEnabled!: boolean;
 
   @ApiProperty({ example: true })
-  debt_reminders!: boolean;
+  debtReminders!: boolean;
 
   @ApiProperty({ example: false })
-  price_alerts!: boolean;
+  priceAlerts!: boolean;
 
   @ApiProperty({ example: true })
-  list_reminders!: boolean;
+  listReminders!: boolean;
 }

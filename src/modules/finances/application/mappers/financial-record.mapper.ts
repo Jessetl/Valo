@@ -18,17 +18,17 @@ export class FinancialRecordMapper {
   ): FinancialRecordResponseDto {
     const dto = new FinancialRecordResponseDto();
     dto.id = record.id;
-    dto.user_id = record.userId;
+    dto.userId = record.userId;
     dto.type = record.type;
     dto.title = record.title;
     dto.description = record.description;
-    dto.amount_local = record.amountLocal;
-    dto.amount_usd = record.amountUsd;
+    dto.amountLocal = record.amountLocal;
+    dto.amountUsd = record.amountUsd;
     dto.priority = record.priority;
-    dto.interest_rate = record.interestRate;
+    dto.interestRate = record.interestRate;
     dto.date = record.date ? toDateOnly(record.date) : null;
-    dto.is_recurring = record.isRecurring;
-    dto.recurrence_day = record.recurrenceDay;
+    dto.isRecurring = record.isRecurring;
+    dto.recurrenceDay = record.recurrenceDay;
     dto.notification = notification
       ? this.toNotificationDto(notification)
       : null;
@@ -40,8 +40,8 @@ export class FinancialRecordMapper {
   ): FinancialRecordNotificationDto {
     const dto = new FinancialRecordNotificationDto();
     dto.id = notification.id;
-    dto.scheduled_at = toDateOnly(notification.scheduledAt);
-    dto.sent_at = notification.sentAt ? toDateOnly(notification.sentAt) : null;
+    dto.scheduledAt = toDateOnly(notification.scheduledAt);
+    dto.sentAt = notification.sentAt ? toDateOnly(notification.sentAt) : null;
     dto.status = notification.status;
     return dto;
   }
@@ -54,12 +54,12 @@ export class FinancialRecordMapper {
     dto.id = record.id;
     dto.type = record.type;
     dto.title = record.title;
-    dto.amount_local = record.amountLocal;
-    dto.amount_usd = record.amountUsd;
+    dto.amountLocal = record.amountLocal;
+    dto.amountUsd = record.amountUsd;
     dto.priority = record.priority;
     dto.date = record.date ? toDateOnly(record.date) : null;
-    dto.is_recurring = record.isRecurring;
-    dto.notification_status = notification ? notification.status : null;
+    dto.isRecurring = record.isRecurring;
+    dto.notificationStatus = notification ? notification.status : null;
     return dto;
   }
 
@@ -69,8 +69,8 @@ export class FinancialRecordMapper {
     const dto = new FinancialSummaryUpcomingExpenseDto();
     dto.id = record.id;
     dto.title = record.title;
-    dto.amount_local = record.amountLocal;
-    dto.amount_usd = record.amountUsd;
+    dto.amountLocal = record.amountLocal;
+    dto.amountUsd = record.amountUsd;
     dto.date = record.date ? toDateOnly(record.date) : null;
     dto.priority = record.priority;
     return dto;

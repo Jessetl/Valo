@@ -8,10 +8,10 @@ export class FinancialRecordNotificationDto {
   id!: string;
 
   @ApiProperty({ example: '2026-06-14' })
-  scheduled_at!: string;
+  scheduledAt!: string;
 
   @ApiPropertyOptional({ example: '2026-06-14', nullable: true })
-  sent_at!: string | null;
+  sentAt!: string | null;
 
   @ApiProperty({
     enum: NotificationStatus,
@@ -25,7 +25,7 @@ export class FinancialRecordResponseDto {
   id!: string;
 
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
-  user_id!: string;
+  userId!: string;
 
   @ApiProperty({ enum: FinancialType, example: FinancialType.EXPENSE })
   type!: FinancialType;
@@ -37,25 +37,25 @@ export class FinancialRecordResponseDto {
   description!: string | null;
 
   @ApiProperty({ example: 3618000.0 })
-  amount_local!: number;
+  amountLocal!: number;
 
   @ApiProperty({ example: 100.0 })
-  amount_usd!: number;
+  amountUsd!: number;
 
   @ApiPropertyOptional({ enum: FinancialPriority, nullable: true })
   priority!: FinancialPriority | null;
 
   @ApiPropertyOptional({ example: 5.0, nullable: true })
-  interest_rate!: number | null;
+  interestRate!: number | null;
 
   @ApiPropertyOptional({ example: '2026-06-15', nullable: true })
   date!: string | null;
 
   @ApiProperty({ example: false })
-  is_recurring!: boolean;
+  isRecurring!: boolean;
 
   @ApiPropertyOptional({ example: 15, nullable: true })
-  recurrence_day!: number | null;
+  recurrenceDay!: number | null;
 
   @ApiPropertyOptional({ type: FinancialRecordNotificationDto, nullable: true })
   notification!: FinancialRecordNotificationDto | null;

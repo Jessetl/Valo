@@ -48,7 +48,7 @@ export class ShoppingListResponseDto {
   @ApiProperty({
     example: 91.0,
     description:
-      'Σ unit_price_local × quantity sobre todos los items. Computed.',
+      'Σ unitPriceLocal × quantity sobre todos los items. Computed.',
   })
   subtotalLocal!: number;
 
@@ -56,13 +56,13 @@ export class ShoppingListResponseDto {
     example: 2.4,
     nullable: true,
     description:
-      'Σ unit_price_usd × quantity sobre todos los items. null si algún item carece de USD.',
+      'Σ unitPriceUsd × quantity sobre todos los items. null si algún item carece de USD.',
   })
   subtotalUsd!: number | null;
 
   @ApiProperty({
     example: 14.56,
-    description: 'subtotal_local × 0.16 si iva_enabled, sino 0.',
+    description: 'subtotalLocal × 0.16 si ivaEnabled, sino 0.',
   })
   ivaLocal!: number;
 
@@ -70,20 +70,20 @@ export class ShoppingListResponseDto {
     example: 0.38,
     nullable: true,
     description:
-      'subtotal_usd × 0.16 si iva_enabled, sino 0. null si subtotal_usd null.',
+      'subtotalUsd × 0.16 si ivaEnabled, sino 0. null si subtotalUsd null.',
   })
   ivaUsd!: number | null;
 
   @ApiProperty({
     example: 105.56,
-    description: 'subtotal_local + iva_local. Computed.',
+    description: 'subtotalLocal + ivaLocal. Computed.',
   })
   totalLocal!: number;
 
   @ApiPropertyOptional({
     example: 2.78,
     nullable: true,
-    description: 'subtotal_usd + iva_usd. null si subtotal_usd null.',
+    description: 'subtotalUsd + ivaUsd. null si subtotalUsd null.',
   })
   totalUsd!: number | null;
 

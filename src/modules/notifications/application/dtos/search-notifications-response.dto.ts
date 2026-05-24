@@ -12,7 +12,7 @@ export class SearchNotificationsMetaDto {
   total!: number;
 
   @ApiProperty({ example: 2 })
-  total_pages!: number;
+  totalPages!: number;
 }
 
 export class SearchNotificationsResponseDto {

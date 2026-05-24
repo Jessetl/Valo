@@ -49,14 +49,14 @@ export class SearchNotificationsUseCase
       page,
       limit,
       filters: {
-        isRead: input.dto.filters?.is_read ?? null,
+        isRead: input.dto.filters?.isRead ?? null,
         status: input.dto.filters?.status ?? null,
         type: input.dto.filters?.type ?? null,
-        scheduledDateFrom: input.dto.filters?.scheduled_date_from
-          ? new Date(input.dto.filters.scheduled_date_from)
+        scheduledDateFrom: input.dto.filters?.scheduledDateFrom
+          ? new Date(input.dto.filters.scheduledDateFrom)
           : null,
-        scheduledDateTo: input.dto.filters?.scheduled_date_to
-          ? new Date(input.dto.filters.scheduled_date_to)
+        scheduledDateTo: input.dto.filters?.scheduledDateTo
+          ? new Date(input.dto.filters.scheduledDateTo)
           : null,
       },
     });
@@ -83,7 +83,7 @@ export class SearchNotificationsUseCase
       page,
       limit,
       total,
-      total_pages: limit > 0 ? Math.ceil(total / limit) : 0,
+      totalPages: limit > 0 ? Math.ceil(total / limit) : 0,
     };
 
     return { data: items, meta };

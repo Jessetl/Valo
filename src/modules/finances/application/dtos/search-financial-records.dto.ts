@@ -27,17 +27,17 @@ export class SearchFinancialRecordsFiltersDto {
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsBoolean()
-  is_recurring?: boolean | null;
+  isRecurring?: boolean | null;
 
   @ApiPropertyOptional({ example: '2026-06-01', nullable: true })
   @IsOptional()
   @IsDateString()
-  date_from?: string | null;
+  dateFrom?: string | null;
 
   @ApiPropertyOptional({ example: '2026-06-30', nullable: true })
   @IsOptional()
   @IsDateString()
-  date_to?: string | null;
+  dateTo?: string | null;
 }
 
 export class SearchFinancialRecordsDto {

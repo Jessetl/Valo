@@ -56,13 +56,13 @@ export class UpdateFinancialRecordUseCase implements UseCase<
       type: dto.type,
       title: dto.title,
       description: dto.description ?? undefined,
-      amountLocal: dto.amount_local,
-      amountUsd: dto.amount_usd,
+      amountLocal: dto.amountLocal,
+      amountUsd: dto.amountUsd,
       priority: dto.priority ?? undefined,
-      interestRate: dto.interest_rate ?? undefined,
+      interestRate: dto.interestRate ?? undefined,
       date: dateProvided ? parsedDate : undefined,
-      isRecurring: dto.is_recurring,
-      recurrenceDay: dto.recurrence_day ?? undefined,
+      isRecurring: dto.isRecurring,
+      recurrenceDay: dto.recurrenceDay ?? undefined,
     });
 
     const saved = await this.recordRepository.save(updated);

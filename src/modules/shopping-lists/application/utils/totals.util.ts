@@ -17,8 +17,8 @@ function round2(n: number): number {
 
 /**
  * Calcula totales segun business-rules.md:
- * - subtotal = Σ (unit_price × quantity) sobre TODOS los items (sin filtrar is_checked).
- * - iva = subtotal × 0.16 si iva_enabled, sino 0.
+ * - subtotal = Σ (unitPrice × quantity) sobre TODOS los items (sin filtrar isChecked).
+ * - iva = subtotal × 0.16 si ivaEnabled, sino 0.
  * - total = subtotal + iva.
  *
  * USD: si algun item tiene unitPriceUsd null, los totales USD = null

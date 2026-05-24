@@ -14,10 +14,10 @@ export class FinancialRecordSummaryItemDto {
   title!: string;
 
   @ApiProperty({ example: 3618000.0 })
-  amount_local!: number;
+  amountLocal!: number;
 
   @ApiProperty({ example: 100.0 })
-  amount_usd!: number;
+  amountUsd!: number;
 
   @ApiPropertyOptional({ enum: FinancialPriority, nullable: true })
   priority!: FinancialPriority | null;
@@ -26,10 +26,10 @@ export class FinancialRecordSummaryItemDto {
   date!: string | null;
 
   @ApiProperty({ example: false })
-  is_recurring!: boolean;
+  isRecurring!: boolean;
 
   @ApiPropertyOptional({ enum: NotificationStatus, nullable: true })
-  notification_status!: NotificationStatus | null;
+  notificationStatus!: NotificationStatus | null;
 }
 
 export class SearchFinancialRecordsMetaDto {
@@ -43,7 +43,7 @@ export class SearchFinancialRecordsMetaDto {
   total!: number;
 
   @ApiProperty({ example: 2 })
-  total_pages!: number;
+  totalPages!: number;
 }
 
 export class SearchFinancialRecordsResponseDto {

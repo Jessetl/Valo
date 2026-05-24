@@ -20,10 +20,10 @@ export class GetNotificationPreferencesUseCase
     const prefs =
       existing ?? NotificationPreferences.createDefault(randomUUID(), userId);
     return {
-      push_enabled: prefs.pushEnabled,
-      debt_reminders: prefs.debtReminders,
-      price_alerts: prefs.priceAlerts,
-      list_reminders: prefs.listReminders,
+      pushEnabled: prefs.pushEnabled,
+      debtReminders: prefs.debtReminders,
+      priceAlerts: prefs.priceAlerts,
+      listReminders: prefs.listReminders,
     };
   }
 }

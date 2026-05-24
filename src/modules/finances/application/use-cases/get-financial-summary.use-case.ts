@@ -50,13 +50,13 @@ export class GetFinancialSummaryUseCase implements UseCase<
     return {
       month,
       year,
-      total_income_local: totals.totalIncomeLocal,
-      total_income_usd: totals.totalIncomeUsd,
-      total_expense_local: totals.totalExpenseLocal,
-      total_expense_usd: totals.totalExpenseUsd,
-      net_balance_local: totals.totalIncomeLocal - totals.totalExpenseLocal,
-      net_balance_usd: totals.totalIncomeUsd - totals.totalExpenseUsd,
-      upcoming_expenses: upcoming.map((r) =>
+      totalIncomeLocal: totals.totalIncomeLocal,
+      totalIncomeUsd: totals.totalIncomeUsd,
+      totalExpenseLocal: totals.totalExpenseLocal,
+      totalExpenseUsd: totals.totalExpenseUsd,
+      netBalanceLocal: totals.totalIncomeLocal - totals.totalExpenseLocal,
+      netBalanceUsd: totals.totalIncomeUsd - totals.totalExpenseUsd,
+      upcomingExpenses: upcoming.map((r) =>
         FinancialRecordMapper.toUpcomingExpense(r),
       ),
     };

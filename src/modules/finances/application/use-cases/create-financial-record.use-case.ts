@@ -44,15 +44,15 @@ export class CreateFinancialRecordUseCase implements UseCase<
       input.userId,
       dto.type,
       dto.title,
-      dto.amount_local,
-      dto.amount_usd,
+      dto.amountLocal,
+      dto.amountUsd,
       dto.date ? parseDateOnly(dto.date) : null,
       {
         description: dto.description ?? null,
         priority: dto.priority ?? null,
-        interestRate: dto.interest_rate ?? null,
-        isRecurring: dto.is_recurring ?? false,
-        recurrenceDay: dto.recurrence_day ?? null,
+        interestRate: dto.interestRate ?? null,
+        isRecurring: dto.isRecurring ?? false,
+        recurrenceDay: dto.recurrenceDay ?? null,
       },
     );
 

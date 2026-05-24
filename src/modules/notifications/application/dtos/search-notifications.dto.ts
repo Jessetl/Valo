@@ -18,7 +18,7 @@ export class SearchNotificationsFiltersDto {
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsBoolean()
-  is_read?: boolean | null;
+  isRead?: boolean | null;
 
   @ApiPropertyOptional({ enum: NotificationStatus, nullable: true })
   @IsOptional()
@@ -34,12 +34,12 @@ export class SearchNotificationsFiltersDto {
   @ApiPropertyOptional({ example: '2026-06-01', nullable: true })
   @IsOptional()
   @IsDateString()
-  scheduled_date_from?: string | null;
+  scheduledDateFrom?: string | null;
 
   @ApiPropertyOptional({ example: '2026-06-30', nullable: true })
   @IsOptional()
   @IsDateString()
-  scheduled_date_to?: string | null;
+  scheduledDateTo?: string | null;
 }
 
 export class SearchNotificationsDto {

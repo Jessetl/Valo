@@ -215,7 +215,7 @@ export class ShoppingListsController {
   @ApiOperation({
     summary: 'Comparar productos entre 2 listas',
     description:
-      'Cruza items por product_name (case-insensitive, trim). Matched: con diff de precio y cheaper_in. Unmatched: agrupados por lista de origen. Summary: totales, savings absolutos y recommended.',
+      'Cruza items por productName (case-insensitive, trim). Matched: con diff de precio y cheaperIn. Unmatched: agrupados por lista de origen. Summary: totales, savings absolutos y recommended.',
   })
   @ApiResponse({
     status: 200,

@@ -15,6 +15,6 @@ export class MarkAllNotificationsReadUseCase
 
   async execute(userId: string): Promise<MarkAllReadResponseDto> {
     const marked = await this.repo.markAllAsReadByUserId(userId);
-    return { marked_count: marked };
+    return { markedCount: marked };
   }
 }

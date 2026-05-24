@@ -58,7 +58,7 @@ export class FinancesController {
   @ApiOperation({
     summary: 'Crear registro financiero',
     description:
-      'Crea ingreso o egreso. Si trae date, agenda automaticamente una notificacion 1 dia antes. Si is_recurring=true, el cron generara registros mensuales en recurrence_day.',
+      'Crea ingreso o egreso. Si trae date, agenda automaticamente una notificacion 1 dia antes. Si isRecurring=true, el cron generara registros mensuales en recurrenceDay.',
   })
   @ApiResponse({
     status: 201,

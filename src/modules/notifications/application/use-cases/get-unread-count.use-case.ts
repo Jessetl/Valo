@@ -15,6 +15,6 @@ export class GetUnreadCountUseCase
 
   async execute(userId: string): Promise<UnreadCountResponseDto> {
     const count = await this.repo.countUnreadByUserId(userId);
-    return { unread_count: count };
+    return { unreadCount: count };
   }
 }

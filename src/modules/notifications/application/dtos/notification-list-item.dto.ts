@@ -12,10 +12,10 @@ export class FinancialRecordSummaryDto {
   type!: string;
 
   @ApiProperty({ example: 3618000.0 })
-  amount_local!: number;
+  amountLocal!: number;
 
   @ApiProperty({ example: 100.0 })
-  amount_usd!: number;
+  amountUsd!: number;
 
   @ApiProperty({ example: '2026-06-15' })
   date!: string;
@@ -29,17 +29,17 @@ export class NotificationListItemDto {
   type!: string;
 
   @ApiProperty({ example: '2026-06-14' })
-  scheduled_at!: string;
+  scheduledAt!: string;
 
   @ApiPropertyOptional({ example: '2026-06-14', nullable: true })
-  sent_at!: string | null;
+  sentAt!: string | null;
 
   @ApiProperty({ enum: NotificationStatus, example: NotificationStatus.SENT })
   status!: NotificationStatus;
 
   @ApiProperty({ example: false })
-  is_read!: boolean;
+  isRead!: boolean;
 
   @ApiProperty({ type: FinancialRecordSummaryDto })
-  financial_record!: FinancialRecordSummaryDto;
+  financialRecord!: FinancialRecordSummaryDto;
 }

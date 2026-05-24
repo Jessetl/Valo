@@ -34,18 +34,18 @@ export class UpdateNotificationPreferencesUseCase
       NotificationPreferences.createDefault(randomUUID(), input.userId);
 
     const updated = base.updateFields({
-      pushEnabled: input.dto.push_enabled,
-      debtReminders: input.dto.debt_reminders,
-      priceAlerts: input.dto.price_alerts,
-      listReminders: input.dto.list_reminders,
+      pushEnabled: input.dto.pushEnabled,
+      debtReminders: input.dto.debtReminders,
+      priceAlerts: input.dto.priceAlerts,
+      listReminders: input.dto.listReminders,
     });
 
     const saved = await this.repo.save(updated);
     return {
-      push_enabled: saved.pushEnabled,
-      debt_reminders: saved.debtReminders,
-      price_alerts: saved.priceAlerts,
-      list_reminders: saved.listReminders,
+      pushEnabled: saved.pushEnabled,
+      debtReminders: saved.debtReminders,
+      priceAlerts: saved.priceAlerts,
+      listReminders: saved.listReminders,
     };
   }
 }

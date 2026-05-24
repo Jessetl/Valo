@@ -94,7 +94,7 @@ describe('CompareShoppingListsUseCase', () => {
     ).rejects.toBeInstanceOf(ShoppingListNotFoundException);
   });
 
-  it('match case-insensitive + trim del product_name', async () => {
+  it('match case-insensitive + trim del productName', async () => {
     const listA = makeList('a', 'u1', [makeItem('ia', 'a', '  Harina  ', 10)]);
     const listB = makeList('b', 'u1', [makeItem('ib', 'b', 'HARINA', 12)]);
     repo.findByIdsAndUserId.mockResolvedValue([listA, listB]);
@@ -160,7 +160,7 @@ describe('CompareShoppingListsUseCase', () => {
     expect(result.summary.savingsLocal).toBe(20);
   });
 
-  it('savings_usd null si algun item carece de unitPriceUsd', async () => {
+  it('savingsUsd null si algun item carece de unitPriceUsd', async () => {
     const listA = makeList('a', 'u1', [makeItem('ia', 'a', 'X', 10, 1, null)]);
     const listB = makeList('b', 'u1', [makeItem('ib', 'b', 'X', 12, 1, 0.32)]);
     repo.findByIdsAndUserId.mockResolvedValue([listA, listB]);
