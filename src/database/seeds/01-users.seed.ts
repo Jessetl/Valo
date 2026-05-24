@@ -19,8 +19,6 @@ const SEED_USERS = [
       fcmToken:
         'cFake_FCM_Token_Juan_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
       refreshToken: 'cFake_Refresh_Token_Juan_seed',
-      platform: 'android',
-      appVersion: '1.0.0',
     },
   },
   {
@@ -39,8 +37,6 @@ const SEED_USERS = [
       fcmToken:
         'cFake_FCM_Token_Maria_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
       refreshToken: 'cFake_Refresh_Token_Maria_seed',
-      platform: 'ios',
-      appVersion: '1.0.0',
     },
   },
 ];
@@ -99,9 +95,8 @@ export const UsersSeed = {
         INSERT INTO user_devices (
           id, user_id, device_id, device_name,
           firebase_fcm_token, firebase_refresh_token,
-          platform, app_version,
           last_active_at, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+        ) VALUES ($1, $2, $3, $4, $5, $6, now(), now())
         ON CONFLICT (id) DO UPDATE SET
           firebase_fcm_token = EXCLUDED.firebase_fcm_token,
           firebase_refresh_token = EXCLUDED.firebase_refresh_token,
@@ -114,8 +109,6 @@ export const UsersSeed = {
           u.device.deviceName,
           u.device.fcmToken,
           u.device.refreshToken,
-          u.device.platform,
-          u.device.appVersion,
         ],
       );
     }

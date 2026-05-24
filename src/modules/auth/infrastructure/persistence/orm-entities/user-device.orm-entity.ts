@@ -28,12 +28,6 @@ export class UserDeviceOrmEntity {
   @Column({ name: 'firebase_refresh_token', type: 'text' })
   refreshTokenEncrypted!: string;
 
-  @Column({ type: 'varchar' })
-  platform!: string;
-
-  @Column({ name: 'app_version', type: 'varchar', nullable: true })
-  appVersion!: string | null;
-
   @Column({ name: 'last_active_at', type: 'timestamptz' })
   lastActiveAt!: Date;
 

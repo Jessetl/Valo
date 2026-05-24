@@ -6,8 +6,6 @@ interface UserDeviceProps {
   deviceName: string;
   fcmToken: string | null;
   refreshTokenEncrypted: string;
-  platform: string;
-  appVersion: string | null;
   lastActiveAt: Date;
   createdAt: Date;
 }
@@ -18,8 +16,6 @@ export class UserDevice extends BaseEntity {
   readonly deviceName: string;
   readonly fcmToken: string | null;
   readonly refreshTokenEncrypted: string;
-  readonly platform: string;
-  readonly appVersion: string | null;
   readonly lastActiveAt: Date;
   readonly createdAt: Date;
 
@@ -30,8 +26,6 @@ export class UserDevice extends BaseEntity {
     this.deviceName = props.deviceName;
     this.fcmToken = props.fcmToken;
     this.refreshTokenEncrypted = props.refreshTokenEncrypted;
-    this.platform = props.platform;
-    this.appVersion = props.appVersion;
     this.lastActiveAt = props.lastActiveAt;
     this.createdAt = props.createdAt;
   }
@@ -42,9 +36,7 @@ export class UserDevice extends BaseEntity {
     deviceId: string,
     deviceName: string,
     refreshTokenEncrypted: string,
-    platform: string,
     fcmToken: string | null = null,
-    appVersion: string | null = null,
   ): UserDevice {
     const now = new Date();
     return new UserDevice(id, {
@@ -53,8 +45,6 @@ export class UserDevice extends BaseEntity {
       deviceName,
       fcmToken,
       refreshTokenEncrypted,
-      platform,
-      appVersion,
       lastActiveAt: now,
       createdAt: now,
     });
@@ -67,8 +57,6 @@ export class UserDevice extends BaseEntity {
       deviceName: this.deviceName,
       fcmToken: this.fcmToken,
       refreshTokenEncrypted,
-      platform: this.platform,
-      appVersion: this.appVersion,
       lastActiveAt: new Date(),
       createdAt: this.createdAt,
     });
@@ -78,9 +66,7 @@ export class UserDevice extends BaseEntity {
     userId: string,
     deviceName: string,
     refreshTokenEncrypted: string,
-    platform: string,
     fcmToken: string | null,
-    appVersion: string | null,
   ): UserDevice {
     return new UserDevice(this.id, {
       userId,
@@ -88,8 +74,6 @@ export class UserDevice extends BaseEntity {
       deviceName,
       fcmToken,
       refreshTokenEncrypted,
-      platform,
-      appVersion,
       lastActiveAt: new Date(),
       createdAt: this.createdAt,
     });

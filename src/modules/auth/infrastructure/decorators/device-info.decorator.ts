@@ -9,8 +9,6 @@ export interface DeviceInfo {
   deviceId: string;
   deviceName: string;
   fcmToken: string | null;
-  platform: string;
-  appVersion: string | null;
 }
 
 function getHeader(req: Request, name: string): string | undefined {
@@ -41,8 +39,6 @@ export const DeviceInfoHeaders = createParamDecorator<undefined, DeviceInfo>(
       deviceId,
       deviceName,
       fcmToken: getHeader(req, 'X-Fcm-Token') ?? null,
-      platform: (getHeader(req, 'X-Platform') ?? 'unknown').toLowerCase(),
-      appVersion: getHeader(req, 'X-App-Version') ?? null,
     };
   },
 );

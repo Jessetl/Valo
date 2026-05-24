@@ -103,8 +103,6 @@ export class AuthController {
   @ApiHeader({ name: 'X-Device-Id', required: true })
   @ApiHeader({ name: 'X-Device-Name', required: true })
   @ApiHeader({ name: 'X-Fcm-Token', required: false })
-  @ApiHeader({ name: 'X-Platform', required: false })
-  @ApiHeader({ name: 'X-App-Version', required: false })
   @ApiResponse({
     status: 200,
     description: 'Login exitoso',
@@ -134,8 +132,6 @@ export class AuthController {
   @ApiHeader({ name: 'X-Device-Id', required: true })
   @ApiHeader({ name: 'X-Device-Name', required: true })
   @ApiHeader({ name: 'X-Fcm-Token', required: false })
-  @ApiHeader({ name: 'X-Platform', required: false })
-  @ApiHeader({ name: 'X-App-Version', required: false })
   @ApiResponse({
     status: 200,
     description: 'Login con Google exitoso',

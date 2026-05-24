@@ -24,8 +24,6 @@ describe('LoginWithGoogleUseCase', () => {
     deviceId: 'dev-1',
     deviceName: 'Pixel',
     fcmToken: null,
-    platform: 'android',
-    appVersion: null,
   };
 
   beforeEach(() => {

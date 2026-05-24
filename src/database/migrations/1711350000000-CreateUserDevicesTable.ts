@@ -46,16 +46,6 @@ export class CreateUserDevicesTable1711350000000 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'platform',
-            type: 'varchar',
-            isNullable: false,
-          },
-          {
-            name: 'app_version',
-            type: 'varchar',
-            isNullable: true,
-          },
-          {
             name: 'last_active_at',
             type: 'timestamptz',
             default: 'now()',

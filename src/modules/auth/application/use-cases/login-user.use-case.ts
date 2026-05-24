@@ -117,9 +117,7 @@ export class LoginUserUseCase implements UseCase<
         userId,
         device.deviceName,
         encrypted,
-        device.platform,
         device.fcmToken,
-        device.appVersion,
       );
       await this.deviceRepository.save(reassigned);
       return;
@@ -135,9 +133,7 @@ export class LoginUserUseCase implements UseCase<
       device.deviceId,
       device.deviceName,
       encrypted,
-      device.platform,
       device.fcmToken,
-      device.appVersion,
     );
     await this.deviceRepository.save(newDevice);
   }

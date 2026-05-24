@@ -72,9 +72,7 @@ export class ChangePasswordUseCase implements UseCase<
         userId,
         device.deviceName,
         encrypted,
-        device.platform,
         device.fcmToken,
-        device.appVersion,
       );
       await this.deviceRepository.save(rotated);
       return;
@@ -86,9 +84,7 @@ export class ChangePasswordUseCase implements UseCase<
       device.deviceId,
       device.deviceName,
       encrypted,
-      device.platform,
       device.fcmToken,
-      device.appVersion,
     );
     await this.deviceRepository.save(newDevice);
   }

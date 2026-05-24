@@ -34,8 +34,6 @@ describe('AuthController', () => {
     deviceId: 'dev-1',
     deviceName: 'Pixel',
     fcmToken: null,
-    platform: 'android',
-    appVersion: null,
   };
 
   beforeEach(() => {
@@ -147,8 +145,6 @@ describe('AuthController', () => {
       deviceId: 'dev-1',
       deviceName: 'iPhone 15',
       fcmToken: null,
-      platform: 'ios',
-      appVersion: null,
     });
 
     expect(getUserById.execute).toHaveBeenCalledWith(userId);
@@ -163,8 +159,6 @@ describe('AuthController', () => {
       deviceId: 'dev-1',
       deviceName: 'iPhone 15',
       fcmToken: null,
-      platform: 'ios',
-      appVersion: null,
     });
 
     expect(updateProfile.execute).toHaveBeenCalledWith({ userId, dto });
@@ -177,8 +171,6 @@ describe('AuthController', () => {
       deviceId: 'dev-1',
       deviceName: 'iPhone 15',
       fcmToken: null,
-      platform: 'ios',
-      appVersion: null,
     });
 
     expect(logout.execute).toHaveBeenCalledWith({ userId, deviceId: 'dev-1' });

@@ -20,8 +20,6 @@ describe('ChangePasswordUseCase', () => {
     deviceId: 'dev-1',
     deviceName: 'Pixel',
     fcmToken: null,
-    platform: 'android',
-    appVersion: null,
   };
 
   const user = User.create('u-1', 'fb-uid', 'jane@kashy.app', 'VE');
