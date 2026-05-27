@@ -87,7 +87,7 @@ export class ShoppingListsController {
   @ApiOperation({
     summary: 'Listar listas con filtros + paginacion',
     description:
-      'Devuelve resumen paginado por lista (sin items detallados). Filtros opcionales: listType, storeName (ILIKE), isActive, scheduledDateFrom/To.',
+      'Devuelve resumen paginado por lista (sin items detallados). Filtros opcionales: listType, storeName (ILIKE), scheduledDateFrom/To.',
   })
   @ApiResponse({
     status: 200,

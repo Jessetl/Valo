@@ -32,12 +32,6 @@ export class UpdateFinancialRecordDto {
   @MaxLength(1000)
   description?: string | null;
 
-  @ApiPropertyOptional({ example: 3618000.0 })
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  amountLocal?: number;
-
   @ApiPropertyOptional({ example: 100.0 })
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })

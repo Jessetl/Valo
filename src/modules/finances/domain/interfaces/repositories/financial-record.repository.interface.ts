@@ -27,9 +27,7 @@ export interface PaginatedFinancialRecords {
 }
 
 export interface MonthlyTotals {
-  totalIncomeLocal: number;
   totalIncomeUsd: number;
-  totalExpenseLocal: number;
   totalExpenseUsd: number;
 }
 

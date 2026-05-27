@@ -95,7 +95,7 @@ describe('ShoppingListsController', () => {
       meta: { page: 1, limit: 20, total: 0, totalPages: 1 },
     });
 
-    const dto = { page: 1, limit: 20, filters: { isActive: true } };
+    const dto = { page: 1, limit: 20, filters: { listType: 'TEMPLATE' } };
     await controller.search(userId, dto as never);
 
     expect(searchShoppingLists.execute).toHaveBeenCalledWith({ userId, dto });

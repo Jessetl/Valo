@@ -42,9 +42,6 @@ export class ShoppingListResponseDto {
   @ApiPropertyOptional({ example: -66.9036, nullable: true })
   longitude!: number | null;
 
-  @ApiProperty({ example: true })
-  isActive!: boolean;
-
   @ApiProperty({
     example: 91.0,
     description:

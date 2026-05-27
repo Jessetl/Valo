@@ -11,9 +11,6 @@ export class FinancialRecordSummaryDto {
   @ApiProperty({ example: 'EXPENSE' })
   type!: string;
 
-  @ApiProperty({ example: 3618000.0 })
-  amountLocal!: number;
-
   @ApiProperty({ example: 100.0 })
   amountUsd!: number;
 

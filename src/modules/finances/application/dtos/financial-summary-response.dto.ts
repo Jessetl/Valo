@@ -10,9 +10,6 @@ export class FinancialSummaryUpcomingExpenseDto {
   @ApiProperty({ example: 'Alquiler' })
   title!: string;
 
-  @ApiProperty({ example: 3618000.0 })
-  amountLocal!: number;
-
   @ApiProperty({ example: 100.0 })
   amountUsd!: number;
 
@@ -31,19 +28,10 @@ export class FinancialSummaryResponseDto {
   year!: number;
 
   @ApiProperty({ example: 0.0 })
-  totalIncomeLocal!: number;
-
-  @ApiProperty({ example: 0.0 })
   totalIncomeUsd!: number;
 
   @ApiProperty({ example: 0.0 })
-  totalExpenseLocal!: number;
-
-  @ApiProperty({ example: 0.0 })
   totalExpenseUsd!: number;
-
-  @ApiProperty({ example: 0.0 })
-  netBalanceLocal!: number;
 
   @ApiProperty({ example: 0.0 })
   netBalanceUsd!: number;

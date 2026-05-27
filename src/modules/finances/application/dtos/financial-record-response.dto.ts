@@ -36,9 +36,6 @@ export class FinancialRecordResponseDto {
   @ApiPropertyOptional({ nullable: true })
   description!: string | null;
 
-  @ApiProperty({ example: 3618000.0 })
-  amountLocal!: number;
-
   @ApiProperty({ example: 100.0 })
   amountUsd!: number;
 

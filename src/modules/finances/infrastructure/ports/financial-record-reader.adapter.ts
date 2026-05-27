@@ -41,7 +41,6 @@ export class FinancialRecordReaderAdapter implements IFinancialRecordReader {
       userId: record.userId,
       title: record.title,
       type: record.type,
-      amountLocal: record.amountLocal,
       amountUsd: record.amountUsd,
       date,
     };

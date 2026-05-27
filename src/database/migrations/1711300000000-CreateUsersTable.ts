@@ -46,7 +46,7 @@ export class CreateUsersTable1711300000000 implements MigrationInterface {
             name: 'subscription_plan',
             type: 'enum',
             enumName: 'users_subscription_plan_enum',
-            enum: ['FREE'],
+            enum: ['FREE', 'KASHY'],
             default: `'FREE'`,
             isNullable: false,
           },

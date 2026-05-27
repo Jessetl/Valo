@@ -25,7 +25,7 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             name: 'list_type',
             type: 'enum',
             enumName: 'shopping_lists_list_type_enum',
-            enum: ['TEMPLATE', 'RECEIPT'],
+            enum: ['TEMPLATE', 'RECEIPT', 'COMPLETED'],
             isNullable: false,
           },
           { name: 'country_code', type: 'varchar', isNullable: false },
@@ -52,12 +52,6 @@ export class CreateShoppingListsTable1711400000000 implements MigrationInterface
             precision: 10,
             scale: 7,
             isNullable: true,
-          },
-          {
-            name: 'is_active',
-            type: 'boolean',
-            default: true,
-            isNullable: false,
           },
           {
             name: 'created_at',

@@ -9,13 +9,13 @@
 
 ### Reglas generales
 
-| Regla                    | Detalle                                                                                                    |
-| :----------------------- | :--------------------------------------------------------------------------------------------------------- |
-| **Moneda local MVP**     | Bolívar (VES).                                                                                             |
-| **Moneda de referencia** | Dólar estadounidense (USD).                                                                                |
-| **Fuente de tasa**       | DolarAPI — tasa oficial BCV (`/v1/dolares/oficial`).                                                       |
-| **Dual currency**        | Todo monto se almacena en moneda local **y** en USD.                                                       |
-| **Quién calcula**        | El frontend calcula la conversión usando la tasa actual y envía ambos montos al backend.                   |
+| Regla                    | Detalle                                                                                  |
+| :----------------------- | :--------------------------------------------------------------------------------------- |
+| **Moneda local MVP**     | Bolívar (VES).                                                                           |
+| **Moneda de referencia** | Dólar estadounidense (USD).                                                              |
+| **Fuente de tasa**       | DolarAPI — tasa oficial BCV (`/v1/dolares/oficial`).                                     |
+| **Dual currency**        | Todo monto se almacena en moneda local **y** en USD.                                     |
+| **Quién calcula**        | El frontend calcula la conversión usando la tasa actual y envía ambos montos al backend. |
 
 > La única validación de tasa con tolerancia ±1% existe en **listas de compras** sobre `exchangeRateSnapshot` (ver sección [Exchange Rate Snapshot](#-exchange-rate-snapshot)). En registros financieros el backend **no valida** la consistencia entre `amount_local` y `amount_usd`: confía en el cálculo del frontend y persiste ambos valores tal cual.
 
@@ -80,12 +80,12 @@ total_usd = subtotal_usd + iva_amount_usd
 
 ### Reglas
 
-| Regla                  | Detalle                                                                                                              |
-| :--------------------- | :------------------------------------------------------------------------------------------------------------------- |
-| **Cuándo se captura**  | Al momento de crear la lista de compras.                                                                             |
-| **Mutabilidad**        | Híbrida según `listType`: en `TEMPLATE` el snapshot se puede re-cotizar (PATCH lo acepta); en `RECEIPT` es **inmutable** (PATCH lo rechaza con `422`). |
-| **Propósito**          | Garantizar que las comparaciones entre listas reflejen la tasa vigente al momento de cada compra, no la tasa actual. |
-| **Fuente**             | Campo `promedio` del endpoint `/v1/dolares/oficial` de DolarAPI.                                                     |
+| Regla                  | Detalle                                                                                                                                                                                               |
+| :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cuándo se captura**  | Al momento de crear la lista de compras.                                                                                                                                                              |
+| **Mutabilidad**        | Híbrida según `listType`: en `TEMPLATE` el snapshot se puede re-cotizar (PATCH lo acepta); en `RECEIPT` es **inmutable** (PATCH lo rechaza con `422`).                                                |
+| **Propósito**          | Garantizar que las comparaciones entre listas reflejen la tasa vigente al momento de cada compra, no la tasa actual.                                                                                  |
+| **Fuente**             | Campo `promedio` del endpoint `/v1/dolares/oficial` de DolarAPI.                                                                                                                                      |
 | **Validación backend** | Cuando el cliente envía `exchangeRateSnapshot` (en `POST` o en `PATCH` sobre `TEMPLATE`), el backend valida que esté dentro de ±1% respecto a la tasa actual del provider. Si excede, responde `422`. |
 
 ### ¿Por qué inmutable solo en RECEIPT?
@@ -119,11 +119,11 @@ Cubre desfases por cache, latencia o redondeo. Rechaza tasas manipuladas o stale
 
 ### Ingreso de montos
 
-| Regla                     | Detalle                                                                     |
-| :------------------------ | :-------------------------------------------------------------------------- |
-| **Quién elige la moneda** | El usuario elige si ingresa en VES o USD.                                          |
-| **Conversión**            | El frontend calcula el monto en la otra moneda usando la tasa actual.              |
-| **Almacenamiento**        | Se guardan ambos: `amount_local` y `amount_usd`.                                   |
+| Regla                     | Detalle                                                                             |
+| :------------------------ | :---------------------------------------------------------------------------------- |
+| **Quién elige la moneda** | El usuario elige si ingresa en VES o USD.                                           |
+| **Conversión**            | El frontend calcula el monto en la otra moneda usando la tasa actual.               |
+| **Almacenamiento**        | Se guardan ambos: `amount_local` y `amount_usd`.                                    |
 | **Validación backend**    | El backend **no valida** la consistencia entre ambos montos. Confía en el frontend. |
 
 ### Balance mensual

@@ -33,7 +33,6 @@ export class ShoppingListPersistenceMapper {
       scheduledDate: orm.scheduledDate,
       latitude: orm.latitude !== null ? Number(orm.latitude) : null,
       longitude: orm.longitude !== null ? Number(orm.longitude) : null,
-      isActive: orm.isActive,
       items,
     });
   }
@@ -52,7 +51,6 @@ export class ShoppingListPersistenceMapper {
     orm.scheduledDate = list.scheduledDate;
     orm.latitude = list.latitude;
     orm.longitude = list.longitude;
-    orm.isActive = list.isActive;
     orm.items = list.items.map((item) => this.toItemOrm(item));
     return orm;
   }

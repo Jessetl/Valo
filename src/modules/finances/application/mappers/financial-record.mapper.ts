@@ -22,7 +22,6 @@ export class FinancialRecordMapper {
     dto.type = record.type;
     dto.title = record.title;
     dto.description = record.description;
-    dto.amountLocal = record.amountLocal;
     dto.amountUsd = record.amountUsd;
     dto.priority = record.priority;
     dto.interestRate = record.interestRate;
@@ -54,7 +53,6 @@ export class FinancialRecordMapper {
     dto.id = record.id;
     dto.type = record.type;
     dto.title = record.title;
-    dto.amountLocal = record.amountLocal;
     dto.amountUsd = record.amountUsd;
     dto.priority = record.priority;
     dto.date = record.date ? toDateOnly(record.date) : null;
@@ -69,7 +67,6 @@ export class FinancialRecordMapper {
     const dto = new FinancialSummaryUpcomingExpenseDto();
     dto.id = record.id;
     dto.title = record.title;
-    dto.amountLocal = record.amountLocal;
     dto.amountUsd = record.amountUsd;
     dto.date = record.date ? toDateOnly(record.date) : null;
     dto.priority = record.priority;

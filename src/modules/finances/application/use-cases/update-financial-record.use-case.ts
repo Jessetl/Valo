@@ -56,7 +56,6 @@ export class UpdateFinancialRecordUseCase implements UseCase<
       type: dto.type,
       title: dto.title,
       description: dto.description ?? undefined,
-      amountLocal: dto.amountLocal,
       amountUsd: dto.amountUsd,
       priority: dto.priority ?? undefined,
       interestRate: dto.interestRate ?? undefined,

@@ -46,7 +46,6 @@ export class NotificationMapper {
     dto.id = record.id;
     dto.title = record.title;
     dto.type = record.type;
-    dto.amountLocal = record.amountLocal;
     dto.amountUsd = record.amountUsd;
     dto.date = toDateOnly(record.date);
     return dto;

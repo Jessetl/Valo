@@ -21,7 +21,6 @@ export class ShoppingListMapper {
     dto.scheduledDate = list.scheduledDate;
     dto.latitude = list.latitude;
     dto.longitude = list.longitude;
-    dto.isActive = list.isActive;
     dto.subtotalLocal = totals.subtotalLocal;
     dto.subtotalUsd = totals.subtotalUsd;
     dto.ivaLocal = totals.ivaLocal;

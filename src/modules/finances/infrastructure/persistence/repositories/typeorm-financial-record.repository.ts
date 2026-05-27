@@ -99,18 +99,14 @@ export class TypeOrmFinancialRecordRepository implements IFinancialRecordReposit
     monthEnd: Date,
   ): Promise<MonthlyTotals> {
     interface TotalsRow {
-      income_local: string;
       income_usd: string;
-      expense_local: string;
       expense_usd: string;
     }
 
     const row = await this.ormRepository
       .createQueryBuilder('r')
       .select([
-        `COALESCE(SUM(CASE WHEN r.type = 'INCOME' THEN r.amount_local END), 0) AS income_local`,
         `COALESCE(SUM(CASE WHEN r.type = 'INCOME' THEN r.amount_usd END), 0) AS income_usd`,
-        `COALESCE(SUM(CASE WHEN r.type = 'EXPENSE' THEN r.amount_local END), 0) AS expense_local`,
         `COALESCE(SUM(CASE WHEN r.type = 'EXPENSE' THEN r.amount_usd END), 0) AS expense_usd`,
       ])
       .where('r.user_id = :userId', { userId })
@@ -119,9 +115,7 @@ export class TypeOrmFinancialRecordRepository implements IFinancialRecordReposit
       .getRawOne<TotalsRow>();
 
     return {
-      totalIncomeLocal: Number(row?.income_local ?? 0),
       totalIncomeUsd: Number(row?.income_usd ?? 0),
-      totalExpenseLocal: Number(row?.expense_local ?? 0),
       totalExpenseUsd: Number(row?.expense_usd ?? 0),
     };
   }

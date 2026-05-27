@@ -1,21 +1,11 @@
 import { QueryRunner } from 'typeorm';
 import { USER_IDS, FINANCIAL_IDS } from './seed-ids';
 
-/**
- * Tasa local (VES) por USD usada para los seeds. Coincide con el snapshot
- * de las listas históricas para que los montos local/USD sean coherentes.
- */
-const RATE_LOCAL_PER_USD = 36180;
-
 /** Retorna una fecha a N días desde hoy en formato YYYY-MM-DD */
 function dateOnly(daysFromNow: number): string {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
   return d.toISOString().split('T')[0];
-}
-
-function toLocal(amountUsd: number): string {
-  return (amountUsd * RATE_LOCAL_PER_USD).toFixed(2);
 }
 
 export const FinancialRecordsSeed = {
@@ -24,7 +14,7 @@ export const FinancialRecordsSeed = {
     await q.query(`
       INSERT INTO financial_records (
         id, user_id, type, title, description,
-        amount_local, amount_usd,
+        amount_usd,
         priority, interest_rate,
         date, is_recurring, recurrence_day
       ) VALUES
@@ -36,7 +26,7 @@ export const FinancialRecordsSeed = {
           'EXPENSE',
           'Préstamo de Carlos',
           'Préstamo de emergencia del mes pasado, acordado con Carlos',
-          ${toLocal(150)}, 150.00,
+          150.00,
           'HIGH', NULL,
           '${dateOnly(1)}', false, NULL
         ),
@@ -48,7 +38,7 @@ export const FinancialRecordsSeed = {
           'EXPENSE',
           'Cuota préstamo banco',
           'Cuota mensual del préstamo personal',
-          ${toLocal(320)}, 320.00,
+          320.00,
           'MEDIUM', NULL,
           '${dateOnly(5)}', true, ${new Date().getDate()}
         ),
@@ -60,7 +50,7 @@ export const FinancialRecordsSeed = {
           'EXPENSE',
           'Netflix compartido con familia',
           NULL,
-          ${toLocal(5.99)}, 5.99,
+          5.99,
           'LOW', NULL,
           '${dateOnly(20)}', true, ${((new Date().getDate() + 19) % 28) + 1}
         ),
@@ -72,7 +62,7 @@ export const FinancialRecordsSeed = {
           'INCOME',
           'Cobro cena a Pedro',
           'Cena del viernes en el restaurante La Tasca, Pedro debe su parte',
-          ${toLocal(42.5)}, 42.50,
+          42.50,
           'HIGH', NULL,
           '${dateOnly(1)}', false, NULL
         ),
@@ -84,7 +74,7 @@ export const FinancialRecordsSeed = {
           'EXPENSE',
           'Teléfono de febrero',
           'Cuota del plan de telefonía de febrero',
-          ${toLocal(25)}, 25.00,
+          25.00,
           'LOW', NULL,
           '${dateOnly(-5)}', false, NULL
         )
@@ -96,7 +86,7 @@ export const FinancialRecordsSeed = {
     await q.query(`
       INSERT INTO financial_records (
         id, user_id, type, title, description,
-        amount_local, amount_usd,
+        amount_usd,
         priority, interest_rate,
         date, is_recurring, recurrence_day
       ) VALUES
@@ -108,7 +98,7 @@ export const FinancialRecordsSeed = {
           'EXPENSE',
           'Préstamo a Luis con interés',
           'Préstamo con acuerdo de 10% mensual, registrado el mes pasado',
-          ${toLocal(500)}, 500.00,
+          500.00,
           'HIGH', 10.00,
           '${dateOnly(1)}', false, NULL
         ),
@@ -120,7 +110,7 @@ export const FinancialRecordsSeed = {
           'INCOME',
           'Cobro alquiler a Ana',
           'Parte del alquiler compartido de este mes',
-          ${toLocal(180)}, 180.00,
+          180.00,
           'MEDIUM', NULL,
           '${dateOnly(2)}', false, NULL
         ),
@@ -132,7 +122,7 @@ export const FinancialRecordsSeed = {
           'INCOME',
           'Cobro materiales a José',
           'Materiales de construcción que José usó y prometió pagar',
-          ${toLocal(275)}, 275.00,
+          275.00,
           'HIGH', NULL,
           '${dateOnly(4)}', false, NULL
         )

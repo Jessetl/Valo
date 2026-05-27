@@ -32,14 +32,6 @@ export class FinancialRecordOrmEntity {
   description: string | null;
 
   @Column({
-    name: 'amount_local',
-    type: 'decimal',
-    precision: 18,
-    scale: 2,
-  })
-  amountLocal: string;
-
-  @Column({
     name: 'amount_usd',
     type: 'decimal',
     precision: 18,

@@ -73,11 +73,6 @@ export class UpdateShoppingListDto {
   @Max(180)
   longitude?: number | null;
 
-  @ApiPropertyOptional({ example: true })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
   @ApiPropertyOptional({
     type: [UpdateShoppingItemDto],
     description:

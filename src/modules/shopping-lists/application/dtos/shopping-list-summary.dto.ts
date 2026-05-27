@@ -17,9 +17,6 @@ export class ShoppingListSummaryDto {
   @ApiProperty({ example: 'VES' })
   currencyCode!: string;
 
-  @ApiProperty({ example: true })
-  isActive!: boolean;
-
   @ApiPropertyOptional({
     example: '2026-04-15T18:00:00.000Z',
     nullable: true,

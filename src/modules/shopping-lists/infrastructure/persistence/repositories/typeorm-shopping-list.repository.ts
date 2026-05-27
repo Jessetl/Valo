@@ -69,7 +69,6 @@ export class TypeOrmShoppingListRepository implements IShoppingListRepository {
     const where: FindWhere = { userId };
 
     if (filters.listType !== undefined) where.listType = filters.listType;
-    if (filters.isActive !== undefined) where.isActive = filters.isActive;
     if (filters.storeName) {
       const escaped = filters.storeName
         .replace(/\\/g, '\\\\')

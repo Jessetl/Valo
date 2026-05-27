@@ -7,7 +7,6 @@ export interface FinancialRecordProps {
   type: FinancialType;
   title: string;
   description: string | null;
-  amountLocal: number;
   amountUsd: number;
   priority: FinancialPriority | null;
   interestRate: number | null;
@@ -21,7 +20,6 @@ export class FinancialRecord extends BaseEntity {
   readonly type: FinancialType;
   readonly title: string;
   readonly description: string | null;
-  readonly amountLocal: number;
   readonly amountUsd: number;
   readonly priority: FinancialPriority | null;
   readonly interestRate: number | null;
@@ -35,7 +33,6 @@ export class FinancialRecord extends BaseEntity {
     this.type = props.type;
     this.title = props.title;
     this.description = props.description;
-    this.amountLocal = props.amountLocal;
     this.amountUsd = props.amountUsd;
     this.priority = props.priority;
     this.interestRate = props.interestRate;
@@ -49,7 +46,6 @@ export class FinancialRecord extends BaseEntity {
     userId: string,
     type: FinancialType,
     title: string,
-    amountLocal: number,
     amountUsd: number,
     date: Date | null,
     options: {
@@ -68,7 +64,6 @@ export class FinancialRecord extends BaseEntity {
       type,
       title,
       description: options.description ?? null,
-      amountLocal,
       amountUsd,
       priority: options.priority ?? null,
       interestRate: options.interestRate ?? null,
@@ -82,7 +77,6 @@ export class FinancialRecord extends BaseEntity {
     type?: FinancialType;
     title?: string;
     description?: string | null;
-    amountLocal?: number;
     amountUsd?: number;
     priority?: FinancialPriority | null;
     interestRate?: number | null;
@@ -103,7 +97,6 @@ export class FinancialRecord extends BaseEntity {
       title: props.title ?? this.title,
       description:
         props.description !== undefined ? props.description : this.description,
-      amountLocal: props.amountLocal ?? this.amountLocal,
       amountUsd: props.amountUsd ?? this.amountUsd,
       priority: props.priority !== undefined ? props.priority : this.priority,
       interestRate:

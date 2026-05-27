@@ -30,11 +30,6 @@ export class CreateFinancialRecordDto {
   @MaxLength(1000)
   description?: string | null;
 
-  @ApiProperty({ example: 3618000.0 })
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  amountLocal!: number;
-
   @ApiProperty({ example: 100.0 })
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)

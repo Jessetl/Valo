@@ -72,7 +72,6 @@ export class GenerateRecurringFinancialRecordsUseCase implements UseCase<
         template.userId,
         template.type,
         template.title,
-        template.amountLocal,
         template.amountUsd,
         target,
         {

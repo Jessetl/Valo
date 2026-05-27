@@ -9,37 +9,36 @@
 
 > Gestiona la identidad, permisos, parametrización financiera y ubicación de cada cuenta.
 
-| Campo               | Tipo      | Constraints      | Descripción                     |
-| :------------------ | :-------- | :--------------- | :------------------------------ |
-| `id`                | UUID      | PK               | Identificador único.            |
-| `firebase_uid`      | String    | Unique, Not Null | UID de Firebase Authentication. |
-| `email`             | String    | Unique, Not Null | Correo electrónico del usuario. |
-| `first_name`        | String    | Nullable         | Nombre.                         |
-| `last_name`         | String    | Nullable         | Apellido.                       |
-| `avatar_url`        | String    | Nullable         | URL de imagen de perfil.        |
-| `subscription_plan` | Enum      | Not Null         | Plan de suscripción.            |
-| `country_code`      | String    | Not Null         | Código de país (ej: VE).        |
-| `latitude`          | Decimal   | Nullable         | Latitud de ubicación.           |
-| `longitude`         | Decimal   | Nullable         | Longitud de ubicación.          |
-| `created_at`        | Timestamp | Not Null         | Fecha de creación.              |
-| `updated_at`        | Timestamp | Not Null         | Última actualización.           |
+| Campo               | Tipo      | Constraints      | Descripción                           |
+| :------------------ | :-------- | :--------------- | :------------------------------------ |
+| `id`                | UUID      | PK               | Identificador único.                  |
+| `firebase_uid`      | String    | Unique, Not Null | UID de Firebase Authentication.       |
+| `email`             | String    | Unique, Not Null | Correo electrónico del usuario.       |
+| `first_name`        | String    | Nullable         | Nombre.                               |
+| `last_name`         | String    | Nullable         | Apellido.                             |
+| `avatar_url`        | String    | Nullable         | URL de imagen de perfil.              |
+| `subscription_plan` | Enum      | Not Null         | `FREE` / `KASHY` Plan de suscripción. |
+| `country_code`      | String    | Not Null         | Código de país (ej: VE).              |
+| `latitude`          | Decimal   | Nullable         | Latitud de ubicación.                 |
+| `longitude`         | Decimal   | Nullable         | Longitud de ubicación.                |
+| `created_at`        | Timestamp | Not Null         | Fecha de creación.                    |
+| `updated_at`        | Timestamp | Not Null         | Última actualización.                 |
 
 ### `user_devices`
 
 > Dispositivos registrados para notificaciones push y gestión de sesiones. Almacena el refresh token de Firebase encriptado para renovación transparente de JWT.
 
-| Campo                    | Tipo      | Constraints         | Descripción                                                                                                                                                                                               |
-| :----------------------- | :-------- | :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                     | UUID      | PK                  | Identificador único.                                                                                                                                                                                      |
-| `user_id`                | UUID      | FK → users          | Usuario dueño del dispositivo.                                                                                                                                                                            |
-| `device_id`              | String    | Unique, Not Null    | `X-Device-Id` del dispositivo.                                                                                                                                                                            |
-| `device_name`            | String    | Not Null            | `X-Device-Name` (formato: `[OS] [VERSION] [MARCA] [MODEL]`).                                                                                                                                              |
-| `firebase_fcm_token`     | String    | Nullable            | Token FCM para notificaciones push. Nullable porque el cliente puede registrar el dispositivo antes de obtener permiso de notificaciones; se actualiza vía login/refresh cuando el token está disponible. |
-| `firebase_refresh_token` | String    | Not Null, Encrypted | Refresh token de Firebase. Encriptado en reposo. Usado por el backend para renovar sesiones.                                                                                                              |
-| `platform`               | String    | Not Null            | `ios` / `android`.                                                                                                                                                                                        |
-| `app_version`            | String    | Nullable            | Versión de la app instalada.                                                                                                                                                                              |
-| `last_active_at`         | Timestamp | Not Null            | Última actividad del dispositivo.                                                                                                                                                                         |
-| `created_at`             | Timestamp | Not Null            | Fecha de registro del dispositivo.                                                                                                                                                                        |
+| Campo                | Tipo      | Constraints      | Descripción                                                                                                                                                                                               |
+| :------------------- | :-------- | :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                 | UUID      | PK               | Identificador único.                                                                                                                                                                                      |
+| `user_id`            | UUID      | FK → users       | Usuario dueño del dispositivo.                                                                                                                                                                            |
+| `device_id`          | String    | Unique, Not Null | `X-Device-Id` del dispositivo.                                                                                                                                                                            |
+| `device_name`        | String    | Not Null         | `X-Device-Name` (formato: `[OS] [VERSION] [MARCA] [MODEL]`).                                                                                                                                              |
+| `firebase_fcm_token` | String    | Nullable         | Token FCM para notificaciones push. Nullable porque el cliente puede registrar el dispositivo antes de obtener permiso de notificaciones; se actualiza vía login/refresh cuando el token está disponible. |
+| `platform`           | String    | Not Null         | `ios` / `android`.                                                                                                                                                                                        |
+| `app_version`        | String    | Nullable         | Versión de la app instalada.                                                                                                                                                                              |
+| `last_active_at`     | Timestamp | Not Null         | Última actividad del dispositivo.                                                                                                                                                                         |
+| `created_at`         | Timestamp | Not Null         | Fecha de registro del dispositivo.                                                                                                                                                                        |
 
 ## 🛒 MÓDULO: COMPRAS
 
@@ -47,23 +46,22 @@
 
 > Listas de compras con soporte para plantillas, recibos, multi-moneda e IVA.
 
-| Campo                    | Tipo      | Constraints | Descripción                         |
-| :----------------------- | :-------- | :---------- | :---------------------------------- |
-| `id`                     | UUID      | PK          | Identificador único.                |
-| `user_id`                | UUID      | FK → users  | Usuario dueño de la lista.          |
-| `name`                   | String    | Not Null    | Nombre de la lista.                 |
-| `store_name`             | String    | Nullable    | Tienda asociada.                    |
-| `list_type`              | Enum      | Not Null    | `TEMPLATE` / `RECEIPT`.             |
-| `country_code`           | String    | Not Null    | Código de país.                     |
-| `currency_code`          | String    | Not Null    | Código de moneda (ej: VES, USD).    |
-| `exchange_rate_snapshot` | Decimal   | Not Null    | Tasa de cambio al momento de crear. |
-| `iva_enabled`            | Boolean   | Not Null    | Si aplica IVA a los items.          |
-| `scheduled_date`         | Timestamp | Nullable    | Fecha programada de compra.         |
-| `latitude`               | Decimal   | Nullable    | Latitud de la tienda.               |
-| `longitude`              | Decimal   | Nullable    | Longitud de la tienda.              |
-| `is_active`              | Boolean   | Not Null    | Si la lista está activa.            |
-| `created_at`             | Timestamp | Not Null    | Fecha de creación.                  |
-| `updated_at`             | Timestamp | Not Null    | Última actualización.               |
+| Campo                    | Tipo      | Constraints | Descripción                           |
+| :----------------------- | :-------- | :---------- | :------------------------------------ |
+| `id`                     | UUID      | PK          | Identificador único.                  |
+| `user_id`                | UUID      | FK → users  | Usuario dueño de la lista.            |
+| `name`                   | String    | Not Null    | Nombre de la lista.                   |
+| `store_name`             | String    | Nullable    | Tienda asociada.                      |
+| `list_type`              | Enum      | Not Null    | `TEMPLATE` / `RECEIPT` / `COMPLETED`. |
+| `country_code`           | String    | Not Null    | Código de país.                       |
+| `currency_code`          | String    | Not Null    | Código de moneda (ej: VES, USD).      |
+| `exchange_rate_snapshot` | Decimal   | Not Null    | Tasa de cambio al momento de crear.   |
+| `iva_enabled`            | Boolean   | Not Null    | Si aplica IVA a los items.            |
+| `scheduled_date`         | Timestamp | Nullable    | Fecha programada de compra.           |
+| `latitude`               | Decimal   | Nullable    | Latitud de la tienda.                 |
+| `longitude`              | Decimal   | Nullable    | Longitud de la tienda.                |
+| `created_at`             | Timestamp | Not Null    | Fecha de creación.                    |
+| `updated_at`             | Timestamp | Not Null    | Última actualización.                 |
 
 ### `shopping_items`
 
@@ -87,13 +85,12 @@
 > Registros de ingresos y egresos con soporte para recurrencia y prioridad.
 
 | Campo            | Tipo      | Constraints | Descripción                                                                                     |
-| :--------------- | :-------- | :---------- | :---------------------------------------------------------------------------------------------- |
+| :--------------- | :-------- | :---------- | :---------------------------------------------------------------------------------------------- | --- |
 | `id`             | UUID      | PK          | Identificador único.                                                                            |
 | `user_id`        | UUID      | FK → users  | Usuario dueño del registro.                                                                     |
 | `type`           | Enum      | Not Null    | `INCOME` / `EXPENSE`.                                                                           |
 | `title`          | String    | Not Null    | Título del registro.                                                                            |
-| `description`    | String    | Nullable    | Descripción adicional.                                                                          |
-| `amount_local`   | Decimal   | Not Null    | Monto en moneda local.                                                                          |
+| `description`    | String    | Nullable    | Descripción adicional.                                                                          |     |
 | `amount_usd`     | Decimal   | Not Null    | Monto en USD.                                                                                   |
 | `priority`       | Enum      | Nullable    | `HIGH` / `MEDIUM` / `LOW`.                                                                      |
 | `interest_rate`  | Decimal   | Nullable    | Tasa de interés (si aplica).                                                                    |

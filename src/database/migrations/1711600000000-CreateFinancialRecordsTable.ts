@@ -41,13 +41,6 @@ export class CreateFinancialRecordsTable1711600000000 implements MigrationInterf
             isNullable: true,
           },
           {
-            name: 'amount_local',
-            type: 'decimal',
-            precision: 18,
-            scale: 2,
-            isNullable: false,
-          },
-          {
             name: 'amount_usd',
             type: 'decimal',
             precision: 18,

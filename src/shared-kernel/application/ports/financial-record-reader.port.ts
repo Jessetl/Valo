@@ -5,7 +5,6 @@ export interface FinancialRecordView {
   userId: string;
   title: string;
   type: string;
-  amountLocal: number;
   amountUsd: number;
   date: Date;
 }

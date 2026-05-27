@@ -45,7 +45,6 @@ export class SearchShoppingListsUseCase implements UseCase<
       {
         listType: filters.listType,
         storeName: filters.storeName,
-        isActive: filters.isActive,
         scheduledDateFrom: filters.scheduledDateFrom
           ? new Date(filters.scheduledDateFrom)
           : undefined,
@@ -79,7 +78,6 @@ export class SearchShoppingListsUseCase implements UseCase<
     dto.storeName = list.storeName;
     dto.listType = list.listType;
     dto.currencyCode = list.currencyCode;
-    dto.isActive = list.isActive;
     dto.scheduledDate = list.scheduledDate;
     dto.itemsCount = list.items.length;
     dto.checkedCount = list.items.filter((item) => item.isChecked).length;

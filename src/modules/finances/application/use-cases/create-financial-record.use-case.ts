@@ -44,7 +44,6 @@ export class CreateFinancialRecordUseCase implements UseCase<
       input.userId,
       dto.type,
       dto.title,
-      dto.amountLocal,
       dto.amountUsd,
       dto.date ? parseDateOnly(dto.date) : null,
       {

@@ -22,7 +22,6 @@ export class FinancialRecordPersistenceMapper {
       type: orm.type,
       title: orm.title,
       description: orm.description,
-      amountLocal: Number(orm.amountLocal),
       amountUsd: Number(orm.amountUsd),
       priority: orm.priority,
       interestRate: orm.interestRate !== null ? Number(orm.interestRate) : null,
@@ -39,7 +38,6 @@ export class FinancialRecordPersistenceMapper {
     orm.type = record.type;
     orm.title = record.title;
     orm.description = record.description;
-    orm.amountLocal = record.amountLocal.toFixed(2);
     orm.amountUsd = record.amountUsd.toFixed(2);
     orm.priority = record.priority;
     orm.interestRate =

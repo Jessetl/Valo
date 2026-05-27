@@ -126,7 +126,6 @@ export class UpdateShoppingListUseCase implements UseCase<
         input.dto.longitude !== undefined
           ? input.dto.longitude
           : existing.longitude,
-      isActive: input.dto.isActive ?? existing.isActive,
       items,
     });
 

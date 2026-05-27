@@ -37,7 +37,6 @@ describe('ShoppingList domain entity', () => {
     expect(list.countryCode).toBe('VE');
     expect(list.currencyCode).toBe('VES');
     expect(list.exchangeRateSnapshot).toBe(36.5);
-    expect(list.isActive).toBe(true);
     expect(list.items).toHaveLength(1);
   });
 
@@ -73,12 +72,10 @@ describe('ShoppingList domain entity', () => {
       scheduledDate: new Date('2026-04-01T00:00:00Z'),
       latitude: 10.5,
       longitude: -66.9,
-      isActive: false,
       items: [],
     });
 
     expect(list.storeName).toBe('Super');
-    expect(list.isActive).toBe(false);
     expect(list.ivaEnabled).toBe(true);
   });
 });

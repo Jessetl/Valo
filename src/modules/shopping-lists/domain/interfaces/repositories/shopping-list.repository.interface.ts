@@ -13,7 +13,6 @@ export interface PaginatedResult<T> {
 export interface ShoppingListSearchFilters {
   listType?: ShoppingListType;
   storeName?: string;
-  isActive?: boolean;
   scheduledDateFrom?: Date;
   scheduledDateTo?: Date;
 }

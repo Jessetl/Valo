@@ -37,13 +37,17 @@ export class CreateUserDevicesTable1711350000000 implements MigrationInterface {
           {
             name: 'firebase_fcm_token',
             type: 'varchar',
-            isUnique: true,
+            isNullable: true,
+          },
+          {
+            name: 'platform',
+            type: 'varchar',
             isNullable: false,
           },
           {
-            name: 'firebase_refresh_token',
-            type: 'text',
-            isNullable: false,
+            name: 'app_version',
+            type: 'varchar',
+            isNullable: true,
           },
           {
             name: 'last_active_at',

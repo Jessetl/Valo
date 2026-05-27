@@ -14,7 +14,6 @@ interface ShoppingListProps {
   scheduledDate: Date | null;
   latitude: number | null;
   longitude: number | null;
-  isActive: boolean;
   items: ShoppingItem[];
 }
 
@@ -30,7 +29,6 @@ export class ShoppingList extends BaseEntity {
   readonly scheduledDate: Date | null;
   readonly latitude: number | null;
   readonly longitude: number | null;
-  readonly isActive: boolean;
   readonly items: ShoppingItem[];
 
   private constructor(id: string, props: ShoppingListProps) {
@@ -46,7 +44,6 @@ export class ShoppingList extends BaseEntity {
     this.scheduledDate = props.scheduledDate;
     this.latitude = props.latitude;
     this.longitude = props.longitude;
-    this.isActive = props.isActive;
     this.items = props.items;
   }
 
@@ -63,7 +60,6 @@ export class ShoppingList extends BaseEntity {
     scheduledDate?: Date | null;
     latitude?: number | null;
     longitude?: number | null;
-    isActive?: boolean;
     items?: ShoppingItem[];
   }): ShoppingList {
     return new ShoppingList(params.id, {
@@ -78,7 +74,6 @@ export class ShoppingList extends BaseEntity {
       scheduledDate: params.scheduledDate ?? null,
       latitude: params.latitude ?? null,
       longitude: params.longitude ?? null,
-      isActive: params.isActive ?? true,
       items: params.items ?? [],
     });
   }
